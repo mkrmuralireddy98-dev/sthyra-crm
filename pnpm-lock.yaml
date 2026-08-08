@@ -61,6 +61,28 @@ importers:
         specifier: ^5.7.0
         version: 5.9.3
 
+  packages/auth:
+    dependencies:
+      '@plumb/observability':
+        specifier: workspace:*
+        version: link:../observability
+      '@plumb/tokens':
+        specifier: workspace:*
+        version: link:../tokens
+      fastify:
+        specifier: ^5.0.0
+        version: 5.11.2
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.20.1
+      tsx:
+        specifier: ^4.19.0
+        version: 4.23.9
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+
   packages/observability:
     dependencies:
       '@plumb/tokens':
@@ -81,6 +103,31 @@ importers:
         version: 5.9.3
 
   packages/tokens:
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.20.1
+      tsx:
+        specifier: ^4.19.0
+        version: 4.23.9
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+
+  services/membership-service:
+    dependencies:
+      '@plumb/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
+      '@plumb/observability':
+        specifier: workspace:*
+        version: link:../../packages/observability
+      '@plumb/tokens':
+        specifier: workspace:*
+        version: link:../../packages/tokens
+      fastify:
+        specifier: ^5.0.0
+        version: 5.11.2
     devDependencies:
       '@types/node':
         specifier: ^22.0.0

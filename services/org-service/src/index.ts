@@ -38,6 +38,7 @@ export interface OrgRepository {
   insert(org: Org): Promise<void>;
   findById(id: string): Promise<Org | null>;
   findByNameAndRegion(name: string, region: Region): Promise<Org | null>;
+  list(query?: { region?: Region; limit?: number }): Promise<Org[]>;
 }
 
 export class InMemoryOrgRepository implements OrgRepository {
@@ -57,6 +58,12 @@ export class InMemoryOrgRepository implements OrgRepository {
   async findByNameAndRegion(name: string, region: Region): Promise<Org | null> {
     const id = this.byKey.get(`${region}::${name.toLowerCase()}`);
     return id ? (this.byId.get(id) ?? null) : null;
+  }
+
+  async list(query?: { region?: Region; limit?: number }): Promise<Org[]> {
+    const all = Array.from(this.byId.values()).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    const filtered = query?.region ? all.filter((o) => o.region === query.region) : all;
+    return query?.limit ? filtered.slice(0, query.limit) : filtered;
   }
 }
 
@@ -88,6 +95,10 @@ export class OrgService {
 
   async get(id: string): Promise<Org | null> {
     return this.repo.findById(id);
+  }
+
+  async list(query?: { region?: Region; limit?: number }): Promise<Org[]> {
+    return this.repo.list(query);
   }
 
   private nextId(): string {

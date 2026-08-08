@@ -1,6 +1,6 @@
 import { describe, it, beforeEach } from 'node:test';
 import * as assert from 'node:assert/strict';
-import { ApiError, createOrg, listProjects, archiveProject } from './api.js';
+import { ApiError, createOrg, listOrgs, listProjects, archiveProject } from './api.js';
 
 describe('api client', () => {
   let originalFetch: typeof globalThis.fetch;
@@ -95,6 +95,27 @@ describe('api client', () => {
     const projects = await listProjects('org_1');
     assert.equal(projects.length, 1);
     assert.equal(projects[0]?.id, 'p1');
+  });
+
+  it('listOrgs GETs /v1/orgs and deserializes the {data: Org[]} envelope', async () => {
+    let lastUrl = '';
+    setFetch(async (url) => {
+      lastUrl = url;
+      return new Response(
+        JSON.stringify({
+          data: [
+            { id: 'org_1', name: 'A', region: 'us-east', plan: 'pro', createdAt: 't' },
+            { id: 'org_2', name: 'B', region: 'eu-west', plan: 'free', createdAt: 't' },
+          ],
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      );
+    });
+    const orgs = await listOrgs();
+    assert.equal(orgs.length, 2);
+    assert.equal(orgs[0]?.id, 'org_1');
+    assert.equal(orgs[1]?.region, 'eu-west');
+    assert.equal(lastUrl, 'http://127.0.0.1:8080/v1/orgs');
   });
 
   it('archiveProject POSTs to /v1/projects/:id/archive', async () => {

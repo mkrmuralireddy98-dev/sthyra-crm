@@ -72,11 +72,15 @@ export interface Project {
 }
 
 export async function listOrgs(opts: FetchOptions = {}): Promise<Org[]> {
-  // Phase 0: org-service doesn't have a list endpoint yet. The dashboard will
-  // grow this when ProjectService.addMember/onboarding lands. For now we
-  // return empty and document it.
-  void opts;
-  return [];
+  const res = await fetch(`${ORG_SERVICE_URL}/v1/orgs`, {
+    method: 'GET',
+    headers: buildHeaders(opts),
+  });
+  if (!res.ok) {
+    throw await parseProblem(res, res.headers.get('x-request-id') ?? '');
+  }
+  const body = (await res.json()) as { data: Org[] };
+  return body.data;
 }
 
 export async function createOrg(

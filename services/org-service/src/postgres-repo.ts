@@ -131,4 +131,40 @@ export class PostgresOrgRepository implements OrgRepository {
     const row = result.rows[0];
     return row ? rowToOrg(row) : null;
   }
+
+  async list(query?: { region?: Region; limit?: number }): Promise<Org[]> {
+    if (query?.region && query.limit) {
+      const result = await this.opts.client.query<OrgRow>(
+        `SELECT id, name, region, plan, created_at FROM orgs
+         WHERE region = $1
+         ORDER BY created_at DESC
+         LIMIT $2`,
+        [query.region, query.limit],
+      );
+      return result.rows.map(rowToOrg);
+    }
+    if (query?.region) {
+      const result = await this.opts.client.query<OrgRow>(
+        `SELECT id, name, region, plan, created_at FROM orgs
+         WHERE region = $1
+         ORDER BY created_at DESC`,
+        [query.region],
+      );
+      return result.rows.map(rowToOrg);
+    }
+    if (query?.limit) {
+      const result = await this.opts.client.query<OrgRow>(
+        `SELECT id, name, region, plan, created_at FROM orgs
+         ORDER BY created_at DESC
+         LIMIT $1`,
+        [query.limit],
+      );
+      return result.rows.map(rowToOrg);
+    }
+    const result = await this.opts.client.query<OrgRow>(
+      `SELECT id, name, region, plan, created_at FROM orgs
+       ORDER BY created_at DESC`,
+    );
+    return result.rows.map(rowToOrg);
+  }
 }

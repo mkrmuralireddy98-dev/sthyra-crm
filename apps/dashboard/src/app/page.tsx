@@ -1,28 +1,53 @@
 import Link from 'next/link';
-import { listProjects, ApiError } from '@/lib/api';
+import { listOrgs, listProjects, ApiError } from '@/lib/api';
 import { randomUUID } from 'node:crypto';
 import { tokensFor } from '@plumb/tokens';
 
 export const dynamic = 'force-dynamic'; // SSR — fetch live data on every request
 
-const DEMO_ORG_ID = 'org_00000001';
-
+/**
+ * Plumb dashboard home. Shows each org with a rollup of its active projects.
+ * Real data path: org-service GET /v1/orgs + project-service GET /v1/projects?orgId=...
+ * The order is sequential (orgs first, then projects per org) so we surface
+ * a clear error per service if either is down.
+ */
 export default async function DashboardHome() {
   const requestId = randomUUID();
-  let projects: Awaited<ReturnType<typeof listProjects>> = [];
-  let error: string | null = null;
+  const tokens = tokensFor('dark');
+
+  let orgs: Awaited<ReturnType<typeof listOrgs>> = [];
+  let orgError: string | null = null;
   try {
-    projects = await listProjects(DEMO_ORG_ID, { requestId });
+    orgs = await listOrgs({ requestId });
   } catch (err) {
-    if (err instanceof ApiError) {
-      error = `${err.title} (request ${err.traceId})`;
-    } else {
-      error = `Unable to reach project-service: ${String(err)}`;
-    }
+    orgError = err instanceof ApiError ? `${err.title} (request ${err.traceId})` : String(err);
   }
 
-  const tokens = tokensFor('dark');
-  const activeProjects = projects.filter((p) => p.status === 'active').length;
+  // Fetch projects per org in parallel — bounded by org count displayed.
+  const projectsByOrg = new Map<string, Awaited<ReturnType<typeof listProjects>>>();
+  const projectErrors: string[] = [];
+  await Promise.all(
+    orgs.map(async (org) => {
+      try {
+        const projects = await listProjects(org.id, { requestId });
+        projectsByOrg.set(org.id, projects);
+      } catch (err) {
+        projectErrors.push(
+          `${org.name}: ${err instanceof ApiError ? err.title : String(err)}`,
+        );
+      }
+    }),
+  );
+
+  const totals = orgs.reduce(
+    (acc, o) => {
+      const projects = projectsByOrg.get(o.id) ?? [];
+      acc.projects += projects.length;
+      acc.active += projects.filter((p) => p.status === 'active').length;
+      return acc;
+    },
+    { projects: 0, active: 0 },
+  );
 
   return (
     <main style={{ maxWidth: 1120, margin: '0 auto', padding: 'var(--space-8) var(--space-6)' }}>
@@ -48,55 +73,76 @@ export default async function DashboardHome() {
         }}
       >
         <div className="plumb-card">
-          <div className="plumb-stat-label">Active projects</div>
-          <div className="plumb-stat">{activeProjects}</div>
+          <div className="plumb-stat-label">Organizations</div>
+          <div className="plumb-stat">{orgs.length}</div>
         </div>
         <div className="plumb-card">
           <div className="plumb-stat-label">Total projects</div>
-          <div className="plumb-stat">{projects.length}</div>
+          <div className="plumb-stat">{totals.projects}</div>
         </div>
         <div className="plumb-card">
-          <div className="plumb-stat-label">Plan</div>
-          <div className="plumb-stat" style={{ fontSize: 'var(--text-xl)' }}>Pro</div>
+          <div className="plumb-stat-label">Active projects</div>
+          <div className="plumb-stat">{totals.active}</div>
         </div>
         <div className="plumb-card">
-          <div className="plumb-stat-label">Region</div>
-          <div className="plumb-stat" style={{ fontSize: 'var(--text-xl)' }}>us-east</div>
+          <div className="plumb-stat-label">Regions</div>
+          <div className="plumb-stat" style={{ fontSize: 'var(--text-xl)' }}>
+            {[...new Set(orgs.map((o) => o.region))].length || '—'}
+          </div>
         </div>
       </section>
 
-      <section aria-label="Projects">
-        <h2 style={{ fontSize: 'var(--text-xl)', margin: '0 0 var(--space-4)' }}>Projects</h2>
-        {error && (
+      <section aria-label="Organizations">
+        <h2 style={{ fontSize: 'var(--text-xl)', margin: '0 0 var(--space-4)' }}>Organizations</h2>
+
+        {orgError && (
           <div className="plumb-card" role="alert" style={{ borderColor: 'var(--color-critical)' }}>
-            <strong>Service unavailable.</strong> {error}
+            <strong>org-service unavailable.</strong> {orgError}
             <p style={{ marginTop: 'var(--space-2)', fontSize: 'var(--text-sm)', color: 'var(--color-fg-muted)' }}>
-              Start the project-service with{' '}
+              Start it with{' '}
               <code style={{ background: 'var(--color-surface-sunken)', padding: '2px 6px', borderRadius: 4 }}>
-                pnpm --filter=@plumb/project-service start:inmem
+                pnpm --filter=@plumb/org-service start:inmem
               </code>
             </p>
           </div>
         )}
 
-        {!error && projects.length === 0 && (
+        {!orgError && orgs.length === 0 && (
           <div className="plumb-empty">
-            No projects yet. <Link href="/orgs/new">Create your first org</Link> to get started.
+            No organizations yet. <Link href="/orgs/new">Create your first org</Link> to get started.
           </div>
         )}
 
-        {!error && projects.length > 0 && (
+        {!orgError && orgs.length > 0 && (
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: 'var(--space-3)' }}>
-            {projects.map((p) => (
-              <li key={p.id} className="plumb-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <div style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--fontWeight-medium)' }}>{p.name}</div>
-                  <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-fg-muted)' }}>{p.address}</div>
-                </div>
-                <span className="plumb-badge">{p.status}</span>
-              </li>
-            ))}
+            {orgs.map((org) => {
+              const projects = projectsByOrg.get(org.id) ?? [];
+              const active = projects.filter((p) => p.status === 'active').length;
+              return (
+                <li key={org.id} className="plumb-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-4)' }}>
+                  <div>
+                    <div style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--fontWeight-medium)' }}>{org.name}</div>
+                    <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-fg-muted)' }}>
+                      {org.region} · {org.plan} · {active} active of {projects.length} projects
+                    </div>
+                  </div>
+                  <Link
+                    href={`/orgs/${org.id}/projects`}
+                    className="plumb-button plumb-button--ghost"
+                    style={{ textDecoration: 'none' }}
+                  >
+                    View projects →
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
+        )}
+
+        {projectErrors.length > 0 && (
+          <p style={{ marginTop: 'var(--space-4)', fontSize: 'var(--text-sm)', color: 'var(--color-warning)' }}>
+            project-service partial failure: {projectErrors.join('; ')}
+          </p>
         )}
       </section>
 

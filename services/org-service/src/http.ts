@@ -55,7 +55,6 @@ export function buildServer(opts: BuildServerOptions): FastifyInstance {
   });
 
   app.get('/v1/health', async () => ({ status: 'ok' }));
-
   app.post('/v1/orgs', async (req, reply) => {
     const idemKey = req.headers['idempotency-key'];
     if (typeof idemKey === 'string' && idemKey.length > 0) {
@@ -138,6 +137,22 @@ export function buildServer(opts: BuildServerOptions): FastifyInstance {
       };
     }
     return serializeOrg(org);
+  });
+
+  app.get('/v1/orgs', async (req, reply) => {
+    const q = req.query as { region?: string; limit?: string };
+    const query: { region?: never; limit?: number } = {};
+    if (q.region) {
+      Object.assign(query, { region: q.region as never });
+    }
+    if (q.limit) {
+      const n = Number(q.limit);
+      if (Number.isFinite(n) && n > 0 && n <= 1000) {
+        Object.assign(query, { limit: n });
+      }
+    }
+    const orgs = await opts.service.list(query);
+    return { data: orgs.map(serializeOrg) };
   });
 
   return app;
