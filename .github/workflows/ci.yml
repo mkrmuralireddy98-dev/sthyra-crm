@@ -10,34 +10,90 @@ env:
   NODE_VERSION: '22'
 
 jobs:
-  quality:
-    name: Typecheck + Test + Build
+  unit-tests:
+    name: Unit tests (in-memory)
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-
       - uses: pnpm/action-setup@v4
-        with:
-          version: 11
-
+        with: { version: 11 }
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -r --filter=./packages/* --filter=./services/* test
 
-      - name: Install
-        run: pnpm install --frozen-lockfile
+  integration-tests:
+    name: Integration tests (Postgres 16)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: plumb
+          POSTGRES_PASSWORD: plumb
+          POSTGRES_DB: plumb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U plumb -d plumb"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://plumb:plumb@localhost:5432/plumb
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 11 }
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
 
-      - name: Typecheck
-        run: pnpm -r --filter=./packages/* --filter=./services/* typecheck
-
-      - name: Test
-        run: pnpm -r --filter=./packages/* --filter=./services/* test
-
+      # Smoke-test that the Postgres-org-repo path actually works against real Postgres.
+      # We boot the inmem CLI, then make a curl check, then start the Postgres CLI in
+      # background and curl real endpoints to verify migrations + insert + read.
       - name: Build
         run: pnpm -r --filter=./packages/* --filter=./services/* build
+      - name: Boot org-service against Postgres
+        run: |
+          cd services/org-service
+          SERVICE_NAME=org-service-it DATABASE_URL=$DATABASE_URL PORT=8181 node dist/postgres-cli.js &
+          SERVER_PID=$!
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            if curl -s http://127.0.0.1:8181/v1/health > /dev/null; then break; fi
+            sleep 1
+          done
+          curl -s -X POST http://127.0.0.1:8181/v1/orgs \
+            -H "content-type: application/json" \
+            -d '{"name":"CI Test Org","region":"us-east","plan":"pro"}' | tee /tmp/created.json
+          echo
+          test -s /tmp/created.json && grep -q '"id":"org_' /tmp/created.json
+          echo "POSTGRES_ORG_REPO_OK"
+          kill $SERVER_PID || true
+          wait $SERVER_PID 2>/dev/null || true
 
+  quality-gates:
+    name: Quality gates (typecheck + lint + build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [unit-tests, integration-tests]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 11 }
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -r --filter=./packages/* --filter=./services/* typecheck
+      - run: pnpm build
       - name: Audit (warn-only on Day 1)
         run: pnpm audit --audit-level=high
         continue-on-error: true

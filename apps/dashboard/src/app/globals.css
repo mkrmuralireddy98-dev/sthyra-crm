@@ -1,0 +1,108 @@
+/* Plumb dashboard — uses CSS variables emitted by @plumb/tokens. */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--fontFamily-ui, Geist, Inter, system-ui, sans-serif);
+  font-size: var(--text-base, 14px);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.plumb-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+}
+
+.plumb-stat {
+  font-size: var(--text-3xl);
+  font-weight: var(--fontWeight-semibold, 600);
+  color: var(--color-fg);
+}
+
+.plumb-stat-label {
+  font-size: var(--text-sm);
+  color: var(--color-fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.plumb-input {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface-sunken, var(--color-bg));
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-fg);
+  font-family: inherit;
+  font-size: var(--text-base, 14px);
+}
+.plumb-input:focus {
+  outline: none;
+  border-color: var(--color-focus);
+  box-shadow: 0 0 0 2px rgba(0, 184, 148, 0.25);
+}
+
+.plumb-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  background: var(--color-accent);
+  color: var(--color-accent-fg, #fff);
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: var(--fontWeight-medium, 500);
+  font-size: var(--text-base, 14px);
+  transition: background var(--dur-fast, 120ms) var(--ease-standard, ease);
+}
+.plumb-button:hover {
+  background: var(--color-accent-hover, var(--color-accent));
+  filter: brightness(1.1);
+}
+
+.plumb-button--ghost {
+  background: transparent;
+  color: var(--color-fg);
+  border: 1px solid var(--color-border);
+}
+
+.plumb-badge {
+  display: inline-flex;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full, 9999px);
+  font-size: var(--text-xs, 12px);
+  background: var(--color-surface-sunken, var(--color-bg));
+  color: var(--color-fg-muted);
+}
+
+.plumb-empty {
+  padding: var(--space-12);
+  text-align: center;
+  color: var(--color-fg-muted);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+}

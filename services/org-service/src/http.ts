@@ -11,6 +11,7 @@
 import Fastify, { type FastifyInstance } from 'fastify';
 import { randomUUID } from 'node:crypto';
 import { OrgService, type Org } from './index.js';
+import { emit, installRequestIdPlugin } from '@plumb/observability';
 
 interface BuildServerOptions {
   service: OrgService;
@@ -36,11 +37,13 @@ interface Rfc7807 {
 
 export function buildServer(opts: BuildServerOptions): FastifyInstance {
   const app = Fastify({ logger: false });
+  installRequestIdPlugin(app);
   const idem = opts.idempotency ?? new Map<string, string>();
 
   app.setErrorHandler((err: unknown, _req, reply) => {
     const trace_id = randomUUID();
     const detail = err instanceof Error ? err.message : String(err);
+    emit('error', 'unhandled_error', { detail });
     reply.type('application/problem+json').status(500).send({
       type: 'https://plumb.dev/errors/internal',
       title: 'Internal Server Error',

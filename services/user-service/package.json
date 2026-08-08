@@ -1,8 +1,8 @@
 {
-  "name": "@plumb/org-service",
+  "name": "@plumb/user-service",
   "version": "0.1.0",
   "private": true,
-  "description": "Plumb Org Service — tenancy, RBAC, project membership",
+  "description": "Plumb User Service — identity, OIDC-shaped tokens, RBAC",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -17,18 +17,15 @@
     "test": "node --test --import tsx/esm src/**/*.test.ts",
     "lint": "echo 'service lint: covered by root eslint config'",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "start:inmem": "node dist/cli.js",
-    "start:pg": "node dist/postgres-cli.js"
+    "start:inmem": "node dist/cli.js"
   },
   "dependencies": {
     "@plumb/observability": "workspace:*",
     "@plumb/tokens": "workspace:*",
-    "fastify": "^5.0.0",
-    "pg": "^8.13.0"
+    "fastify": "^5.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
-    "@types/pg": "^8.11.0",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0"
   }
