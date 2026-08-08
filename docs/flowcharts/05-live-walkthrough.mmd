@@ -1,0 +1,78 @@
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "primaryColor": "#0A0D13",
+    "primaryTextColor": "#F2F4F7",
+    "primaryBorderColor": "#00B894",
+    "lineColor": "#00B894",
+    "secondaryColor": "#161A22",
+    "tertiaryColor": "#262C36",
+    "fontFamily": "Helvetica, Arial, sans-serif",
+    "fontSize": "14px"
+  }
+}}%%
+flowchart TB
+    classDef actor fill:#262C36,stroke:#00B894,color:#F2F4F7
+    classDef control fill:#161A22,stroke:#00B894,color:#F2F4F7
+    classDef cache fill:#1F242C,stroke:#F5A524,color:#F2F4F7
+    classDef live fill:#262C36,stroke:#F5A524,color:#F2F4F7
+
+    Owner["👤 Owner Browser"]:::actor
+    GCPM["👤 GC PM Browser"]:::actor
+    Lender["👤 Lender Browser"]:::actor
+
+    subgraph AWS["AWS Region: us-east-1"]
+        ALB["Application Load Balancer<br/>TLS 1.3 termination"]:::control
+
+        subgraph REALTIME["EKS: plumb-realtime (Phoenix Channels cluster)"]
+            PHX["⚡ realtime-gateway<br/>(Elixir Phoenix Channels)<br/>presence + WebRTC SFU coordination + timeline sync"]:::live
+        end
+
+        subgraph CACHE["ElastiCache Redis"]
+            PRES["📡 channel:{walkthrough-id}<br/>Pub/Sub: pointer, camera, chat"]:::cache
+        end
+
+        subgraph MEDIA["Media"]
+            IVS["🎥 IVS Real-time<br/>(audio/video mix)"]:::live
+            S3LIVE["🪣 S3: plumb-live-<br/>walkthrough recordings<br/>(auto-minutes via Transcribe + Bedrock)"]:::cache
+        end
+
+        subgraph TILES["Tile-server"]
+            TILE["🧱 S3: plumb-tiles<br/>project / capture / L / frame<br/>3D tile pyramid + Gaussian splats"]:::cache
+            CF["☁️ CloudFront + Lambda@Edge<br/>(signed URLs per viewer)"]:::control
+        end
+    end
+
+    Owner -->|"wss://live.plumb.dev/ws/{id}"| ALB
+    GCPM -->|"wss://live.plumb.dev/ws/{id}"| ALB
+    Lender -->|"wss://live.plumb.dev/ws/{id}"| ALB
+
+    ALB -->|"sticky session by walkthrough-id"| PHX
+    PHX <-->|"pointer pos, view, chat"| PRES
+    PHX -->|"mix/signaling"| IVS
+    IVS -->|"record"| S3LIVE
+
+    Owner -.->|"tile fetch"| CF
+    GCPM -.->|"tile fetch"| CF
+    Lender -.->|"tile fetch"| CF
+    PHX -.->|"broadcast view state"| CF
+    CF -->|"same cache key for all"| TILE
+
+    Note["📝 All clients see the same frame<br/>because they hit the same tile cache key.<br/>Phoenix presence syncs pointers & cameras in real time.<br/>IVS handles audio/video; recording auto-minutes via Transcribe."]
+
+    style ALB fill:#161A22,stroke:#00B894,color:#F2F4F7
+    style PHX fill:#262C36,stroke:#F5A524,color:#F2F4F7
+    style PRES fill:#1F242C,stroke:#F5A524,color:#F2F4F7
+    style IVS fill:#262C36,stroke:#F5A524,color:#F2F4F7
+    style S3LIVE fill:#1F242C,stroke:#F5A524,color:#F2F4F7
+    style TILE fill:#1F242C,stroke:#F5A524,color:#F2F4F7
+    style CF fill:#161A22,stroke:#00B894,color:#F2F4F7
+    style Note fill:#0A0D13,stroke:#F5A524,color:#F5A524,stroke-width:1px,stroke-dasharray:3 3
+    style AWS fill:#0A0D13,stroke:#00B894,color:#00B894,stroke-dasharray:5 5
+    style REALTIME fill:#0A0D13,stroke:#F5A524,color:#F5A524,stroke-dasharray:5 5
+    style CACHE fill:#0A0D13,stroke:#F5A524,color:#F5A524,stroke-dasharray:5 5
+    style MEDIA fill:#0A0D13,stroke:#F5A524,color:#F5A524,stroke-dasharray:5 5
+    style TILES fill:#0A0D13,stroke:#F5A524,color:#F5A524,stroke-dasharray:5 5
+    style Owner fill:#262C36,stroke:#00B894,color:#F2F4F7
+    style GCPM fill:#262C36,stroke:#00B894,color:#F2F4F7
+    style Lender fill:#262C36,stroke:#00B894,color:#F2F4F7

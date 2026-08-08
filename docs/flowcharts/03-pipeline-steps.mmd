@@ -1,0 +1,49 @@
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "primaryColor": "#0A0D13",
+    "primaryTextColor": "#F2F4F7",
+    "primaryBorderColor": "#00B894",
+    "lineColor": "#00B894",
+    "secondaryColor": "#161A22",
+    "tertiaryColor": "#262C36",
+    "fontFamily": "Helvetica, Arial, sans-serif",
+    "fontSize": "14px"
+  }
+}}%%
+flowchart LR
+    classDef input fill:#262C36,stroke:#00B894,color:#F2F4F7
+    classDef pipeline fill:#161A22,stroke:#00B894,color:#F2F4F7
+    classDef output fill:#1F242C,stroke:#F5A524,color:#F2F4F7
+
+    START([📷<br/>Capture<br/>finalized])
+    DECODE[⚙️ Lambda<br/>Frame extraction]
+    SUPERPT[🔬 GPU<br/>SuperPoint features]
+    SFM[🗺️ GPU<br/>COLMAP/GLOMAP<br/>SfM]
+    MVS[🏔️ GPU<br/>OpenMVS<br/>dense MVS]
+    MESH[🔺 GPU<br/>Poisson<br/>reconstruction]
+    GAUSSIAN[✨ GPU<br/>3D Gaussian<br/>Splatting]
+    SEG[🎯 GPU<br/>SAM-2<br/>segmentation]
+    ALIGN[📐 GPU<br/>Align to BIM<br/>DINOv2 + ICP]
+    DONE([✅ capture.ready<br/>+ WebSocket push])
+
+    START ==> DECODE
+    DECODE ==> SUPERPT
+    SUPERPT ==> SFM
+    SFM ==> MVS
+    MVS ==> MESH
+    MESH ==> GAUSSIAN
+    GAUSSIAN ==> SEG
+    SEG ==> ALIGN
+    ALIGN ==> DONE
+
+    START:::input
+    DECODE:::pipeline
+    SUPERPT:::pipeline
+    SFM:::pipeline
+    MVS:::pipeline
+    MESH:::pipeline
+    GAUSSIAN:::pipeline
+    SEG:::pipeline
+    ALIGN:::pipeline
+    DONE:::output

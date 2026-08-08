@@ -1,0 +1,42 @@
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "primaryColor": "#0A0D13",
+    "primaryTextColor": "#F2F4F7",
+    "primaryBorderColor": "#00B894",
+    "lineColor": "#00B894",
+    "secondaryColor": "#161A22",
+    "tertiaryColor": "#262C36",
+    "fontFamily": "Helvetica, Arial, sans-serif",
+    "fontSize": "14px"
+  }
+}}%%
+flowchart TB
+    classDef tier fill:#262C36,stroke:#00B894,color:#F2F4F7
+    classDef detail fill:#161A22,stroke:#00B894,color:#F2F4F7
+
+    Internet([🌍 Internet]):::tier
+    T1["<b>Tier 1 — Edge (Public)</b><br/>🌐 Route 53 · CloudFront · WAF · Shield<br/>🛡️ DDoS protection · TLS 1.3 · OWASP rules"]:::detail
+    T2["<b>Tier 2 — Auth (Public)</b><br/>🪪 Amazon Cognito · OIDC · SAML SSO<br/>🔐 FIDO2 / TOTP MFA · JWT issuance"]:::detail
+    T3["<b>Tier 3 — API Gateway (Public)</b><br/>🌐 API Gateway (Envoy) · JWT validation<br/>📨 Rate limiting · 🔁 Idempotency-Key"]:::detail
+    T4["<b>Tier 4 — Service Mesh (Internal)</b><br/>🕸️ App Mesh (Envoy) · mTLS (Phase 2)<br/>🪪 SPIFFE/SVID · 🛡️ OPA policies"]:::detail
+    T5["<b>Tier 5 — Compute (Internal)</b><br/>⚙️ EKS: plumb-control / realtime / gpu / batch<br/>📦 Stateless services · IRSA"]:::detail
+    T6["<b>Tier 6 — Data (No Internet)</b><br/>🗄️ RDS Aurora · ⚡ ElastiCache · 🔍 OpenSearch<br/>🪣 S3 (per-tenant CMK) · 🔑 Secrets Manager"]:::detail
+
+    Internet ==> T1
+    T1 ==>|"WAF + Shield"| T2
+    T2 ==>|"JWT validation"| T3
+    T3 ==>|"mTLS, ABAC"| T4
+    T4 ==>|"east-west"| T5
+    T5 ==>|"VPC endpoints only"| T6
+
+    Note["📜 Each layer enforces the previous.<br/>🛡️ Defense in depth: 12 layers.<br/>🚫 Tier 6 has NO inbound from public internet."]
+
+    style Internet fill:#262C36,stroke:#00B894,color:#F2F4F7
+    style Note fill:#0A0D13,stroke:#F5A524,color:#F5A524,stroke-width:1px,stroke-dasharray:3 3
+    style T1 fill:#161A22,stroke:#F5A524,color:#F2F4F7
+    style T2 fill:#161A22,stroke:#F5A524,color:#F2F4F7
+    style T3 fill:#161A22,stroke:#F5A524,color:#F2F4F7
+    style T4 fill:#262C36,stroke:#F5A524,color:#F2F4F7
+    style T5 fill:#262C36,stroke:#00B894,color:#F2F4F7
+    style T6 fill:#1F242C,stroke:#F5A524,color:#F2F4F7

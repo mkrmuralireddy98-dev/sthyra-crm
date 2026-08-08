@@ -1,0 +1,91 @@
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "primaryColor": "#0A0D13",
+    "primaryTextColor": "#F2F4F7",
+    "primaryBorderColor": "#00B894",
+    "lineColor": "#00B894",
+    "secondaryColor": "#161A22",
+    "tertiaryColor": "#262C36",
+    "fontFamily": "Helvetica, Arial, sans-serif",
+    "fontSize": "14px"
+  }
+}}%%
+flowchart TB
+    classDef mobile fill:#262C36,stroke:#00B894,color:#F2F4F7
+    classDef edge fill:#161A22,stroke:#00B894,color:#F2F4F7
+    classDef control fill:#262C36,stroke:#00B894,color:#F2F4F7
+    classDef pipeline fill:#161A22,stroke:#00B894,color:#F2F4F7
+    classDef gpu fill:#161A22,stroke:#F5A524,color:#F2F4F7
+    classDef storage fill:#1F242C,stroke:#F5A524,color:#F2F4F7
+
+    Mobile["📱 iPhone + Insta360 X4<br/>(AVCaptureSession records<br/>8K equirectangular @ 30fps,<br/>CoreMotion fuses IMU + GPS)"]:::mobile
+
+    subgraph INIT["Phase 1 — Capture Initiation"]
+        S1["1. POST /v1/projects/{id}/captures<br/>Bearer Cognito JWT<br/>Idempotency-Key: uuid-per-session"]:::edge
+        S2["2. API Gateway validates JWT<br/>+ forwards to capture-service"]:::edge
+        S3["3. INSERT captures row<br/>(status='uploading')"]:::control
+        S4["4. Return upload session<br/>{id: 'upl_xxx', chunkUrls: [...]}"]:::control
+    end
+
+    subgraph UPLOAD["Phase 2 — Chunked Upload (direct to S3)"]
+        S5["5a. PUT chunk 0 (8 MB, signed URL)"]
+        S5b["5b. PUT chunk 1"]
+        S5c["5c. PUT chunk N<br/>(retained on retry;<br/>idempotent at chunk level)"]
+    end
+
+    subgraph FINALIZE["Phase 3 — Finalize + Pipeline Kick-off"]
+        S6["6. POST /v1/upload-sessions/{id}/complete<br/>Body: { sha256 }"]
+        S7["7. ListObject + verify hash"]:::storage
+        S8["8. UPDATE captures SET status='processing'"]:::control
+        S9["9. StartExecution CapturePipeline<br/>(Step Functions)"]:::pipeline
+    end
+
+    subgraph GPU_PIPE["Phase 4 — Async Spatial AI Pipeline (p50 ≤ 1.3 h, p95 ≤ 3 h)"]
+        P1["10. Lambda: DecodeFrame<br/>Extract equirect + cube faces"]:::pipeline
+        P2["11. GPU: SuperPoint features"]:::gpu
+        P3["12. GPU: SfM (COLMAP/GLOMAP)"]:::gpu
+        P4["13. GPU: MVS (OpenMVS)"]:::gpu
+        P5["14. GPU: Poisson mesh"]:::gpu
+        P6["15. GPU: 3D Gaussian Splatting"]:::gpu
+        P7["16. GPU: SAM-2 segmentation"]:::gpu
+        P8["17. GPU: Align to BIM (DINOv2 + ICP)"]:::gpu
+    end
+
+    subgraph DONE["Phase 5 — Publish"]
+        P9["18. StateMachineSucceeded<br/>+ artifact URLs (S3, tile paths)"]:::pipeline
+        P10["19. UPDATE captures SET status='ready'"]:::control
+        P11["20. WebSocket push (via realtime-gateway)<br/>{ type: 'capture.ready', artifacts: [...] }"]:::edge
+    end
+
+    Mobile --> S1
+    S1 --> S2
+    S2 --> S3
+    S3 --> S4
+    S4 --> S5
+    S5 --> S5b
+    S5b --> S5c
+    S5c --> S6
+    S6 --> S7
+    S7 --> S8
+    S8 --> S9
+
+    S9 --> P1
+    P1 --> P2
+    P2 --> P3
+    P3 --> P4
+    P4 --> P5
+    P5 --> P6
+    P6 --> P7
+    P7 --> P8
+
+    P8 --> P9
+    P9 --> P10
+    P10 --> P11
+    P11 -.->|"push"| Mobile
+
+    style INIT fill:#0A0D13,stroke:#00B894,color:#00B894,stroke-dasharray:5 5
+    style UPLOAD fill:#0A0D13,stroke:#F5A524,color:#F5A524,stroke-dasharray:5 5
+    style FINALIZE fill:#0A0D13,stroke:#F5A524,color:#F5A524,stroke-dasharray:5 5
+    style GPU_PIPE fill:#0A0D13,stroke:#F5A524,color:#F5A524,stroke-dasharray:5 5
+    style DONE fill:#0A0D13,stroke:#4FDDB6,color:#4FDDB6,stroke-dasharray:5 5

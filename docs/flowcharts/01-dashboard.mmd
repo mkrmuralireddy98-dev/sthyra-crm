@@ -1,0 +1,71 @@
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "primaryColor": "#0A0D13",
+    "primaryTextColor": "#F2F4F7",
+    "primaryBorderColor": "#00B894",
+    "lineColor": "#00B894",
+    "secondaryColor": "#161A22",
+    "tertiaryColor": "#262C36",
+    "fontFamily": "Helvetica, Arial, sans-serif",
+    "fontSize": "14px",
+    "edgeLabelBackground": "#0A0D13"
+  },
+  "flowchart": {
+    "curve": "basis",
+    "nodeSpacing": 30,
+    "rankSpacing": 50,
+    "padding": 12
+  }
+}}%%
+flowchart TB
+    classDef edgeStyle fill:#161A22,stroke:#00B894,color:#F2F4F7
+    classDef edgeTextStyle fill:#0A0D13,stroke:#00B894,color:#00B894
+
+    subgraph PUBLIC["<b>PUBLIC INTERNET</b>"]
+        Browser["<b>Browser</b><br/>(Superintendent /<br/>Owner / GC PM)"]
+    end
+
+    subgraph EDGE["<b>AWS EDGE PLANE</b>"]
+        CF["<b>CloudFront</b><br/>CDN · TLS 1.3"]
+        WAF["<b>AWS WAF</b><br/>OWASP rules"]
+        APIGW["<b>API Gateway</b><br/>REST · JWT validation"]
+    end
+
+    subgraph EKS_CONTROL["<b>EKS: plumb-control</b>"]
+        NextJS["<b>Next.js Dashboard</b><br/>(SSR / Edge)"]
+        OrgSvc["<b>org-service</b>"]
+        ProjSvc["<b>project-service</b>"]
+        UserSvc["<b>user-service</b>"]
+    end
+
+    subgraph DATA["<b>AWS DATA PLANE</b>"]
+        RDS["<b>RDS Aurora PG</b><br/>orgs table"]
+        S3["<b>S3</b><br/>static assets"]
+    end
+
+    Browser -->|1. GET /| CF
+    CF -->|cache miss| WAF
+    WAF -->|2. GET /api/*| APIGW
+    APIGW -->|JWT verified| NextJS
+    NextJS -->|3. SSR data fetch| OrgSvc
+    NextJS -->|3. SSR data fetch| ProjSvc
+    OrgSvc -->|4. SELECT| RDS
+    ProjSvc -->|4. SELECT| RDS
+    NextJS -->|static assets| S3
+    NextJS -.->|5. HTML response| Browser
+
+    style Browser fill:#262C36,stroke:#00B894,color:#F2F4F7
+    style CF fill:#161A22,stroke:#00B894,color:#F2F4F7
+    style WAF fill:#161A22,stroke:#00B894,color:#F2F4F7
+    style APIGW fill:#161A22,stroke:#00B894,color:#F2F4F7
+    style NextJS fill:#262C36,stroke:#00B894,color:#F2F4F7
+    style OrgSvc fill:#262C36,stroke:#00B894,color:#F2F4F7
+    style ProjSvc fill:#262C36,stroke:#00B894,color:#F2F4F7
+    style UserSvc fill:#262C36,stroke:#00B894,color:#F2F4F7
+    style RDS fill:#1F242C,stroke:#F5A524,color:#F2F4F7
+    style S3 fill:#1F242C,stroke:#F5A524,color:#F2F4F7
+    style PUBLIC fill:#0A0D13,stroke:#00B894,color:#00B894,stroke-dasharray:5 5
+    style EDGE fill:#0A0D13,stroke:#00B894,color:#00B894,stroke-dasharray:5 5
+    style EKS_CONTROL fill:#0A0D13,stroke:#00B894,color:#00B894,stroke-dasharray:5 5
+    style DATA fill:#0A0D13,stroke:#F5A524,color:#F5A524,stroke-dasharray:5 5

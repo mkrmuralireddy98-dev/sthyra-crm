@@ -1,0 +1,80 @@
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "primaryColor": "#0A0D13",
+    "primaryTextColor": "#F2F4F7",
+    "primaryBorderColor": "#00B894",
+    "lineColor": "#00B894",
+    "secondaryColor": "#161A22",
+    "tertiaryColor": "#262C36",
+    "fontFamily": "Helvetica, Arial, sans-serif",
+    "fontSize": "14px"
+  }
+}}%%
+flowchart TB
+    classDef actor fill:#262C36,stroke:#00B894,color:#F2F4F7
+    classDef control fill:#161A22,stroke:#00B894,color:#F2F4F7
+    classDef safety fill:#161A22,stroke:#F5A524,color:#F2F4F7
+    classDef storage fill:#1F242C,stroke:#F5A524,color:#F2F4F7
+
+    User["👤 User"]:::actor
+    Dashboard["🖥️ Next.js Dashboard"]:::actor
+
+    subgraph PRE["Pre-inference safety"]
+        SR["PII redactor<br/>(typed tokens in vault)"]:::safety
+        PF["Prompt firewall<br/>(jailbreak benchmark,<br/>structure split)"]:::safety
+        CQ["Context quarantine<br/>(untrusted text in<br/>delimited channel)"]:::safety
+    end
+
+    subgraph RETRIEVE["RAG retrieval (tenant-pinned)"]
+        AR["Aurora pgvector<br/>hybrid BM25 + dense<br/>(OpenCLIP / BGE-M3)"]:::storage
+        RK["bge-reranker-v2-m3<br/>(350M params)"]:::storage
+    end
+
+    subgraph INFER["LLM inference (tenant-pinned)"]
+        BR["Bedrock (Claude)<br/>or<br/>SageMaker (Llama 3 / Mistral)"]:::control
+        ST["Streaming SSE deltas<br/>+ tool calls"]:::control
+    end
+
+    subgraph POST["Post-inference safety"]
+        CC["Content classifier<br/>(toxicity / IP / exfil)"]:::safety
+        PI["PII inverse<br/>(rate-limited reveal)"]:::safety
+        CP["C2PA provenance<br/>(signs derived assets)"]:::safety
+    end
+
+    S3[("🪣 S3: copilot-artifacts<br/>(signed + provenance)")]:::storage
+    RAG_LOG["📋 Append-only audit log<br/>(hash-chained, WORM)"]:::storage
+
+    User -->|"1. 'Show me open RFIs on<br/>Level 3 over $5k'"| Dashboard
+    Dashboard -->|"2. POST /api/copilot/query<br/>Bearer JWT · x-request-id"| BR
+
+    BR -->|"3. Allow prompt"| SR
+    SR -->|"4. Redacted text"| PF
+    PF -->|"5. Sanitized"| CQ
+
+    CQ -->|"6. Hybrid query<br/>(embeddings + BM25)"| AR
+    AR -->|"7. Top-K chunks"| RK
+    RK -->|"8. Re-ranked top-K"| BR
+
+    BR -->|"9. Function-calling inference"| ST
+    ST -->|"10. Stream {delta, citations}"| Dashboard
+    Dashboard -->|"11. Render inline citations<br/>as thumbnails + map pins"| User
+
+    ST -->|"12. Tool call"| CC
+    CC -->|"13. Pass / rephrase"| PI
+    PI -->|"14. Stamp provenance"| CP
+    CP -->|"15. Store artifact"| S3
+
+    BR -.->|"every turn"| RAG_LOG
+
+    Note["🛡️ Refusal-on-no-citation: every AI claim must<br/>resolve to a project artifact (capture, BIM, RFI, sheet).<br/>📜 Append-only audit log captures every tool call."]
+
+    style PRE fill:#0A0D13,stroke:#F5A524,color:#F5A524,stroke-dasharray:5 5
+    style RETRIEVE fill:#0A0D13,stroke:#F5A524,color:#F5A524,stroke-dasharray:5 5
+    style INFER fill:#0A0D13,stroke:#00B894,color:#00B894,stroke-dasharray:5 5
+    style POST fill:#0A0D13,stroke:#F5A524,color:#F5A524,stroke-dasharray:5 5
+    style User fill:#262C36,stroke:#00B894,color:#F2F4F7
+    style Dashboard fill:#262C36,stroke:#00B894,color:#F2F4F7
+    style S3 fill:#1F242C,stroke:#F5A524,color:#F2F4F7
+    style RAG_LOG fill:#1F242C,stroke:#F5A524,color:#F2F4F7
+    style Note fill:#0A0D13,stroke:#F5A524,color:#F5A524,stroke-width:1px,stroke-dasharray:3 3

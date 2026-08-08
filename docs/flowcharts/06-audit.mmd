@@ -1,0 +1,62 @@
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "primaryColor": "#0A0D13",
+    "primaryTextColor": "#F2F4F7",
+    "primaryBorderColor": "#00B894",
+    "lineColor": "#00B894",
+    "secondaryColor": "#161A22",
+    "tertiaryColor": "#262C36",
+    "fontFamily": "Helvetica, Arial, sans-serif",
+    "fontSize": "14px"
+  }
+}}%%
+flowchart TB
+    classDef user fill:#262C36,stroke:#00B894,color:#F2F4F7
+    classDef control fill:#161A22,stroke:#00B894,color:#F2F4F7
+    classDef data fill:#1F242C,stroke:#F5A524,color:#F2F4F7
+    classDef audit fill:#262C36,stroke:#F5A524,color:#F2F4F7
+
+    Analyst["🛡️ Compliance Analyst<br/>(via SSO — no standing access)"]:::user
+    IAM["AWS IAM<br/>(plumb-audit-ro role,<br/>1-hour session)"]:::control
+
+    subgraph VPC["VPC: plumb-prod-use1"]
+        Bastion["🖥️ Bastion EC2<br/>(SSM Session Manager only —<br/>no SSH key, no public IP)"]:::control
+        SG["🛡️ Security group: data-sg<br/>(RDS ingress allowed only<br/>from bastion role)"]:::audit
+        RDS["🗄️ RDS Aurora PostgreSQL<br/>audit_log table<br/>(7-year retention,<br/>partitioned monthly)"]:::data
+    end
+
+    subgraph LOGGING["Audit logging"]
+        CT["📋 CloudTrail<br/>(every API call:<br/>psql → RDS, S3, KMS)"]:::audit
+        ATH["📊 Athena + CUR<br/>(query audit history)"]:::audit
+    end
+
+    Archive["🪣 S3: plumb-audit-exports<br/>Object Lock: Compliance mode<br/>7-year retention<br/>SSE-KMS (tenant CMK)<br/>(immutable even by admins)"]:::data
+
+    Analyst -->|"1. SSO login"| IAM
+    IAM -->|"2. StartSession → port-forward"| Bastion
+    Bastion -->|"3. psql -U plumb_audit_ro<br/>(ephemeral token, 1h TTL)"| RDS
+    SG -.->|"4. Allow only bastion role"| RDS
+
+    RDS -->|"5. SELECT * FROM audit_log<br/>WHERE tenant_id='org_acme'<br/>AND ts > NOW() - 90 days"| RDS
+    RDS -->|"6. Result set"| Bastion
+
+    Bastion -->|"7. COPY (SELECT) TO parquet<br/>via kms-encrypted upload"| Archive
+
+    CT -.->|"8. Records: AssumeRole,<br/>StartSession, ExecuteStatement,<br/>Decrypt (KMS), PutObject (S3)"| CT
+    Archive -.->|"9. Object Lock Compliance mode<br/>= immutable for 7 years"| Archive
+    ATH -.->|"10. SQL queries on audit log"| RDS
+
+    Note["📜 No standing access: every connection<br/>requires a fresh SSO + SSM StartSession.<br/>🛡️ Object Lock Compliance = even root admins<br/>cannot delete or modify the export."]
+
+    style Analyst fill:#262C36,stroke:#00B894,color:#F2F4F7
+    style IAM fill:#161A22,stroke:#00B894,color:#F2F4F7
+    style Bastion fill:#161A22,stroke:#00B894,color:#F2F4F7
+    style SG fill:#262C36,stroke:#F5A524,color:#F2F4F7
+    style RDS fill:#1F242C,stroke:#F5A524,color:#F2F4F7
+    style CT fill:#262C36,stroke:#F5A524,color:#F2F4F7
+    style ATH fill:#262C36,stroke:#F5A524,color:#F2F4F7
+    style Archive fill:#1F242C,stroke:#F5A524,color:#F2F4F7
+    style Note fill:#0A0D13,stroke:#F5A524,color:#F5A524,stroke-width:1px,stroke-dasharray:3 3
+    style VPC fill:#0A0D13,stroke:#F5A524,color:#F5A524,stroke-dasharray:5 5
+    style LOGGING fill:#0A0D13,stroke:#F5A524,color:#F5A524,stroke-dasharray:5 5

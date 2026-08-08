@@ -1,0 +1,57 @@
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "primaryColor": "#0A0D13",
+    "primaryTextColor": "#F2F4F7",
+    "primaryBorderColor": "#00B894",
+    "lineColor": "#00B894",
+    "secondaryColor": "#161A22",
+    "tertiaryColor": "#262C36",
+    "fontFamily": "Helvetica, Arial, sans-serif",
+    "fontSize": "14px"
+  }
+}}%%
+flowchart LR
+    classDef client fill:#262C36,stroke:#00B894,color:#F2F4F7
+    classDef edge fill:#161A22,stroke:#00B894,color:#F2F4F7
+    classDef origin fill:#1F242C,stroke:#F5A524,color:#F2F4F7
+
+    User["👤 User"]:::client
+    Browser["🌐 Browser"]:::client
+
+    subgraph CLOUDFRONT["CloudFront (edge)"]
+        CF[CDN cache]
+        OAC[Origin Access<br/>Control]
+    end
+
+    subgraph AWS["AWS Region"]
+        S3[("🪣 S3<br/>static assets<br/>OAC-protected")]:::origin
+        API[("⚙️ API Gateway<br/>+ Lambda@Edge")]:::edge
+        ALB[ALB]
+        NextJS["Next.js SSR"]
+        OrgSvc[org-service]
+        RDS[("RDS Aurora")]:::origin
+    end
+
+    User --> Browser
+    Browser -->|TLS 1.3| CF
+    CF -->|cache miss for /_next/static/*| OAC
+    OAC -->|signed access| S3
+    CF -->|cache miss for /api/*| API
+    API -->|JWT validation| ALB
+    ALB --> NextJS
+    NextJS -->|SSR fetch| OrgSvc
+    OrgSvc -->|SQL| RDS
+
+    style User fill:#262C36,stroke:#00B894,color:#F2F4F7
+    style Browser fill:#262C36,stroke:#00B894,color:#F2F4F7
+    style CF fill:#161A22,stroke:#00B894,color:#F2F4F7
+    style OAC fill:#161A22,stroke:#00B894,color:#F2F4F7
+    style S3 fill:#1F242C,stroke:#F5A524,color:#F2F4F7
+    style API fill:#161A22,stroke:#00B894,color:#F2F4F7
+    style ALB fill:#161A22,stroke:#00B894,color:#F2F4F7
+    style NextJS fill:#262C36,stroke:#00B894,color:#F2F4F7
+    style OrgSvc fill:#262C36,stroke:#00B894,color:#F2F4F7
+    style RDS fill:#1F242C,stroke:#F5A524,color:#F2F4F7
+    style CLOUDFRONT fill:#0A0D13,stroke:#00B894,color:#00B894,stroke-dasharray:5 5
+    style AWS fill:#0A0D13,stroke:#00B894,color:#00B894,stroke-dasharray:5 5

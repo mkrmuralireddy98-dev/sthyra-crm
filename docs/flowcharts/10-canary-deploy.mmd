@@ -1,0 +1,63 @@
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "primaryColor": "#0A0D13",
+    "primaryTextColor": "#F2F4F7",
+    "primaryBorderColor": "#00B894",
+    "lineColor": "#00B894",
+    "secondaryColor": "#161A22",
+    "tertiaryColor": "#262C36",
+    "fontFamily": "Helvetica, Arial, sans-serif",
+    "fontSize": "14px"
+  }
+}}%%
+flowchart LR
+    classDef prod fill:#262C36,stroke:#00B894,color:#F2F4F7
+    classDef canary fill:#262C36,stroke:#F5A524,color:#F2F4F7
+    classDef stable fill:#262C36,stroke:#4FDDB6,color:#F2F4F7
+    classDef metric fill:#161A22,stroke:#00B894,color:#F2F4F7
+
+    subgraph ARGOCD["ArgoCD + Argo Rollouts"]
+        GH["GitHub Actions<br/>build + push image"]
+        REPO["Helm chart<br/>on git tag"]
+        ARGOR["Argo Rollouts<br/>canary controller"]
+
+        GH -->|"v0.2.0-sha-abc"| REPO
+        REPO --> ARGOR
+    end
+
+    subgraph K8S["EKS: plumb-control"]
+        subgraph NEW["New version (canary)"]
+            V1["Pod 1<br/>org-service<br/>v0.2.0"]:::canary
+        end
+        subgraph OLD["Old version (stable)"]
+            V2["Pod 1"]:::stable
+            V3["Pod 2"]:::stable
+            V4["Pod 3"]:::stable
+            V5["Pod 4"]:::stable
+            V6["Pod 5"]:::stable
+        end
+
+        SLO["📊 SLO checks<br/>· error rate < 0.1%<br/>· p99 latency < 500ms<br/>· error budget burn < 2x"]:::metric
+    end
+
+    ARGOCD -->|"step 1: weight=1%"| V1
+    ARGOCD -->|"step 2: weight=5%"| V1
+    ARGOCD -->|"step 3: weight=25%"| V1
+    ARGOCD -->|"step 4: weight=50%"| V1
+    ARGOCD -->|"step 5: weight=100%"| V1
+
+    SLO -.->|burn > 2x| ARGOR
+    ARGOR -.->|"auto-rollback"| V2
+
+    Note["🛡️ If SLO burn > 2x at any step:<br/>   auto-rollback to 100% stable.<br/>🪪 Spinnaker/Argo Rollouts preserves<br/>   last 3 revisions for forensic diff."]
+
+    style GH fill:#161A22,stroke:#00B894,color:#F2F4F7
+    style REPO fill:#161A22,stroke:#00B894,color:#F2F4F7
+    style ARGOR fill:#161A22,stroke:#00B894,color:#F2F4F7
+    style SLO fill:#161A22,stroke:#F5A524,color:#F2F4F7
+    style Note fill:#0A0D13,stroke:#F5A524,color:#F5A524,stroke-width:1px,stroke-dasharray:3 3
+    style ARGOCD fill:#0A0D13,stroke:#00B894,color:#00B894,stroke-dasharray:5 5
+    style K8S fill:#0A0D13,stroke:#F5A524,color:#F5A524,stroke-dasharray:5 5
+    style NEW fill:#0A0D13,stroke:#F5A524,color:#F5A524,stroke-dasharray:5 5
+    style OLD fill:#0A0D13,stroke:#4FDDB6,color:#4FDDB6,stroke-dasharray:5 5

@@ -33,3 +33,6 @@ coverage/
 *.tsbuildinfo
 PLUMB-PHASE-0-REPORT.html
 PLUMB-SYSTEM-ARCHITECTURE.html
+
+# Visual flowcharts build artifacts
+docs/flowcharts/_assembled.html
