@@ -32,3 +32,4 @@ coverage/
 # typescript
 *.tsbuildinfo
 PLUMB-PHASE-0-REPORT.html
+PLUMB-SYSTEM-ARCHITECTURE.html
