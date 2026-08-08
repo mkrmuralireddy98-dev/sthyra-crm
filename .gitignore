@@ -1,0 +1,33 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build outputs
+dist/
+build/
+.next/
+.turbo/
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# environment
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# editor
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# test
+coverage/
+.nyc_output/
+
+# typescript
+*.tsbuildinfo

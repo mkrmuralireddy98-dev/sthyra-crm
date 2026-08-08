@@ -1,0 +1,30 @@
+{
+  "name": "@plumb/org-service",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Plumb Org Service — tenancy, RBAC, project membership",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "node --test --import tsx/esm src/**/*.test.ts",
+    "lint": "echo 'lint: skipped (add eslint config in Phase 1)'",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@plumb/tokens": "workspace:*",
+    "fastify": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}

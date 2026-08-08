@@ -1,0 +1,43 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  quality:
+    name: Typecheck + Test + Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm -r --filter=./packages/* --filter=./services/* typecheck
+
+      - name: Test
+        run: pnpm -r --filter=./packages/* --filter=./services/* test
+
+      - name: Build
+        run: pnpm -r --filter=./packages/* --filter=./services/* build
+
+      - name: Audit (warn-only on Day 1)
+        run: pnpm audit --audit-level=high
+        continue-on-error: true
