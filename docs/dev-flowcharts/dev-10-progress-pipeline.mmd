@@ -1,0 +1,21 @@
+%%{init: {"theme": "base", "themeVariables": {"primaryColor": "#0A0D13", "primaryTextColor": "#F2F4F7", "primaryBorderColor": "#00B894", "lineColor": "#00B894", "secondaryColor": "#161A22", "tertiaryColor": "#262C36", "fontFamily": "Helvetica, Arial, sans-serif", "fontSize": "14px"}}}%%
+flowchart LR
+    classDef in fill:#262C36,stroke:#00B894,color:#F2F4F7
+    classDef gpu fill:#161A22,stroke:#F5A524,color:#F2F4F7
+    classDef out fill:#1F242C,stroke:#4FDDB6,color:#F2F4F7
+
+    C[("capture.ready event")]:::in
+    FEAT["GPU: extract per-element<br/>installed boolean<br/>(SAM-2 + DETR)"]:::gpu
+    TRACK["Instance tracking<br/>across captures"]:::gpu
+    ALIGN["BIM-vs-reality alignment<br/>(per element)"]:::gpu
+    AGG["Aggregate per trade/floor/area<br/>+ β-distributed CI"]:::gpu
+    RISK["Schedule risk forecast<br/>(critical path + weather)"]:::gpu
+    P[("ProgressSnapshot +<br/>risk dashboard")]:::out
+    EV["Emit progress.updated<br/>→ dashboard refresh +<br/>notifications"]:::out
+
+    C --> FEAT --> TRACK --> ALIGN --> AGG --> RISK --> P
+    P --> EV
+
+    Note["Correctness budget:<br/>±3% abs / ±5% rel vs hand-count.<br/>Every snapshot reproducible (seeded, artifacts stored)."]
+
+    style Note fill:#0A0D13,stroke:#F5A524,color:#F5A524,stroke-width:1px,stroke-dasharray:3 3

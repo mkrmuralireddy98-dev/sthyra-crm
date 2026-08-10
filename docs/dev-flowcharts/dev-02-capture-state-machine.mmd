@@ -1,0 +1,36 @@
+%%{init: {"theme": "base", "themeVariables": {"primaryColor": "#0A0D13", "primaryTextColor": "#F2F4F7", "primaryBorderColor": "#00B894", "lineColor": "#00B894", "secondaryColor": "#161A22", "tertiaryColor": "#262C36", "fontFamily": "Helvetica, Arial, sans-serif", "fontSize": "14px"}}}%%
+flowchart LR
+    classDef state fill:#262C36,stroke:#00B894,color:#F2F4F7
+    classDef fail fill:#262C36,stroke:#F5A524,color:#F2F4F7
+    classDef endstate fill:#1F242C,stroke:#4FDDB6,color:#F2F4F7
+
+    S0(["draft"]):::state
+    S1["uploading"]:::state
+    S2["processing"]:::state
+    S2a["decoding"]:::state
+    S2b["sfm"]:::state
+    S2c["meshing"]:::state
+    S2d["segmenting"]:::state
+    S2e["aligning"]:::state
+    S3(["ready"]):::endstate
+    S4(["failed"]):::fail
+    S5(["archived"]):::endstate
+
+    S0 -->|"capture session created<br/>in SQLite BEFORE recording"| S1
+    S1 -->|"finalize + sha256 verified"| S2
+    S2 --> S2a
+    S2a --> S2b
+    S2b --> S2c
+    S2c --> S2d
+    S2d --> S2e
+    S2e -->|"all stages ok"| S3
+    S2e -->|"any stage error<br/>(retries exhausted)"| S4
+    S3 -->|"user or retention"| S5
+
+    S4 -.->|"retry with smaller<br/>image pool (max 3)"| S2
+    S1 -.->|"network failure<br/>chunk resumable"| S1
+    S2a -.->|"DLQ + on-call"| S4
+
+    Note["State machine rules:<br/>· every transition writes PipelineRun row<br/>· idempotent transitions (same key → no-op)<br/>· user sees processing → ready via WebSocket"]
+
+    style Note fill:#0A0D13,stroke:#F5A524,color:#F5A524,stroke-width:1px,stroke-dasharray:3 3

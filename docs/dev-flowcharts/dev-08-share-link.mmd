@@ -1,0 +1,24 @@
+%%{init: {"theme": "base", "themeVariables": {"primaryColor": "#0A0D13", "primaryTextColor": "#F2F4F7", "primaryBorderColor": "#00B894", "lineColor": "#00B894", "secondaryColor": "#161A22", "tertiaryColor": "#262C36", "fontFamily": "Helvetica, Arial, sans-serif", "fontSize": "14px"}}}%%
+flowchart LR
+    classDef ext fill:#262C36,stroke:#00B894,color:#F2F4F7
+    classDef svc fill:#161A22,stroke:#00B894,color:#F2F4F7
+    classDef gate fill:#262C36,stroke:#F5A524,color:#F2F4F7
+
+    Bank["🏦 Bank inspector / Owner's rep<br/>(no Plumb account)"]:::ext
+    Link["Receives share link<br/>https://plumb.dev/s/{token}"]:::ext
+    GW{{"API Gateway:<br/>· token exists?<br/>· signed?<br/>· not expired?<br/>· scope matches?"}}:::gate
+    Deny["401/410 problem+json"]:::gate
+    JWT["Issue short-lived viewer JWT<br/>(5 min, read-only,<br/>project-scoped)"]:::svc
+    VIEW["Read-only 360 viewer<br/>+ capture + pinned issues<br/>(no download, no export)"]:::ext
+    AUDIT["AuditLog: who/when/what viewed<br/>(IP, UA, token id)"]:::svc
+
+    Bank --> Link
+    Link --> GW
+    GW -->|"invalid/expired"| Deny
+    GW -->|"valid"| JWT
+    JWT --> VIEW
+    VIEW -.-> AUDIT
+
+    Note["Share-link policy:<br/>· default TTL 24 h, max 7 d<br/>· scope: project + surfaces<br/>· revocable per token<br/>· every access logged"]
+
+    style Note fill:#0A0D13,stroke:#F5A524,color:#F5A524,stroke-width:1px,stroke-dasharray:3 3

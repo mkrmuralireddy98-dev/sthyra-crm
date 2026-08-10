@@ -1,0 +1,29 @@
+%%{init: {"theme": "base", "themeVariables": {"primaryColor": "#0A0D13", "primaryTextColor": "#F2F4F7", "primaryBorderColor": "#00B894", "lineColor": "#00B894", "secondaryColor": "#161A22", "tertiaryColor": "#262C36", "fontFamily": "Helvetica, Arial, sans-serif", "fontSize": "14px"}}}%%
+flowchart TB
+    classDef req fill:#262C36,stroke:#00B894,color:#F2F4F7
+    classDef layer fill:#161A22,stroke:#00B894,color:#F2F4F7
+    classDef deny fill:#262C36,stroke:#F5A524,color:#F2F4F7
+
+    R["Request from tenant A<br/>user (JWT: tenant_id=A)"]:::req
+
+    subgraph GATEWAYS["Every data plane enforces tenant — not just the API"]
+        API["API layer:<br/>JWT tenant_id → context"]:::layer
+        PG["PostgreSQL:<br/>ROW LEVEL SECURITY<br/>current_setting('app.tenant_id')<br/>→ rows auto-filtered"]:::layer
+        REDIS["Redis:<br/>keys prefixed tenant:A:<br/>ACL denies other prefixes"]:::layer
+        S3B["S3:<br/>tenant_id in key +<br/>per-tenant access points"]:::layer
+        SEARCH["OpenSearch:<br/>tenant field filter<br/>+ index alias per tenant"]:::layer
+        KMS["KMS:<br/>per-tenant CMK<br/>envelope encryption"]:::layer
+    end
+
+    LEAK{{"Cross-tenant access attempted?"}}
+    DENYALL["❌ Denied + AuditLog entry"]:::deny
+    OK["✅ Served (only tenant A data)"]:::req
+
+    R --> API --> PG --> REDIS --> S3B --> SEARCH --> KMS
+    KMS --> LEAK
+    LEAK -->|"yes"| DENYALL
+    LEAK -->|"no"| OK
+
+    Note["Golden rule: tenant isolation is tested across<br/>search, vectors, caches, analytics, logs, exports —<br/>the known leakage paths. Not just the primary API."]
+
+    style Note fill:#0A0D13,stroke:#F5A524,color:#F5A524,stroke-width:1px,stroke-dasharray:3 3

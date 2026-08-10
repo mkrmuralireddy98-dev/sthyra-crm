@@ -1,0 +1,27 @@
+%%{init: {"theme": "base", "themeVariables": {"primaryColor": "#0A0D13", "primaryTextColor": "#F2F4F7", "primaryBorderColor": "#00B894", "lineColor": "#00B894", "secondaryColor": "#161A22", "tertiaryColor": "#262C36", "fontFamily": "Helvetica, Arial, sans-serif", "fontSize": "14px"}}}%%
+flowchart LR
+    classDef state fill:#262C36,stroke:#00B894,color:#F2F4F7
+    classDef fail fill:#262C36,stroke:#F5A524,color:#F2F4F7
+    classDef endstate fill:#1F242C,stroke:#4FDDB6,color:#F2F4F7
+
+    O(["open"]):::state
+    A["assigned"]:::state
+    W["in_progress"]:::state
+    V["ready_for_review"]:::state
+    R(["closed"]):::endstate
+    RE(["reopened"]):::state
+    CA(["cancelled"]):::fail
+
+    O -->|"assignee set"| A
+    A -->|"work started"| W
+    W -->|"attachments + notes"| V
+    V -->|"accepted"| R
+    V -->|"rejected"| RE
+    RE --> A
+    O -->|"stale / duplicate"| CA
+    A --> CA
+    W --> CA
+
+    Note["Issue transitions emit domain events:<br/>issue.created → assignee notified (Slack/Teams/email)<br/>issue.closed → punch list updated, BCF topic synced<br/>Every transition → AuditLog entry"]
+
+    style Note fill:#0A0D13,stroke:#F5A524,color:#F5A524,stroke-width:1px,stroke-dasharray:3 3

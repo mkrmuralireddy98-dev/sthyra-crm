@@ -1,0 +1,33 @@
+%%{init: {"theme": "base", "themeVariables": {"primaryColor": "#0A0D13", "primaryTextColor": "#F2F4F7", "primaryBorderColor": "#00B894", "lineColor": "#00B894", "secondaryColor": "#161A22", "tertiaryColor": "#262C36", "fontFamily": "Helvetica, Arial, sans-serif", "fontSize": "14px"}}}%%
+flowchart TB
+    classDef mobile fill:#262C36,stroke:#00B894,color:#F2F4F7
+    classDef local fill:#1F242C,stroke:#F5A524,color:#F2F4F7
+    classDef remote fill:#161A22,stroke:#00B894,color:#F2F4F7
+
+    User["Field user creates note<br/>(no network)"]:::mobile
+    SQLITE[("SQLite (GRDB/Room)<br/>LocalID = UUIDv7<br/>Lamport ts")]:::local
+
+    Dirty{{"SyncEngine:<br/>dirty records?"}}
+    Up["Upload batch:<br/>clientId + contentHash<br/>(idempotent)"]:::remote
+    Svc{{"Server:<br/>contentHash exists?"}}
+    Dup["Return existing ServerID<br/>(no duplicate created)"]:::remote
+    New["INSERT with ServerID<br/>+ map LocalID → ServerID"]:::remote
+    Back["Write mapping back<br/>+ mark record synced"]:::mobile
+    Pull["Fetch since cursor<br/>→ upsert local"]:::remote
+    Done(["✅ Synced"])
+
+    User --> SQLITE
+    SQLITE --> Dirty
+    Dirty -->|"no"| Pull
+    Dirty -->|"yes"| Up
+    Up --> Svc
+    Svc -->|"duplicate"| Dup
+    Svc -->|"new"| New
+    Dup --> Back
+    New --> Back
+    Back --> Pull
+    Pull --> Done
+
+    Note["Developer note:<br/>· offline queue survives app kill (BGTaskScheduler/WorkManager)<br/>· collision-safe: UUIDv7 + Lamport clock<br/>· retry with exponential backoff, no data loss"]
+
+    style Note fill:#0A0D13,stroke:#F5A524,color:#F5A524,stroke-width:1px,stroke-dasharray:3 3

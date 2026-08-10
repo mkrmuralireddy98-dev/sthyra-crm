@@ -36,3 +36,7 @@ PLUMB-SYSTEM-ARCHITECTURE.html
 
 # Visual flowcharts build artifacts
 docs/flowcharts/_assembled.html
+
+# Docs build artifacts
+docs/_features-catalog.html
+docs/**/_assembled.html

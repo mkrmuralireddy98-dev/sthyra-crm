@@ -1,0 +1,30 @@
+%%{init: {"theme": "base", "themeVariables": {"primaryColor": "#0A0D13", "primaryTextColor": "#F2F4F7", "primaryBorderColor": "#00B894", "lineColor": "#00B894", "secondaryColor": "#161A22", "tertiaryColor": "#262C36", "fontFamily": "Helvetica, Arial, sans-serif", "fontSize": "14px"}}}%%
+flowchart TB
+    classDef user fill:#262C36,stroke:#00B894,color:#F2F4F7
+    classDef svc fill:#161A22,stroke:#00B894,color:#F2F4F7
+    classDef tool fill:#1F242C,stroke:#F5A524,color:#F2F4F7
+
+    U["User: 'Show me open RFIs<br/>on Level 3 over $5k'"]:::user
+    P["Pre-inference safety:<br/>PII redactor → firewall → quarantine"]:::svc
+    PLAN{{"LLM plans tool calls"}}
+    T1["tool: query_captures<br/>(frames w/ RFIs, Level 3)"]:::tool
+    T2["tool: spatial_query<br/>(filter cost > $5k)"]:::tool
+    T3["tool: summarize_progress"]:::tool
+    C{{"Citations attached?"}}
+    NOCITE["Refuse: 'I can't answer<br/>without evidence'"]:::svc
+    STREAM["Stream SSE: deltas + citations<br/>with thumbnails + map pins"]:::user
+    POST["Post-inference:<br/>classifier → PII inverse → C2PA"]:::svc
+
+    U --> P
+    P --> PLAN
+    PLAN --> T1
+    T1 --> T2
+    T2 --> T3
+    T3 --> C
+    C -->|"no"| NOCITE
+    C -->|"yes"| POST
+    POST --> STREAM
+
+    Note["Tool registry (add yours here):<br/>query_captures · spatial_query · diff_captures<br/>create_issue · generate_report · draft_rfi<br/>summarize_progress · measure"]
+
+    style Note fill:#0A0D13,stroke:#F5A524,color:#F5A524,stroke-width:1px,stroke-dasharray:3 3

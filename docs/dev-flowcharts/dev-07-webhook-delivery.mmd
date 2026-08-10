@@ -1,0 +1,27 @@
+%%{init: {"theme": "base", "themeVariables": {"primaryColor": "#0A0D13", "primaryTextColor": "#F2F4F7", "primaryBorderColor": "#00B894", "lineColor": "#00B894", "secondaryColor": "#161A22", "tertiaryColor": "#262C36", "fontFamily": "Helvetica, Arial, sans-serif", "fontSize": "14px"}}}%%
+flowchart TB
+    classDef ev fill:#262C36,stroke:#00B894,color:#F2F4F7
+    classDef svc fill:#161A22,stroke:#00B894,color:#F2F4F7
+    classDef fail fill:#262C36,stroke:#F5A524,color:#F2F4F7
+
+    EV["Domain event:<br/>issue.created / capture.ready / etc."]:::ev
+    BUS["EventBridge / Kafka topic<br/>per event type"]:::svc
+    Q["Per-integration queue<br/>(SQS, at-least-once)"]:::svc
+    SEND["Webhook POST<br/>HMAC-signed, replay-safe"]:::svc
+    ACK{{"2xx within timeout?"}}
+    RETRY["Exponential backoff<br/>+ jitter (max 5)"]:::svc
+    DLQ["DLQ → alert + manual replay"]:::fail
+    DONE(["✅ Delivered"]):::ev
+
+    EV --> BUS
+    BUS --> Q
+    Q --> SEND
+    SEND --> ACK
+    ACK -->|"no"| RETRY
+    RETRY --> SEND
+    ACK -->|"yes"| DONE
+    RETRY -->|"exhausted"| DLQ
+
+    Note["Webhook SLA tiers:<br/>· Public: best-effort<br/>· Partner: 24h delivery guarantee<br/>· Enterprise: 99.9% + replay + audit trail"]
+
+    style Note fill:#0A0D13,stroke:#F5A524,color:#F5A524,stroke-width:1px,stroke-dasharray:3 3
