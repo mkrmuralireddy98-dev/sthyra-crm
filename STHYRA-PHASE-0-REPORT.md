@@ -1,7 +1,7 @@
 ---
-title: "Plumb — Visual Intelligence for the Built World"
+title: "Sthyra CRM — Visual Intelligence for the Built World"
 subtitle: "Phase 0 Foundation: Complete Status Report and Execution Roadmap"
-author: "Engineering Team · Plumb"
+author: "Engineering Team · Sthyra CRM"
 date: "August 2026"
 geometry: "margin=2.2cm"
 fontsize: 11pt
@@ -14,12 +14,12 @@ toc-depth: 3
 
 # Executive Summary
 
-Plumb is a multi-tenant, visual-intelligence platform for the construction
+Sthyra CRM is a multi-tenant, visual-intelligence platform for the construction
 industry. The full product plan — 18 months, ~$8.4M Year-1 budget, 13 products,
 multi-region cloud, FedRAMP Moderate — was produced in a single planning session
 in which **10 specialist "engineer" agents** were dispatched in parallel to
 design the system end-to-end. The plan was synthesized into a single 461-line
-master document and a 449-line technical appendix (the "Plumb Master Plan")
+master document and a 449-line technical appendix (the "Sthyra CRM Master Plan")
 saved to the operator's plan store.
 
 This document reports the **Phase 0 Foundation** that was actually built and
@@ -43,7 +43,7 @@ document is the handoff packet for the next engineer or AI coding agent.
 
 # Table of Contents
 
-1. The Plumb Plan — what was synthesized
+1. The Sthyra CRM Plan — what was synthesized
 2. Phase 0 Foundation — what was built
 3. Repository Layout
 4. Architectural Decisions (Pinned)
@@ -58,7 +58,7 @@ document is the handoff packet for the next engineer or AI coding agent.
 
 \newpage
 
-# 1. The Plumb Plan — what was synthesized
+# 1. The Sthyra CRM Plan — what was synthesized
 
 The master plan was produced by **10 specialist agents** dispatched in
 parallel and given the verified OpenSpace AI product line (Capture →
@@ -85,9 +85,9 @@ weren't configured in the operator's environment).
 Each agent was briefed as a real engineer joining the team. Outputs were
 synthesized into two documents saved to `~/.hermes/plans/`:
 
-- `2026-08-08_090307-plumb-visual-intelligence-platform.md` — master plan,
+- `2026-08-08_090307-sthyra-crm-visual-intelligence-platform.md` — master plan,
   461 lines, 18 sections
-- `2026-08-08_090307-plumb-visual-intelligence-platform-APPENDIX.md` —
+- `2026-08-08_090307-sthyra-crm-visual-intelligence-platform-APPENDIX.md` —
   technical appendix, 449 lines, including a process log of cross-agent
   conflicts that surfaced and were resolved
 
@@ -145,14 +145,14 @@ fad7a02  feat(phase-0): postgres repo, project-service, user-service,
 
 | Package / Service | Purpose | Tests |
 |---|---|---|
-| `@plumb/tokens` | Design system: 3 modes (light/dark/high-contrast), teal+amber palette, type, motion, radii, shadows, CSS variable export | 11 |
-| `@plumb/observability` | Structured JSON logging + AsyncLocalStorage request-id + Fastify plugin | 5 |
-| `@plumb/auth` | Shared bearer-token middleware (Fastify plugin) verifying via user-service `/v1/tokens/verify`; attaches `req.principal`; RFC 7807 401/503 | 7 |
-| `@plumb/org-service` | Tenant-scoped orgs. REST + Postgres + in-memory. POST/GET/list. Idempotency-Key. | 26 |
-| `@plumb/project-service` | Tenant-scoped projects belonging to an org. Archive FSM. Postgres + in-memory. | 25 |
-| `@plumb/user-service` | Identity, RBAC, opaque SHA-256 hashed tokens. Bearer-token verify endpoint. | 15 |
-| `@plumb/membership-service` | User↔org and user↔project bindings. 5 org roles + 5 project roles. Auth wired. | 19 |
-| `@plumb/dashboard` | Next.js 14 App Router shell. Home page (live org/project rollups). `/orgs/new` form. `/orgs/[orgId]/projects` drill-down. `/immersive` marketing placeholder. | 6 |
+| `@sthyra-crm/tokens` | Design system: 3 modes (light/dark/high-contrast), teal+amber palette, type, motion, radii, shadows, CSS variable export | 11 |
+| `@sthyra-crm/observability` | Structured JSON logging + AsyncLocalStorage request-id + Fastify plugin | 5 |
+| `@sthyra-crm/auth` | Shared bearer-token middleware (Fastify plugin) verifying via user-service `/v1/tokens/verify`; attaches `req.principal`; RFC 7807 401/503 | 7 |
+| `@sthyra-crm/org-service` | Tenant-scoped orgs. REST + Postgres + in-memory. POST/GET/list. Idempotency-Key. | 26 |
+| `@sthyra-crm/project-service` | Tenant-scoped projects belonging to an org. Archive FSM. Postgres + in-memory. | 25 |
+| `@sthyra-crm/user-service` | Identity, RBAC, opaque SHA-256 hashed tokens. Bearer-token verify endpoint. | 15 |
+| `@sthyra-crm/membership-service` | User↔org and user↔project bindings. 5 org roles + 5 project roles. Auth wired. | 19 |
+| `@sthyra-crm/dashboard` | Next.js 14 App Router shell. Home page (live org/project rollups). `/orgs/new` form. `/orgs/[orgId]/projects` drill-down. `/immersive` marketing placeholder. | 6 |
 | **Total** | | **114** |
 
 Files: 42 TypeScript files in `src/`, 70 total source files (incl. JSON, YAML,
@@ -174,49 +174,49 @@ CSS, markdown), **~4,844 LOC** (TypeScript/TSX only, excluding dist).
 # 3. Repository Layout
 
 ```
-plumb/
+sthyra-crm/
 ├── packages/                            # reusable library code
-│   ├── tokens/                         # @plumb/tokens — design system
+│   ├── tokens/                         # @sthyra-crm/tokens — design system
 │   │   ├── src/index.ts                # brand colors, semantic tokens, 3 modes
 │   │   ├── src/index.test.ts           # 11 tests
 │   │   └── tsconfig.json
-│   ├── observability/                  # @plumb/observability — logging + request-id
+│   ├── observability/                  # @sthyra-crm/observability — logging + request-id
 │   │   ├── src/index.ts                # AsyncLocalStorage + Fastify plugin
 │   │   ├── src/index.test.ts           # 5 tests
 │   │   └── tsconfig.json
-│   └── auth/                           # @plumb/auth — bearer-token middleware
+│   └── auth/                           # @sthyra-crm/auth — bearer-token middleware
 │       ├── src/index.ts                # installAuthPlugin() with verify seam
 │       ├── src/index.test.ts           # 7 tests (public/health, 401 paths, etc.)
 │       └── tsconfig.json
 │
 ├── services/                           # stateful backend services
-│   ├── org-service/                    # @plumb/org-service
+│   ├── org-service/                    # @sthyra-crm/org-service
 │   │   ├── src/index.ts                # OrgService + Repository interface
 │   │   ├── src/postgres-repo.ts        # PostgresOrgRepository
 │   │   ├── src/http.ts                 # Fastify server (RFC 7807, Idempotency-Key)
 │   │   ├── src/cli.ts                  # in-memory CLI
 │   │   ├── src/postgres-cli.ts         # Postgres CLI
 │   │   └── src/*.test.ts               # 26 tests
-│   ├── project-service/                # @plumb/project-service
+│   ├── project-service/                # @sthyra-crm/project-service
 │   │   ├── src/index.ts                # ProjectService + archive FSM
 │   │   ├── src/postgres-repo.ts        # PostgresProjectRepository
 │   │   ├── src/http.ts                 # Fastify server
 │   │   ├── src/cli.ts
 │   │   ├── src/postgres-cli.ts
 │   │   └── src/*.test.ts               # 25 tests
-│   ├── user-service/                   # @plumb/user-service
+│   ├── user-service/                   # @sthyra-crm/user-service
 │   │   ├── src/index.ts                # UserService + opaque token store
 │   │   ├── src/http.ts                 # Fastify + bearer-token verify endpoint
 │   │   ├── src/cli.ts
 │   │   └── src/*.test.ts               # 15 tests
-│   └── membership-service/             # @plumb/membership-service
+│   └── membership-service/             # @sthyra-crm/membership-service
 │       ├── src/index.ts                # OrgMembership + ProjectMembership
 │       ├── src/http.ts                 # Fastify with auth wired
 │       ├── src/cli.ts
 │       └── src/*.test.ts               # 19 tests
 │
 ├── apps/                                # end-user surfaces
-│   └── dashboard/                       # @plumb/dashboard
+│   └── dashboard/                       # @sthyra-crm/dashboard
 │       ├── next.config.mjs
 │       ├── src/app/layout.tsx           # emits CSS vars from tokens
 │       ├── src/app/globals.css          # design-token-driven styles
@@ -322,7 +322,7 @@ $ curl -X POST http://localhost:8080/v1/orgs \
 
 $ # duplicate → 409 problem+json
 $ curl ... -H "idempotency-key: req-002" ...
-{"type":"https://plumb.dev/errors/conflict",
+{"type":"https://sthyra-crm.dev/errors/conflict",
  "title":"Organization already exists",
  "status":409,
  "detail":"An organization named \"Hudson Tower GC\" already exists in region \"us-east\".",
@@ -364,12 +364,12 @@ app.addHook('onResponse', (req, reply) => {
 Live log output, captured during smoke testing:
 
 ```json
-{"ts":"2026-08-08T05:18:05.164Z","level":"info","service":"plumb-service",
+{"ts":"2026-08-08T05:18:05.164Z","level":"info","service":"sthyra-crm-service",
  "request_id":"17993628-1193-4f64-8ce0-7ac9c1141364","msg":"http_request",
  "fields":{"method":"GET","url":"/v1/health","status":200,"duration_ms":2}}
 ```
 
-## 4.6 Bearer-token auth via @plumb/auth
+## 4.6 Bearer-token auth via @sthyra-crm/auth
 
 A shared Fastify plugin that every backend service installs. It:
 
@@ -558,7 +558,7 @@ $ curl http://127.0.0.1:9086/v1/health
 
 $ # List members without bearer → 401
 $ curl http://127.0.0.1:9086/v1/orgs/org_1/members
-{"type":"https://plumb.dev/errors/unauthorized",
+{"type":"https://sthyra-crm.dev/errors/unauthorized",
  "title":"Missing bearer token",
  "status":401,
  "detail":"Authorization: Bearer *** header is required",
@@ -568,7 +568,7 @@ $ curl http://127.0.0.1:9086/v1/orgs/org_1/members
 $ # List with bogus bearer → 401
 $ curl -H "Authorization: Bearer opaque:fake" \
        http://127.0.0.1:9086/v1/orgs/org_1/members
-{"type":"https://plumb.dev/errors/unauthorized",
+{"type":"https://sthyra-crm.dev/errors/unauthorized",
  "title":"Invalid or expired token",
  "status":401,
  "trace_id":"44bf705e-4890-45ce-a4ad-9e6018403128",
@@ -588,7 +588,7 @@ content-type: application/json
 Server-side log emitted with the same `request_id`:
 
 ```json
-{"ts":"2026-08-08T05:18:05.201Z","level":"info","service":"plumb-service",
+{"ts":"2026-08-08T05:18:05.201Z","level":"info","service":"sthyra-crm-service",
  "request_id":"req_ping_123","msg":"http_request",
  "fields":{"method":"GET","url":"/v1/health","status":200,"duration_ms":1}}
 ```
@@ -617,7 +617,7 @@ thing.
 | Tenancy is data-modeled | Every record carries `region`; (name, region) is unique |
 | Repository pattern | InMemory for tests, Postgres for prod. Interface in the service file |
 | REST + RFC 7807 + Idempotency-Key | At the edge. Use the existing helpers |
-| Request-ID propagation | Via `@plumb/observability`. Every log has `request_id` |
+| Request-ID propagation | Via `@sthyra-crm/observability`. Every log has `request_id` |
 | Strict TypeScript | `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride` |
 | Teal + amber palette | NOT cyan + copper. NEVER safety-orange-as-primary |
 
@@ -649,7 +649,7 @@ apps/<app>/            # end-user surface (dashboard, future mobile-shell)
 
 ## 7.6 Logging
 
-- Never `console.log`. Use `emit('info' | 'warn' | 'error', msg, fields)` from `@plumb/observability`.
+- Never `console.log`. Use `emit('info' | 'warn' | 'error', msg, fields)` from `@sthyra-crm/observability`.
 - Logs are JSON, one line per event.
 - Don't log PII, full tokens, or full request bodies.
 
@@ -681,7 +681,7 @@ Edit `packages/tokens/src/index.ts`. Add to `SemanticColor` interface + all
 
 ```bash
 # Clone or cd into the repo
-cd ~/projects/plumb
+cd ~/projects/sthyra-crm
 
 # Install (pnpm 11, Node 22)
 pnpm install
@@ -709,23 +709,23 @@ cd apps/dashboard && pnpm test
 
 ```bash
 # Terminal 1: org-service against Postgres
-DATABASE_URL=postgres://plumb:plumb@localhost:5432/plumb \
-  pnpm --filter=@plumb/org-service start:pg
+DATABASE_URL=postgres://sthyra-crm:sthyra-crm@localhost:5432/sthyra-crm \
+  pnpm --filter=@sthyra-crm/org-service start:pg
 
 # Terminal 2: org-service against in-memory (faster, for demos)
-pnpm --filter=@plumb/org-service start:inmem
+pnpm --filter=@sthyra-crm/org-service start:inmem
 
 # Terminal 3: project-service
-pnpm --filter=@plumb/project-service start:inmem
+pnpm --filter=@sthyra-crm/project-service start:inmem
 
 # Terminal 4: user-service
-pnpm --filter=@plumb/user-service start:inmem
+pnpm --filter=@sthyra-crm/user-service start:inmem
 
 # Terminal 5: membership-service
-pnpm --filter=@plumb/membership-service start:inmem
+pnpm --filter=@sthyra-crm/membership-service start:inmem
 
 # Terminal 6: dashboard
-pnpm --filter=@plumb/dashboard dev
+pnpm --filter=@sthyra-crm/dashboard dev
 # → http://localhost:3000
 ```
 
@@ -760,8 +760,8 @@ GitHub Actions environment, but you can simulate it locally by:
 
 ```bash
 docker compose up -d postgres
-DATABASE_URL=postgres://plumb:plumb@localhost:5432/plumb \
-  pnpm --filter=@plumb/org-service start:pg &
+DATABASE_URL=postgres://sthyra-crm:sthyra-crm@localhost:5432/sthyra-crm \
+  pnpm --filter=@sthyra-crm/org-service start:pg &
 SERVER_PID=$!
 sleep 2
 curl -X POST http://127.0.0.1:8080/v1/orgs \
@@ -795,7 +795,7 @@ instead of built is documented here as a deliberate non-goal.
 | Terraform / Kubernetes / multi-region | Requires DevOps/SRE handoff | Phase 2 |
 | Integrations (Procore, ACC, BIM 360, P6, Salesforce, ServiceNow, Slack, Teams, Box, GDrive, DocuSign, Smartsheet, Bluebeam, Aconex, Outlook, GCal — 16+) | Each is its own service | Phase 1–2 |
 | FedRAMP / SOC 2 / ISO 27001 evidence collection | Requires audit handoff | Phase 2 |
-| Phase-3 GA features (Plumb Live multi-stakeholder walkthroughs, Plumb Twin FM integrations, Plumb ESG, Plumb Claims, Drone-in-a-Box) | Each is its own product track | Phase 4 |
+| Phase-3 GA features (Sthyra CRM Live multi-stakeholder walkthroughs, Sthyra CRM Twin FM integrations, Sthyra CRM ESG, Sthyra CRM Claims, Drone-in-a-Box) | Each is its own product track | Phase 4 |
 
 ## 9.2 What WOULD have been fabricated if we cut corners
 
@@ -868,7 +868,7 @@ export async function exchangeCode(client: Client, code: string, redirectUri: st
 - E2E: provider login → token → dashboard renders user
 
 **Verification:** A user can log in via the OIDC provider and the resulting
-JWT is verified locally by `@plumb/auth` without an HTTP round-trip.
+JWT is verified locally by `@sthyra-crm/auth` without an HTTP round-trip.
 
 ### 10.1.2 SAML SSO
 
@@ -894,7 +894,7 @@ users automatically.
 - `/scim/v2/Users`, `/scim/v2/Groups` per RFC 7644
 - Hooks into the user-service provision/deprovision path
 
-**Verification:** A SCIM client (Okta, Azure AD) can create users in Plumb
+**Verification:** A SCIM client (Okta, Azure AD) can create users in Sthyra CRM
 via SCIM, and deprovisioning from the IdP removes access within 5 minutes.
 
 ### 10.1.4 MFA / step-up auth
@@ -930,7 +930,7 @@ auto-rotated).
 import { verifyJWT, createRemoteJWKSet } from 'jose';
 const jwks = createRemoteJWKSet(new URL('https://spire-agent:8443/.well-known/jwks.json'));
 const { payload } = await verifyJWT(svid, jwks);
-return { userId: payload.sub, orgId: payload['x-plumb-org'], role: payload['x-plumb-role'] };
+return { userId: payload.sub, orgId: payload['x-sthyra-crm-org'], role: payload['x-sthyra-crm-role'] };
 ```
 
 **Verification:** Two services can call each other over mTLS with
@@ -981,7 +981,7 @@ CREATE INDEX IF NOT EXISTS tokens_expires_at_idx ON tokens (expires_at);
   - parameterized SQL only (no string concat)
   - migration idempotency
 
-**Verification:** `pnpm --filter=@plumb/user-service start:pg` boots against
+**Verification:** `pnpm --filter=@sthyra-crm/user-service start:pg` boots against
 Postgres, `POST /v1/users` and `POST /v1/users/:id/tokens` work end-to-end.
 
 ### 10.2.2 Membership-service Postgres repository
@@ -1024,7 +1024,7 @@ CREATE TABLE IF NOT EXISTS project_memberships (
 );
 ```
 
-**Verification:** `pnpm --filter=@plumb/membership-service start:pg` boots
+**Verification:** `pnpm --filter=@sthyra-crm/membership-service start:pg` boots
 against Postgres.
 
 ## 10.3 Phase 1.C — Capture service foundation
@@ -1124,9 +1124,9 @@ through `get`.
 
 **Files:**
 - New: `apps/mobile-kmm/` — Kotlin Multiplatform module
-- `apps/mobile-kmm/src/commonMain/kotlin/com/plumb/sync/` — sync engine
-- `apps/mobile-kmm/src/commonMain/kotlin/com/plumb/models/` — domain types
-- `apps/mobile-kmm/src/commonMain/kotlin/com/plumb/crypto/` — Blake3 + AES-GCM
+- `apps/mobile-kmm/src/commonMain/kotlin/com/sthyra-crm/sync/` — sync engine
+- `apps/mobile-kmm/src/commonMain/kotlin/com/sthyra-crm/models/` — domain types
+- `apps/mobile-kmm/src/commonMain/kotlin/com/sthyra-crm/crypto/` — Blake3 + AES-GCM
 
 **Code shape (sync engine):**
 
@@ -1178,7 +1178,7 @@ Mirror of iOS shell, using Camera2 + SensorManager + WorkManager.
 ### 10.4.4 On-device Whisper for dictation
 
 **Files:**
-- New: `apps/mobile-kmm/src/commonMain/kotlin/com/plumb/asr/` — Whisper.cpp
+- New: `apps/mobile-kmm/src/commonMain/kotlin/com/sthyra-crm/asr/` — Whisper.cpp
   KMP binding
 - Model asset delivered on first launch (~75 MB for `tiny`, ~150 MB for
   `base`)
@@ -1188,7 +1188,7 @@ Mirror of iOS shell, using Camera2 + SensorManager + WorkManager.
 ### 10.4.5 Indoor positioning
 
 **Files:**
-- `apps/mobile-kmm/src/commonMain/kotlin/com/plumb/indoor/` — particle
+- `apps/mobile-kmm/src/commonMain/kotlin/com/sthyra-crm/indoor/` — particle
   filter over floor plan + Wi-Fi RTT + BLE beacons
 - Calibration flow in iOS/Android shells
 
@@ -1301,7 +1301,7 @@ services/integration-<vendor>/
   src/index.ts          # Integration service
   src/webhook-handler.ts # Receives vendor webhooks
   src/sync.ts           # Pull-based sync on a schedule
-  src/transform.ts      # Vendor → Plumb type mapping
+  src/transform.ts      # Vendor → Sthyra CRM type mapping
   src/*.test.ts         # TDD
 ```
 
@@ -1323,8 +1323,8 @@ services/integration-<vendor>/
 | Outlook / Google Calendar | 2 | OAC meeting scheduling |
 
 **Verification:** A test tenant in Procore + ACC + P6 round-trips: create a
-project in Plumb → see it in Procore; create an RFI in Procore → see it in
-Plumb.
+project in Sthyra CRM → see it in Procore; create an RFI in Procore → see it in
+Sthyra CRM.
 
 ### 10.7.3 FedRAMP Moderate authorization
 
@@ -1353,24 +1353,24 @@ Plumb.
 
 ## 10.8 Phase 3 — Differentiator products
 
-### 10.8.1 Plumb Live (multi-stakeholder walkthroughs)
+### 10.8.1 Sthyra CRM Live (multi-stakeholder walkthroughs)
 
 Multi-user presence in the 360 viewer with pass-the-pointer and
 auto-minutes. WebRTC SFU + presence via Redis Pub/Sub + recordings stored
 to S3.
 
-### 10.8.2 Plumb Twin (digital twin + handover)
+### 10.8.2 Sthyra CRM Twin (digital twin + handover)
 
 Continuous delta detection on every capture + handover package
 (federated model + capture history + O&M + ESG) + FM integrations
 (Akila, Willow, AWS IoT TwinMaker, Azure Digital Twins).
 
-### 10.8.3 Plumb ESG
+### 10.8.3 Sthyra CRM ESG
 
 Embodied carbon tracking (BIM material quantities → CO2e), waste tracking,
 LEED/Envision/BREEAM credit readiness, GRESB/MSCI/SEC climate disclosure.
 
-### 10.8.4 Plumb Claims (legal-grade)
+### 10.8.4 Sthyra CRM Claims (legal-grade)
 
 RFC 3161 timestamps, notarization, dispute-ready single-PDF export, expert-
 witness export template.
@@ -1383,7 +1383,7 @@ BVLOS-aware flight logs. LAANC integration where available.
 ### 10.8.6 On-prem / air-gapped deployment
 
 DOD/intel/nuclear customers require fully air-gapped deployments. The
-`Plumb Twin` and `Plumb Claims` products are the wedge into this market.
+`Sthyra CRM Twin` and `Sthyra CRM Claims` products are the wedge into this market.
 
 ### 10.8.7 Regional AI Copilot inference
 
@@ -1435,12 +1435,12 @@ These surfaced during planning but were not resolved:
 4. **OpenSpace/StructionSite import fidelity.** Old captures are the
    switching cost. How deep do we go — geometry + pins + scrub, or
    whole-account migration?
-5. **BIM dependency.** If a project has no model, do we shut down Plumb
+5. **BIM dependency.** If a project has no model, do we shut down Sthyra CRM
    Model or generate a base model from the floor plan?
-6. **Hardware revenue.** Plumb-branded 360 cameras / drones? Neutral is
+6. **Hardware revenue.** Sthyra CRM-branded 360 cameras / drones? Neutral is
    safer long-term; branded is higher-margin short-term.
 7. **International expansion order.** UK, KSA, India, Brazil, Germany?
-8. **Insurance & warranty.** Plumb Claims opens legal exposure; need
+8. **Insurance & warranty.** Sthyra CRM Claims opens legal exposure; need
    product liability + E&O coverage from day one.
 
 \newpage
@@ -1478,9 +1478,9 @@ $0.40 + LLM $0.85 + telemetry $0.25. 35% margin to retail at scale.
 
 ## L.4 Brand codename
 
-**Resolution:** **Plumb.**
+**Resolution:** **Sthyra CRM.**
 
-Three agents each invented their own (Plumb, STRATUM, SiteLens). A plumb
+Three agents each invented their own (Sthyra CRM, STRATUM, SiteLens). A sthyra-crm
 line is the oldest truth-instrument in building — the right name for a
 product whose value proposition is ground truth. STRATUM becomes the
 internal design-system layer name; SiteLens is dropped.
@@ -1490,10 +1490,10 @@ internal design-system layer name; SiteLens is dropped.
 The async delivery of the Product Lead's PRD added four products the
 master plan hadn't initially included:
 
-- **Plumb Voice** — hands-free "Hey Plumb" + on-device Whisper
-- **Plumb Live** — multi-stakeholder live walkthroughs
-- **Plumb Edge** — on-device AI on phones/tablets
-- **Plumb Claims** — legal-grade notarized capture (renamed from "Forensics")
+- **Sthyra CRM Voice** — hands-free "Hey Sthyra CRM" + on-device Whisper
+- **Sthyra CRM Live** — multi-stakeholder live walkthroughs
+- **Sthyra CRM Edge** — on-device AI on phones/tablets
+- **Sthyra CRM Claims** — legal-grade notarized capture (renamed from "Forensics")
 
 Master plan §1 was updated to include all 13 products.
 
@@ -1501,7 +1501,7 @@ Master plan §1 was updated to include all 13 products.
 
 # Closing Notes
 
-This document is the handoff packet for the Plumb Phase 0 Foundation. The
+This document is the handoff packet for the Sthyra CRM Phase 0 Foundation. The
 master plan, the technical appendix, and the per-package deep-dives from
 the 10 specialist agents all live in the operator's plan store at
 `~/.hermes/plans/`.

@@ -38,13 +38,13 @@ export default async function OrgProjectsPage({ params }: PageProps) {
       </header>
 
       {projects.length === 0 ? (
-        <div className="plumb-empty">
+        <div className="sthyra-crm-empty">
           No projects in this organization yet.
         </div>
       ) : (
         <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: 'var(--space-3)' }}>
           {projects.map((p) => (
-            <li key={p.id} className="plumb-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-4)' }}>
+            <li key={p.id} className="sthyra-crm-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-4)' }}>
               <div>
                 <div style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--fontWeight-medium)' }}>{p.name}</div>
                 <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-fg-muted)' }}>{p.address}</div>
@@ -53,7 +53,7 @@ export default async function OrgProjectsPage({ params }: PageProps) {
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                <span className="plumb-badge">{p.status}</span>
+                <span className="sthyra-crm-badge">{p.status}</span>
                 {p.status !== 'archived' && <ArchiveButton projectId={p.id} />}
               </div>
             </li>

@@ -10,7 +10,7 @@
 A real, working monorepo with **71 passing tests across 8 test suites**, an end-to-end-verified HTTP service, real Postgres integration, request-id propagation, a Next.js dashboard shell, and Docker Compose for local dev.
 
 ```
-plumb/
+sthyra-crm/
 ├── packages/
 │   ├── tokens/         # @sthyra-crm/tokens — design tokens (color, type, motion)
 │   └── observability/  # @sthyra-crm/observability — structured logging + request-id

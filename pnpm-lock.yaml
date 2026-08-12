@@ -29,10 +29,10 @@ importers:
 
   apps/dashboard:
     dependencies:
-      '@plumb/observability':
+      '@sthyra-crm/observability':
         specifier: workspace:*
         version: link:../../packages/observability
-      '@plumb/tokens':
+      '@sthyra-crm/tokens':
         specifier: workspace:*
         version: link:../../packages/tokens
       next:
@@ -63,10 +63,10 @@ importers:
 
   packages/auth:
     dependencies:
-      '@plumb/observability':
+      '@sthyra-crm/observability':
         specifier: workspace:*
         version: link:../observability
-      '@plumb/tokens':
+      '@sthyra-crm/tokens':
         specifier: workspace:*
         version: link:../tokens
       fastify:
@@ -85,7 +85,7 @@ importers:
 
   packages/observability:
     dependencies:
-      '@plumb/tokens':
+      '@sthyra-crm/tokens':
         specifier: workspace:*
         version: link:../tokens
     devDependencies:
@@ -116,13 +116,13 @@ importers:
 
   services/membership-service:
     dependencies:
-      '@plumb/auth':
+      '@sthyra-crm/auth':
         specifier: workspace:*
         version: link:../../packages/auth
-      '@plumb/observability':
+      '@sthyra-crm/observability':
         specifier: workspace:*
         version: link:../../packages/observability
-      '@plumb/tokens':
+      '@sthyra-crm/tokens':
         specifier: workspace:*
         version: link:../../packages/tokens
       fastify:
@@ -141,10 +141,10 @@ importers:
 
   services/org-service:
     dependencies:
-      '@plumb/observability':
+      '@sthyra-crm/observability':
         specifier: workspace:*
         version: link:../../packages/observability
-      '@plumb/tokens':
+      '@sthyra-crm/tokens':
         specifier: workspace:*
         version: link:../../packages/tokens
       fastify:
@@ -169,7 +169,7 @@ importers:
 
   services/project-service:
     dependencies:
-      '@plumb/tokens':
+      '@sthyra-crm/tokens':
         specifier: workspace:*
         version: link:../../packages/tokens
       fastify:
@@ -194,10 +194,10 @@ importers:
 
   services/user-service:
     dependencies:
-      '@plumb/observability':
+      '@sthyra-crm/observability':
         specifier: workspace:*
         version: link:../../packages/observability
-      '@plumb/tokens':
+      '@sthyra-crm/tokens':
         specifier: workspace:*
         version: link:../../packages/tokens
       fastify:

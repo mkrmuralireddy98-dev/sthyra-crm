@@ -1,5 +1,5 @@
 /**
- * Plumb Project Service — projects belong to an org, have a status, an address, a start date.
+ * Sthyra CRM Project Service — projects belong to an org, have a status, an address, a start date.
  *
  * Architectural invariants (master plan §5):
  *  - Every project belongs to exactly one org (`org_id` is the tenant scope).

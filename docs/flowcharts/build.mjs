@@ -20,7 +20,7 @@ const chartsDir = resolve(root, 'docs/flowcharts');
 
 const introPath = resolve(chartsDir, '_intro.md');
 const htmlPath = resolve(chartsDir, '_assembled.html');
-const pdfPath = resolve(root, 'PLUMB-VISUAL-FLOWCHARTS.pdf');
+const pdfPath = resolve(root, 'STHYRA-VISUAL-FLOWCHARTS.pdf');
 
 const intro = readFileSync(introPath, 'utf8');
 
@@ -42,7 +42,7 @@ const styledHtml = `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Plumb — Visual Flowcharts</title>
+<title>Sthyra CRM — Visual Flowcharts</title>
 <style>
   :root {
     color-scheme: dark;

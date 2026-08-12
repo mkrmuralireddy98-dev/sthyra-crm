@@ -1,8 +1,8 @@
 {
-  "name": "@plumb/user-service",
+  "name": "@sthyra-crm/user-service",
   "version": "0.1.0",
   "private": true,
-  "description": "Plumb User Service — identity, OIDC-shaped tokens, RBAC",
+  "description": "Sthyra CRM User Service — identity, OIDC-shaped tokens, RBAC",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -20,8 +20,8 @@
     "start:inmem": "node dist/cli.js"
   },
   "dependencies": {
-    "@plumb/observability": "workspace:*",
-    "@plumb/tokens": "workspace:*",
+    "@sthyra-crm/observability": "workspace:*",
+    "@sthyra-crm/tokens": "workspace:*",
     "fastify": "^5.0.0"
   },
   "devDependencies": {

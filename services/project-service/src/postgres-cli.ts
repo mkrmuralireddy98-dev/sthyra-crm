@@ -3,7 +3,7 @@
  *
  * To run locally:
  *   docker compose -f ../../docker-compose.yml up postgres -d
- *   DATABASE_URL=postgres://plumb:plumb@localhost:5432/plumb pnpm --filter @plumb/project-service start:pg
+ *   DATABASE_URL=postgres://sthyra-crm:sthyra-crm@localhost:5432/sthyra-crm pnpm --filter @sthyra-crm/project-service start:pg
  *
  * Note: requires the orgs table to exist (run the org-service Postgres CLI once
  * first, or run a manual migration). The project-service foreign-key references

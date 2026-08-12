@@ -1,5 +1,5 @@
 /**
- * Plumb design tokens — the single source of truth for the visual system.
+ * Sthyra CRM design tokens — the single source of truth for the visual system.
  * Resolved colors per Appendix L.1: teal + amber (PPE-aware palette).
  * Resolution: NEVER use safety-orange / cyan + copper as primary on real sites.
  */

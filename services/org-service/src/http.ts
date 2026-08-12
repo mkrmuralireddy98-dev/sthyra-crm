@@ -11,7 +11,7 @@
 import Fastify, { type FastifyInstance } from 'fastify';
 import { randomUUID } from 'node:crypto';
 import { OrgService, type Org } from './index.js';
-import { emit, installRequestIdPlugin } from '@plumb/observability';
+import { emit, installRequestIdPlugin } from '@sthyra-crm/observability';
 
 interface BuildServerOptions {
   service: OrgService;
@@ -45,7 +45,7 @@ export function buildServer(opts: BuildServerOptions): FastifyInstance {
     const detail = err instanceof Error ? err.message : String(err);
     emit('error', 'unhandled_error', { detail });
     reply.type('application/problem+json').status(500).send({
-      type: 'https://plumb.dev/errors/internal',
+      type: 'https://sthyra-crm.dev/errors/internal',
       title: 'Internal Server Error',
       status: 500,
       detail,
@@ -62,7 +62,7 @@ export function buildServer(opts: BuildServerOptions): FastifyInstance {
       if (existingId) {
         reply.type('application/problem+json').status(409);
         return {
-          type: 'https://plumb.dev/errors/idempotency_conflict',
+          type: 'https://sthyra-crm.dev/errors/idempotency_conflict',
           title: 'Idempotency-Key already used',
           status: 409,
           detail: `An organization was already created with Idempotency-Key "${idemKey}".`,
@@ -76,7 +76,7 @@ export function buildServer(opts: BuildServerOptions): FastifyInstance {
     if (!body || typeof body !== 'object') {
       reply.type('application/problem+json').status(422);
       return {
-        type: 'https://plumb.dev/errors/validation_failed',
+        type: 'https://sthyra-crm.dev/errors/validation_failed',
         title: 'Validation failed',
         status: 422,
         detail: 'request body must be a JSON object',
@@ -112,7 +112,7 @@ export function buildServer(opts: BuildServerOptions): FastifyInstance {
       const status = isDuplicate ? 409 : 422;
       reply.type('application/problem+json').status(status);
       return {
-        type: `https://plumb.dev/errors/${isDuplicate ? 'conflict' : 'validation_failed'}`,
+        type: `https://sthyra-crm.dev/errors/${isDuplicate ? 'conflict' : 'validation_failed'}`,
         title,
         status,
         detail: message,
@@ -128,7 +128,7 @@ export function buildServer(opts: BuildServerOptions): FastifyInstance {
     if (!org) {
       reply.type('application/problem+json').status(404);
       return {
-        type: 'https://plumb.dev/errors/not_found',
+        type: 'https://sthyra-crm.dev/errors/not_found',
         title: 'Organization not found',
         status: 404,
         detail: `No organization with id "${id}".`,

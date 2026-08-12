@@ -18,9 +18,9 @@ flowchart TB
     classDef audit fill:#262C36,stroke:#F5A524,color:#F2F4F7
 
     Analyst["🛡️ Compliance Analyst<br/>(via SSO — no standing access)"]:::user
-    IAM["AWS IAM<br/>(plumb-audit-ro role,<br/>1-hour session)"]:::control
+    IAM["AWS IAM<br/>(sthyra-crm-audit-ro role,<br/>1-hour session)"]:::control
 
-    subgraph VPC["VPC: plumb-prod-use1"]
+    subgraph VPC["VPC: sthyra-crm-prod-use1"]
         Bastion["🖥️ Bastion EC2<br/>(SSM Session Manager only —<br/>no SSH key, no public IP)"]:::control
         SG["🛡️ Security group: data-sg<br/>(RDS ingress allowed only<br/>from bastion role)"]:::audit
         RDS["🗄️ RDS Aurora PostgreSQL<br/>audit_log table<br/>(7-year retention,<br/>partitioned monthly)"]:::data
@@ -31,11 +31,11 @@ flowchart TB
         ATH["📊 Athena + CUR<br/>(query audit history)"]:::audit
     end
 
-    Archive["🪣 S3: plumb-audit-exports<br/>Object Lock: Compliance mode<br/>7-year retention<br/>SSE-KMS (tenant CMK)<br/>(immutable even by admins)"]:::data
+    Archive["🪣 S3: sthyra-crm-audit-exports<br/>Object Lock: Compliance mode<br/>7-year retention<br/>SSE-KMS (tenant CMK)<br/>(immutable even by admins)"]:::data
 
     Analyst -->|"1. SSO login"| IAM
     IAM -->|"2. StartSession → port-forward"| Bastion
-    Bastion -->|"3. psql -U plumb_audit_ro<br/>(ephemeral token, 1h TTL)"| RDS
+    Bastion -->|"3. psql -U sthyra_crm_audit_ro<br/>(ephemeral token, 1h TTL)"| RDS
     SG -.->|"4. Allow only bastion role"| RDS
 
     RDS -->|"5. SELECT * FROM audit_log<br/>WHERE tenant_id='org_acme'<br/>AND ts > NOW() - 90 days"| RDS

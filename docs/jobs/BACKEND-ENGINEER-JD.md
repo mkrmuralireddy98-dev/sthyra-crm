@@ -132,7 +132,7 @@ What's built right now (working code, committed, tested):
 **Tree right now:**
 
 ```
-plumb/
+sthyra-crm/
 ├── packages/{tokens, observability, auth}
 ├── services/{org-service, project-service, user-service, membership-service}
 ├── apps/dashboard

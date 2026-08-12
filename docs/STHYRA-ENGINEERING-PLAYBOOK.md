@@ -41,7 +41,7 @@ docker --version        # for Postgres
 git --version
 
 # Clone + install
-cd ~/projects/plumb
+cd ~/projects/sthyra-crm
 pnpm install
 
 # Build
@@ -58,7 +58,7 @@ pnpm test
 docker compose up -d postgres
 
 # Terminal 2: org-service against Postgres
-DATABASE_URL=postgres://plumb:plumb@localhost:5432/plumb \
+DATABASE_URL=postgres://sthyra-crm:sthyra-crm@localhost:5432/sthyra-crm \
   pnpm --filter=@sthyra-crm/org-service start:pg &
 
 # Terminal 3: project-service
@@ -420,7 +420,7 @@ cd mobile-kmm
 
 ### Task 5.2 — Sync engine (KMM shared logic)
 
-**File:** `apps/mobile-kmm/src/commonMain/kotlin/com/plumb/sync/SyncEngine.kt`
+**File:** `apps/mobile-kmm/src/commonMain/kotlin/com/sthyra-crm/sync/SyncEngine.kt`
 
 Pattern from `docs/dev-flowcharts/dev-03-offline-sync.mmd`:
 - LocalID = UUIDv7
@@ -687,14 +687,14 @@ metadata:
   name: org-service
   namespace: argocd
 spec:
-  project: plumb
+  project: sthyra-crm
   source:
-    repoURL: https://github.com/plumb/org-service-helm
+    repoURL: https://github.com/sthyra-crm/org-service-helm
     targetRevision: main
     path: .
   destination:
     server: https://kubernetes.default.svc
-    namespace: plumb
+    namespace: sthyra-crm
   syncPolicy:
     automated: { prune: true, selfHeal: true }
     syncOptions: [CreateNamespace=true]

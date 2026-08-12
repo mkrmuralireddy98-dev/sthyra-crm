@@ -33,18 +33,18 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: plumb
-          POSTGRES_PASSWORD: plumb
-          POSTGRES_DB: plumb
+          POSTGRES_USER: sthyra-crm
+          POSTGRES_PASSWORD: sthyra-crm
+          POSTGRES_DB: sthyra-crm
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U plumb -d plumb"
+          --health-cmd "pg_isready -U sthyra-crm -d sthyra-crm"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
     env:
-      DATABASE_URL: postgres://plumb:plumb@localhost:5432/plumb
+      DATABASE_URL: postgres://sthyra-crm:sthyra-crm@localhost:5432/sthyra-crm
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

@@ -20,7 +20,7 @@ flowchart TB
     T2["<b>Tier 2 — Auth (Public)</b><br/>🪪 Amazon Cognito · OIDC · SAML SSO<br/>🔐 FIDO2 / TOTP MFA · JWT issuance"]:::detail
     T3["<b>Tier 3 — API Gateway (Public)</b><br/>🌐 API Gateway (Envoy) · JWT validation<br/>📨 Rate limiting · 🔁 Idempotency-Key"]:::detail
     T4["<b>Tier 4 — Service Mesh (Internal)</b><br/>🕸️ App Mesh (Envoy) · mTLS (Phase 2)<br/>🪪 SPIFFE/SVID · 🛡️ OPA policies"]:::detail
-    T5["<b>Tier 5 — Compute (Internal)</b><br/>⚙️ EKS: plumb-control / realtime / gpu / batch<br/>📦 Stateless services · IRSA"]:::detail
+    T5["<b>Tier 5 — Compute (Internal)</b><br/>⚙️ EKS: sthyra-crm-control / realtime / gpu / batch<br/>📦 Stateless services · IRSA"]:::detail
     T6["<b>Tier 6 — Data (No Internet)</b><br/>🗄️ RDS Aurora · ⚡ ElastiCache · 🔍 OpenSearch<br/>🪣 S3 (per-tenant CMK) · 🔑 Secrets Manager"]:::detail
 
     Internet ==> T1

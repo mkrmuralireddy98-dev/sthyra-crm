@@ -1,7 +1,7 @@
 ---
-title: "Plumb — System Architecture"
+title: "Sthyra CRM — System Architecture"
 subtitle: "Complete Service Inventory, AWS Mapping, and Flow Diagrams"
-author: "Engineering Team · Plumb"
+author: "Engineering Team · Sthyra CRM"
 date: "August 2026"
 geometry: "margin=2.2cm"
 fontsize: 11pt
@@ -14,7 +14,7 @@ toc-depth: 3
 
 # Executive Summary
 
-This document is the **system architecture** for Plumb — the AWS deployment
+This document is the **system architecture** for Sthyra CRM — the AWS deployment
 target that complements the Phase 0 report. While the Phase 0 report
 documents *what* was built (the foundation), this document specifies *how*
 the full 13-product platform runs in production on AWS.
@@ -31,9 +31,9 @@ and a dedicated GPU node group for the ML/3D pipeline.
 # Table of Contents
 
 1. **System Overview** — 30,000-foot view
-2. **AWS Service Inventory** — every AWS service mapped to a Plumb component
+2. **AWS Service Inventory** — every AWS service mapped to a Sthyra CRM component
 3. **Network Topology** — VPCs, subnets, security groups, transit gateway
-4. **Service Inventory** — every Plumb service with its AWS deployment
+4. **Service Inventory** — every Sthyra CRM service with its AWS deployment
 5. **Flow Diagrams** — the major request paths
    - 5.1 User opens the dashboard
    - 5.2 Field user starts a 360° capture
@@ -55,7 +55,7 @@ and a dedicated GPU node group for the ML/3D pipeline.
 
 # 1. System Overview
 
-Plumb is a multi-tenant SaaS platform for construction visual intelligence.
+Sthyra CRM is a multi-tenant SaaS platform for construction visual intelligence.
 Three planes:
 
 ```
@@ -110,10 +110,10 @@ Three planes:
 
 # 2. AWS Service Inventory
 
-Every AWS service used by Plumb, with the Plumb component it serves and
+Every AWS service used by Sthyra CRM, with the Sthyra CRM component it serves and
 the closest non-AWS alternative annotated for clarity.
 
-| Layer | AWS Service | Plumb Component | Notes |
+| Layer | AWS Service | Sthyra CRM Component | Notes |
 |---|---|---|---|
 | **DNS** | Route 53 | Apex + per-region failover | Health-checked alias records to CloudFront |
 | **CDN** | CloudFront | Static assets, marketing site, 360° tile streaming | OAI to S3; Lambda@Edge for auth checks |
@@ -167,7 +167,7 @@ mirror it with regional IP ranges.
 ```
                          ┌─────────────────────────────────────────┐
                          │   AWS Region: us-east-1                 │
-                         │   VPC: 10.0.0.0/16 (plumb-prod-use1)   │
+                         │   VPC: 10.0.0.0/16 (sthyra-crm-prod-use1)   │
                          └─────────────────────────────────────────┘
                                               │
         ┌─────────────────────────────────────┼──────────────────────────────────┐
@@ -188,7 +188,7 @@ mirror it with regional IP ranges.
                 │                             │                         │
         ┌───────▼─────────┐           ┌────────▼────────┐         ┌───────▼────────┐
         │  EKS:          │           │   EKS:         │         │   EKS:        │
-        │  plumb-control │           │   plumb-realtime│        │   plumb-gpu   │
+        │  sthyra-crm-control │           │   sthyra-crm-realtime│        │   sthyra-crm-gpu   │
         │  (stateless    │           │   (Phoenix       │        │  (P5/G5 nodes)│
         │   services)    │           │    Channels)     │        │               │
         └────────────────┘           └─────────────────┘         └───────────────┘
@@ -215,25 +215,25 @@ INTER-REGION:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  plumb-control-sg                                                      │
+│  sthyra-crm-control-sg                                                      │
 │  Ingress: 443/ALB-sg, 10250/65000-65535/control-plane-sg               │
 │  Egress:  5432/data-sg, 6379/redis-sg, 443/0.0.0.0/0                    │
 └─────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  plumb-realtime-sg (Phoenix Channels)                                  │
+│  sthyra-crm-realtime-sg (Phoenix Channels)                                  │
 │  Ingress: 443/ALB-sg, 4000-4010 (WebSocket)                           │
 │  Egress:  6379/redis-sg                                                 │
 └─────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  plumb-gpu-sg (CV/ML pipeline)                                         │
+│  sthyra-crm-gpu-sg (CV/ML pipeline)                                         │
 │  Ingress: 10250/control-plane-sg                                       │
 │  Egress: 5432/data-sg, 443/S3-vpce, 443/Bedrock-vpce                   │
 └─────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  plumb-data-sg (RDS, ElastiCache, OpenSearch) — NO INGRESS              │
+│  sthyra-crm-data-sg (RDS, ElastiCache, OpenSearch) — NO INGRESS              │
 │  Ingress: 5432/control-sg, 5432/gpu-sg, 6379/control-sg, 9200/control │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
@@ -242,7 +242,7 @@ INTER-REGION:
 
 # 4. Service Inventory
 
-Every Plumb service, its AWS deployment shape, and the AWS services it
+Every Sthyra CRM service, its AWS deployment shape, and the AWS services it
 depends on. **Phase 0 services** are built; **Phase 1+ services** are specified
 in the Phase 0 report.
 
@@ -250,11 +250,11 @@ in the Phase 0 report.
 
 | Service | Image | EKS Cluster | Replicas (min/max) | Dependencies |
 |---|---|---|---|---|
-| `org-service` | `org-service:v0.1.0` | plumb-control | 2/6 | RDS Postgres, Secrets Manager |
-| `project-service` | `project-service:v0.1.0` | plumb-control | 2/6 | RDS Postgres |
-| `user-service` | `user-service:v0.1.0` | plumb-control | 2/6 | RDS Postgres, Amazon Cognito |
-| `membership-service` | `membership-service:v0.1.0` | plumb-control | 2/6 | RDS Postgres, user-service |
-| `dashboard` (Next.js) | `dashboard:v0.1.0` | plumb-control | 2/10 | EFS for `.next/cache`, all services |
+| `org-service` | `org-service:v0.1.0` | sthyra-crm-control | 2/6 | RDS Postgres, Secrets Manager |
+| `project-service` | `project-service:v0.1.0` | sthyra-crm-control | 2/6 | RDS Postgres |
+| `user-service` | `user-service:v0.1.0` | sthyra-crm-control | 2/6 | RDS Postgres, Amazon Cognito |
+| `membership-service` | `membership-service:v0.1.0` | sthyra-crm-control | 2/6 | RDS Postgres, user-service |
+| `dashboard` (Next.js) | `dashboard:v0.1.0` | sthyra-crm-control | 2/10 | EFS for `.next/cache`, all services |
 
 ## 4.2 Phase 1 services (specification)
 
@@ -285,7 +285,7 @@ in the Phase 0 report.
 
 | Service | AWS Resource | Purpose |
 |---|---|---|
-| `realtime-gateway` | EKS Phoenix Channels on `plumb-realtime` cluster | WebSocket presence + live walkthroughs |
+| `realtime-gateway` | EKS Phoenix Channels on `sthyra-crm-realtime` cluster | WebSocket presence + live walkthroughs |
 | `pipeline-orchestrator` | Step Functions + Lambda | Coordinates Spatial AI pipeline |
 | `tile-server` | CloudFront + Lambda@Edge | Streams 3D tiles to browsers |
 | `auth-broker` | EKS + Amazon Cognito + Lambda | OAuth2/OIDC + SAML |
@@ -298,12 +298,12 @@ in the Phase 0 report.
 # 5. Flow Diagrams
 
 The flow diagrams below show the **major request paths** through the system.
-Each diagram names the AWS service, the Plumb service, and the data
+Each diagram names the AWS service, the Sthyra CRM service, and the data
 exchanged at each step.
 
 ## 5.1 User opens the dashboard
 
-A VDC PM opens `https://app.plumb.dev` and lands on the homepage showing
+A VDC PM opens `https://app.sthyra-crm.dev` and lands on the homepage showing
 org/project rollups.
 
 ```
@@ -332,7 +332,7 @@ org/project rollups.
 │       │ ───────────────────────────────────────────────────────────►    │
 │       │                                                              │    │
 │       │                                                              │    │
-│       │                                              PLUMB-CONTROL EKS│
+│       │                                              STHYRA-CRM-CONTROL EKS│
 │       │                                              ┌───────────────┐│
 │       │                                              │  Next.js SSR  ││
 │       │                                              │  (org-svc data)││
@@ -373,7 +373,7 @@ org/project rollups.
 **Key properties:**
 - All CloudFront → ALB traffic is HTTPS (TLS 1.3)
 - API Gateway validates the Cognito JWT on every request
-- `x-request-id` is propagated through every hop (per `@plumb/observability`)
+- `x-request-id` is propagated through every hop (per `@sthyra-crm/observability`)
 - Next.js SSR fetch uses `force-dynamic` so the home page is always fresh
 - HTML is CDN-cached for 60s; API responses are not cached
 
@@ -418,7 +418,7 @@ X4, taps "Start walk" in the mobile app.
 │        │                                                                 │
 │        ▼                                                                 │
 │  ┌──────────────┐       ┌─────────────────┐  ┌────────────────────┐  │
-│  │ API Gateway  │──────►│ capture-service  │  │ S3: plumb-raw-360  │  │
+│  │ API Gateway  │──────►│ capture-service  │  │ S3: sthyra-crm-raw-360  │  │
 │  │ (Envoy)      │  JWT  │ (Node.js)        │  │ key = user/project/│  │
 │  └──────────────┘  chk  └────────┬─────────┘  │ capture/{session}/  │  │
 │                                  │            │ frame/{n}.jpg     │  │
@@ -437,7 +437,7 @@ X4, taps "Start walk" in the mobile app.
 │                                                  └──────────┬───────────┘│
 │                                                             │          │
 │  ┌─────────────────────────────────────────────────────────┴──────────┐│
-│  │  GPU node group (plumb-gpu in EKS)                                 ││
+│  │  GPU node group (sthyra-crm-gpu in EKS)                                 ││
 │  │  ┌──────────────────────────────────────────────────────────────┐ ││
 │  │  │ imgproc-service workers                                        │ ││
 │  │  │ TensorFlow Serving + Triton Inference Server                  │ ││
@@ -453,9 +453,9 @@ X4, taps "Start walk" in the mobile app.
 │    { id: "cap_00000001",                                                │
 │      uploadSession: { id: "upl_xxx",                                   │
 │                        chunkUrls: [                                    │
-│                          "https://s3.amazonaws.com/plumb-raw-360/.../0",│
-│                          "https://s3.amazonaws.com/plumb-raw-360/.../1",│
-│                          "https://s3.amazonaws.com/plumb-raw-360/.../2" │
+│                          "https://s3.amazonaws.com/sthyra-crm-raw-360/.../0",│
+│                          "https://s3.amazonaws.com/sthyra-crm-raw-360/.../1",│
+│                          "https://s3.amazonaws.com/sthyra-crm-raw-360/.../2" │
 │                        ] } }                                          │
 │                                                                         │
 │  ... mobile then PUTs each chunk directly to S3 ...                     │
@@ -607,13 +607,13 @@ The owner, the GC PM, and a lender are all in the same live 360° walkthrough.
 │           ▼                                                              │
 │  ┌────────────────────┐    ┌─────────────────────┐    ┌────────────────┐ │
 │  │ ElastiCache Redis  │    │ IVS (real-time ST)  │    │ S3 recordings  │ │
-│  │ presence channel   │    │ (audio/video mix)  │    │ plumb-live-..  │ │
+│  │ presence channel   │    │ (audio/video mix)  │    │ sthyra-crm-live-..  │ │
 │  └────────────────────┘    └─────────────────────┘    └────────────────┘ │
 └──────────────────────────────────────────────────────────────────────────┘
                                 │
                                 ▼
 ┌──────────────────────────────────────────────────────────────────────────┐
-│  CloudFront → tile-server → S3 (plumb-tiles / project / capture / L / ... )│
+│  CloudFront → tile-server → S3 (sthyra-crm-tiles / project / capture / L / ... )│
 │                                                                          │
 │  Owner and lender see the same 360° frame synchronously because both    │
 │  load signed URLs from the same tile-server with the same cache key.      │
@@ -625,7 +625,7 @@ The owner, the GC PM, and a lender are all in the same live 360° walkthrough.
   BEAM VM's fault tolerance and natural fan-out)
 - **IVS (Interactive Video Service)** for real-time audio/video
 - **Redis Pub/Sub** as the presence bus (channel-per-walkthrough)
-- **S3** for recordings (`plumb-live-{region}/…`); auto-minutes via
+- **S3** for recordings (`sthyra-crm-live-{region}/…`); auto-minutes via
   Transcribe → Bedrock summary
 - **Tile-server** is the same component used for non-live walkthroughs; the
   shared cache means owners and lenders see the same frame
@@ -644,14 +644,14 @@ record owned by ACME Corp in the last 90 days"*.
                                   ▼
 ┌──────────────────────────────────────────────────────────────────────────┐
 │  AWS Console / SSO → Admins only have read access                        │
-│  Session Manager → SSM Agent on a bastion EC2 in plumb-admin VPC        │
+│  Session Manager → SSM Agent on a bastion EC2 in sthyra-crm-admin VPC        │
 │  Bastion connects to RDS Postgres via SG (data-sg) only                │
 └──────────────────────────────────────────────────────────────────────────┘
                                   │
                                   ▼
 ┌──────────────────────────────────────────────────────────────────────────┐
-│  RDS Aurora PostgreSQL (plumb-audit-use1)                                │
-│  - Logged-in role: plumb_audit_ro (DB-level role, IAM-mapped)           │
+│  RDS Aurora PostgreSQL (sthyra-crm-audit-use1)                                │
+│  - Logged-in role: sthyra_crm_audit_ro (DB-level role, IAM-mapped)           │
 │  - Query:                                                                │
 │      SELECT user_id, action, resource_type, resource_id, ts              │
 │      FROM audit_log                                                     │
@@ -664,7 +664,7 @@ record owned by ACME Corp in the last 90 days"*.
                                   │
                                   ▼
 ┌──────────────────────────────────────────────────────────────────────────┐
-│  S3: plumb-audit-exports (Object Lock: Compliance mode, 7-year retention)│
+│  S3: sthyra-crm-audit-exports (Object Lock: Compliance mode, 7-year retention)│
 │  - Query export parquet / CSV                                           │
 │  - CloudTrail logs the psql connection and query                         │
 │  - KMS-encrypted at rest                                                │
@@ -677,7 +677,7 @@ record owned by ACME Corp in the last 90 days"*.
 - **CloudTrail** records every API call (including psql queries, which
   generate RDS API calls)
 - **Object Lock + Compliance mode** prevents audit export tampering
-- **DB-level role separation** (`plumb_audit_ro`) prevents admins from
+- **DB-level role separation** (`sthyra_crm_audit_ro`) prevents admins from
   masquerading as application users
 
 \newpage
@@ -742,20 +742,20 @@ record owned by ACME Corp in the last 90 days"*.
 
 | Bucket | Purpose | Lifecycle | Encryption |
 |---|---|---|---|
-| `plumb-raw-360-{region}` | Raw 360° video, drone frames, video uploads | Hot 30d → IA 90d → Glacier 365d | SSE-KMS |
-| `plumb-frames-{region}` | Extracted frames (per-capture, equirectangular + cube faces) | Hot 90d → IA 365d | SSE-KMS |
-| `plumb-tiles-{region}` | 3D tile pyramids (3D Tiles, Gaussian Splatting) | Hot 90d → IA 365d | SSE-KMS |
-| `plumb-bim-{region}` | BIM models (IFC, RVT, NWD) as glTF + originals | Hot 30d → IA 365d | SSE-KMS |
-| `plumb-attach-{region}` | User-uploaded attachments (photos, PDFs, sketches) | IA 30d → Glacier 365d | SSE-KMS |
-| `plumb-drone-{region}` | Drone telemetry logs, orthomosaics | Hot 90d → IA 365d | SSE-KMS |
-| `plumb-live-{region}` | Live walkthrough recordings | Hot 90d → IA 365d | SSE-KMS |
-| `plumb-audit-exports-{region}` | Audit query exports (Object Lock Compliance, 7y) | Never (locked) | SSE-KMS + Object Lock |
-| `plumb-log-archive-{region}` | Long-term log archive (S3 Standard-IA after 30d) | Hot 30d → IA 365d | SSE-KMS |
-| `plumb-customer-exports-{region}` | Per-tenant export buckets (BYO data) | Customer-defined | Customer CMK |
+| `sthyra-crm-raw-360-{region}` | Raw 360° video, drone frames, video uploads | Hot 30d → IA 90d → Glacier 365d | SSE-KMS |
+| `sthyra-crm-frames-{region}` | Extracted frames (per-capture, equirectangular + cube faces) | Hot 90d → IA 365d | SSE-KMS |
+| `sthyra-crm-tiles-{region}` | 3D tile pyramids (3D Tiles, Gaussian Splatting) | Hot 90d → IA 365d | SSE-KMS |
+| `sthyra-crm-bim-{region}` | BIM models (IFC, RVT, NWD) as glTF + originals | Hot 30d → IA 365d | SSE-KMS |
+| `sthyra-crm-attach-{region}` | User-uploaded attachments (photos, PDFs, sketches) | IA 30d → Glacier 365d | SSE-KMS |
+| `sthyra-crm-drone-{region}` | Drone telemetry logs, orthomosaics | Hot 90d → IA 365d | SSE-KMS |
+| `sthyra-crm-live-{region}` | Live walkthrough recordings | Hot 90d → IA 365d | SSE-KMS |
+| `sthyra-crm-audit-exports-{region}` | Audit query exports (Object Lock Compliance, 7y) | Never (locked) | SSE-KMS + Object Lock |
+| `sthyra-crm-log-archive-{region}` | Long-term log archive (S3 Standard-IA after 30d) | Hot 30d → IA 365d | SSE-KMS |
+| `sthyra-crm-customer-exports-{region}` | Per-tenant export buckets (BYO data) | Customer-defined | Customer CMK |
 
 **All buckets are private. Access via CloudFront signed URLs or S3 access
-points only. Cross-region replication active for `plumb-raw-360-` and
-`plumb-audit-exports-` (encryption-at-rest is preserved across regions).**
+points only. Cross-region replication active for `sthyra-crm-raw-360-` and
+`sthyra-crm-audit-exports-` (encryption-at-rest is preserved across regions).**
 
 ## 6.3 TimescaleDB (capture telemetry)
 
@@ -822,13 +822,13 @@ points only. Cross-region replication active for `plumb-raw-360-` and
 
 | Cluster | Engine | Purpose | Eviction | TTL |
 |---|---|---|---|---|
-| `plumb-session-{region}` | Redis 7 | Session store, idempotency cache, idempotency keys | allkeys-lru | 1h sessions, 24h idem |
-| `plumb-presence-{region}` | Redis 7 | Phoenix Channels presence pub/sub | volatile-lru | ephemeral |
-| `plumb-rate-{region}` | Redis 7 | Token-bucket rate limiting per `(userId, route)` | volatile-lru | 1m |
-| `plumb-flow-{region}` | Redis 7 | Idempotency and dedup keys for upstream integrations | volatile-lru | 24h |
+| `sthyra-crm-session-{region}` | Redis 7 | Session store, idempotency cache, idempotency keys | allkeys-lru | 1h sessions, 24h idem |
+| `sthyra-crm-presence-{region}` | Redis 7 | Phoenix Channels presence pub/sub | volatile-lru | ephemeral |
+| `sthyra-crm-rate-{region}` | Redis 7 | Token-bucket rate limiting per `(userId, route)` | volatile-lru | 1m |
+| `sthyra-crm-flow-{region}` | Redis 7 | Idempotency and dedup keys for upstream integrations | volatile-lru | 24h |
 
 **Cluster mode:** 6 shards × 2 replicas per primary. AOF persistence on
-`plumb-session-` and `plumb-flow-` only.
+`sthyra-crm-session-` and `sthyra-crm-flow-` only.
 
 \newpage
 
@@ -838,10 +838,10 @@ points only. Cross-region replication active for `plumb-raw-360-` and
 
 | Cluster | Roles | Node groups | Region deployment |
 |---|---|---|---|
-| `plumb-control-use1` | All stateless services (Phase 0 + Phase 1 control) | system, app, gpu | us-east-1 |
-| `plumb-realtime-use1` | Phoenix Channels realtime gateway | realtime | us-east-1 |
-| `plumb-gpu-use1` | imgproc-service workers (P5/G5) | gpu | us-east-1 |
-| `plumb-batch-use1` | Step Functions, ETL, scheduled jobs | batch | us-east-1 |
+| `sthyra-crm-control-use1` | All stateless services (Phase 0 + Phase 1 control) | system, app, gpu | us-east-1 |
+| `sthyra-crm-realtime-use1` | Phoenix Channels realtime gateway | realtime | us-east-1 |
+| `sthyra-crm-gpu-use1` | imgproc-service workers (P5/G5) | gpu | us-east-1 |
+| `sthyra-crm-batch-use1` | Step Functions, ETL, scheduled jobs | batch | us-east-1 |
 
 Mirrored in `eu-west-1`, `ap-southeast-2`, `ap-northeast-1`, `ksa-central-1`.
 
@@ -869,7 +869,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: org-service
-  namespace: plumb
+  namespace: sthyra-crm
 spec:
   replicas: 3
   strategy:
@@ -931,7 +931,7 @@ API Gateway → ALB (TLS 1.3) → Ingress-NGINX → Service.
 ┌──────────────────────────────────────────────────────────────────────────┐
 │  ALB (NLB-mode for low latency)                                          │
 │  - TLS 1.3 termination                                                   │
-│  - ACM cert for *.plumb.dev                                             │
+│  - ACM cert for *.sthyra-crm.dev                                             │
 │  - WAF integration (managed rule sets)                                  │
 │  - Target group: EKS Ingress-NGINX                                      │
 └──────────────────────────────────────────────────────────────────────────┘
@@ -942,11 +942,11 @@ API Gateway → ALB (TLS 1.3) → Ingress-NGINX → Service.
 │  - WAF header pass-through                                              │
 │  - Mutating x-request-id (if missing) → propagates from API Gateway     │
 │  - Routes:                                                              │
-│      /v1/*        → plumb-control namespace (stateless services)        │
-│      /ws          → plumb-realtime namespace (Phoenix Channels)         │
-│      /stream      → plumb-gpu namespace (imgproc-service)               │
-│      /admin/*     → plumb-admin namespace (RBAC enforced)               │
-│      /api/*       → plumb-dashboard namespace (dashboard SSR)           │
+│      /v1/*        → sthyra-crm-control namespace (stateless services)        │
+│      /ws          → sthyra-crm-realtime namespace (Phoenix Channels)         │
+│      /stream      → sthyra-crm-gpu namespace (imgproc-service)               │
+│      /admin/*     → sthyra-crm-admin namespace (RBAC enforced)               │
+│      /api/*       → sthyra-crm-dashboard namespace (dashboard SSR)           │
 │  - Rate limiting via NGINX annotations (defense-in-depth)              │
 └──────────────────────────────────────────────────────────────────────────┘
 ```
@@ -1018,8 +1018,8 @@ When mTLS is mandated:
 
 **Deployment:** SPIRE Server runs as a StatefulSet; SPIRE Agent runs as a
 DaemonSet; each service has a SPIRE Registration Entry. The
-`@plumb/auth` package already implements the verify side (§4.6 of
-PLUMB-PHASE-0-REPORT.md); the SPIRE integration is a Phase 2 wiring task.
+`@sthyra-crm/auth` package already implements the verify side (§4.6 of
+STHYRA-PHASE-0-REPORT.md); the SPIRE integration is a Phase 2 wiring task.
 
 ## 8.3 Inter-AZ traffic
 
@@ -1031,7 +1031,7 @@ PLUMB-PHASE-0-REPORT.md); the SPIRE integration is a Phase 2 wiring task.
 
 ## 8.4 Inter-region traffic
 
-- **S3 Cross-Region Replication** for `plumb-raw-360-` and `plumb-audit-exports-`
+- **S3 Cross-Region Replication** for `sthyra-crm-raw-360-` and `sthyra-crm-audit-exports-`
 - **Aurora Global Database** for cross-region read replicas (RPO ≤ 1s)
 - **Route 53 latency-based routing** across regions
 - **Transit Gateway peering** between commercial regions (us-east-1 ↔
@@ -1062,7 +1062,7 @@ PLUMB-PHASE-0-REPORT.md); the SPIRE integration is a Phase 2 wiring task.
 ┌──────────────────────────────────────────────────────────────────────────┐
 │  JWT issued to mobile/web client                                        │
 │  - Issuer: https://cognito-idp.{region}.amazonaws.com/{userPoolId}     │
-│  - Audience: plumb-api                                                  │
+│  - Audience: sthyra-crm-api                                                  │
 │  - Lifetime: 1 hour (access token), 30 days (refresh token)             │
 │  - Claims: sub, email, org_id, role, custom:tenant_id                   │
 └──────────────────────────────────────────────────────────────────────────┘
@@ -1087,9 +1087,9 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: org-service
-  namespace: plumb
+  namespace: sthyra-crm
   annotations:
-    eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/plumb-org-service
+    eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/sthyra-crm-org-service
 ```
 
 The IAM role has a trust policy that only allows the `org-service` SA to
@@ -1108,7 +1108,7 @@ permissions scoped to exactly what the service needs:
     {
       "Effect": "Allow",
       "Action": ["rds-db:connect"],
-      "Resource": "arn:aws:rds:us-east-1:123456789012:db:plumb-control"
+      "Resource": "arn:aws:rds:us-east-1:123456789012:db:sthyra-crm-control"
     }
   ]
 }
@@ -1146,7 +1146,7 @@ Tenant isolation is enforced at **five layers**:
 
 ┌──────────────────────────────────────────────────────────────────────────┐
 │                          LOGS                                            │
-│  - Structured JSON via @plumb/observability                             │
+│  - Structured JSON via @sthyra-crm/observability                             │
 │  - CloudWatch Logs (control plane)                                      │
 │  - Kinesis Firehose → S3 (long-term archive)                             │
 │  - OpenSearch (full-text search, ad-hoc)                                │
@@ -1196,7 +1196,7 @@ SELECT
   line_item_product_code,
   DATE(line_item_usage_start_date) AS day,
   SUM(line_item_unblended_cost) AS cost_usd
-FROM plumb_cur
+FROM sthyra_crm_cur
 WHERE line_item_usage_start_date >= NOW() - INTERVAL '30 days'
 GROUP BY 1, 2, 3
 ORDER BY day DESC;
@@ -1249,7 +1249,7 @@ ORDER BY day DESC;
 │  ┌────────────────────────────────────────────────────────────────────┐ │
 │  │  GovCloud VPC (isolated from commercial AWS)                         │ │
 │  │  ┌──────────────────────────────────────────────────────────────┐ │ │
-│  │  │  EKS: plumb-gov-control                                        │ │ │
+│  │  │  EKS: sthyra-crm-gov-control                                        │ │ │
 │  │  │  Aurora PostgreSQL (GovCloud)                                  │ │ │
 │  │  │  S3 (GovCloud) — Object Lock Compliance                        │ │ │
 │  │  │  CloudHSM (FIPS 140-3 Level 3)                                 │ │ │
@@ -1420,7 +1420,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
   name: org-service
-  namespace: plumb
+  namespace: sthyra-crm
 spec:
   replicas: 6
   strategy:
@@ -1541,12 +1541,12 @@ before this architecture becomes the implementation plan.
 
 # Closing Notes
 
-This document is the **AWS deployment target** for Plumb. It complements:
+This document is the **AWS deployment target** for Sthyra CRM. It complements:
 
-- `PLUMB-PHASE-0-REPORT.md` — what was built in Phase 0 (the foundation)
-- `~/.hermes/plans/2026-08-08_090307-plumb-visual-intelligence-platform.md` —
+- `STHYRA-PHASE-0-REPORT.md` — what was built in Phase 0 (the foundation)
+- `~/.hermes/plans/2026-08-08_090307-sthyra-crm-visual-intelligence-platform.md` —
   the master plan produced by the 10-agent planning pass
-- `~/.hermes/plans/2026-08-08_090307-plumb-visual-intelligence-platform-APPENDIX.md` —
+- `~/.hermes/plans/2026-08-08_090307-sthyra-crm-visual-intelligence-platform-APPENDIX.md` —
   the technical appendix with resolved cross-agent conflicts
 
 The full system spans 13 products, ~$8.4M Year-1 budget, 12 founding hires,

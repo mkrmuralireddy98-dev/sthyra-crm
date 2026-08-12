@@ -26,7 +26,7 @@ flowchart LR
         REPO --> ARGOR
     end
 
-    subgraph K8S["EKS: plumb-control"]
+    subgraph K8S["EKS: sthyra-crm-control"]
         subgraph NEW["New version (canary)"]
             V1["Pod 1<br/>org-service<br/>v0.2.0"]:::canary
         end

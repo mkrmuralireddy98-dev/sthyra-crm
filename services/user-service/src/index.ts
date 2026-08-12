@@ -1,5 +1,5 @@
 /**
- * Plumb User Service — identity, RBAC, OIDC-shaped tokens.
+ * Sthyra CRM User Service — identity, RBAC, OIDC-shaped tokens.
  *
  * Phase 0 scope: schema, provision/lookup, opaque token issuance + verification.
  * Phase 1 will add real OIDC (Auth0/Okta/Entra), SAML SSO, SCIM provisioning,

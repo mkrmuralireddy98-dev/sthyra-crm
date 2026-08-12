@@ -84,7 +84,7 @@ describe('observability', () => {
       const app = Fastify({ logger: false });
       installRequestIdPlugin(app);
       app.get('/v1/emit', async () => {
-        emit('info', 'test_event', { foo: 'bar' }, 'plumb-test');
+        emit('info', 'test_event', { foo: 'bar' }, 'sthyra-crm-test');
         return { ok: true };
       });
       await app.ready();
@@ -101,7 +101,7 @@ describe('observability', () => {
       const matching = lines.filter((l) => l.includes('test_event'));
       assert.ok(matching.length >= 1);
       const parsed = JSON.parse(matching[matching.length - 1]!);
-      assert.equal(parsed.service, 'plumb-test');
+      assert.equal(parsed.service, 'sthyra-crm-test');
       assert.equal(parsed.request_id, incoming);
       assert.equal(parsed.level, 'info');
       assert.deepEqual(parsed.fields, { foo: 'bar' });

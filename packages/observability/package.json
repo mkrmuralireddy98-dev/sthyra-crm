@@ -1,8 +1,8 @@
 {
-  "name": "@plumb/observability",
+  "name": "@sthyra-crm/observability",
   "version": "0.1.0",
   "private": true,
-  "description": "Plumb observability — structured logging, request-id propagation, OTel-ready hooks",
+  "description": "Sthyra CRM observability — structured logging, request-id propagation, OTel-ready hooks",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -19,7 +19,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@plumb/tokens": "workspace:*"
+    "@sthyra-crm/tokens": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

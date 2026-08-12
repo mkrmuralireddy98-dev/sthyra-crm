@@ -1,4 +1,4 @@
-/* Plumb dashboard — uses CSS variables emitted by @plumb/tokens. */
+/* Sthyra CRM dashboard — uses CSS variables emitted by @sthyra-crm/tokens. */
 
 * {
   box-sizing: border-box;
@@ -30,27 +30,27 @@ button {
   cursor: pointer;
 }
 
-.plumb-card {
+.sthyra-crm-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: var(--space-6);
 }
 
-.plumb-stat {
+.sthyra-crm-stat {
   font-size: var(--text-3xl);
   font-weight: var(--fontWeight-semibold, 600);
   color: var(--color-fg);
 }
 
-.plumb-stat-label {
+.sthyra-crm-stat-label {
   font-size: var(--text-sm);
   color: var(--color-fg-muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
-.plumb-input {
+.sthyra-crm-input {
   width: 100%;
   padding: var(--space-3) var(--space-4);
   background: var(--color-surface-sunken, var(--color-bg));
@@ -60,13 +60,13 @@ button {
   font-family: inherit;
   font-size: var(--text-base, 14px);
 }
-.plumb-input:focus {
+.sthyra-crm-input:focus {
   outline: none;
   border-color: var(--color-focus);
   box-shadow: 0 0 0 2px rgba(0, 184, 148, 0.25);
 }
 
-.plumb-button {
+.sthyra-crm-button {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
@@ -79,18 +79,18 @@ button {
   font-size: var(--text-base, 14px);
   transition: background var(--dur-fast, 120ms) var(--ease-standard, ease);
 }
-.plumb-button:hover {
+.sthyra-crm-button:hover {
   background: var(--color-accent-hover, var(--color-accent));
   filter: brightness(1.1);
 }
 
-.plumb-button--ghost {
+.sthyra-crm-button--ghost {
   background: transparent;
   color: var(--color-fg);
   border: 1px solid var(--color-border);
 }
 
-.plumb-badge {
+.sthyra-crm-badge {
   display: inline-flex;
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-full, 9999px);
@@ -99,7 +99,7 @@ button {
   color: var(--color-fg-muted);
 }
 
-.plumb-empty {
+.sthyra-crm-empty {
   padding: var(--space-12);
   text-align: center;
   color: var(--color-fg-muted);

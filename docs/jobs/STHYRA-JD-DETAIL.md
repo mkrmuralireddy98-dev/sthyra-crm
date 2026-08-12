@@ -2,7 +2,7 @@
 
 ## Lead. Don't follow. Build the data plane that the company runs on.
 
-You'll own every transaction Plumb's 6 services write. If you want a job where you ship a feature, get it reviewed, and move on, this isn't it. If you want a job where you design the Postgres schema, write the parameterized SQL, build the multitenancy invariant, then ship the API that uses it — and the next morning own the on-call page when it breaks — this is exactly it.
+You'll own every transaction Sthyra CRM's 6 services write. If you want a job where you ship a feature, get it reviewed, and move on, this isn't it. If you want a job where you design the Postgres schema, write the parameterized SQL, build the multitenancy invariant, then ship the API that uses it — and the next morning own the on-call page when it breaks — this is exactly it.
 
 ---
 
@@ -85,4 +85,4 @@ No recruiters. No agencies. No LinkedIn Easy Apply.
 
 ---
 
-*Plumb is an equal-opportunity employer. We hire on the basis of merit and potential. We do not discriminate on race, color, religion, gender, gender identity, sexual orientation, national origin, age, disability, veteran status, or any other characteristic protected by law.*
+*Sthyra CRM is an equal-opportunity employer. We hire on the basis of merit and potential. We do not discriminate on race, color, religion, gender, gender identity, sexual orientation, national origin, age, disability, veteran status, or any other characteristic protected by law.*

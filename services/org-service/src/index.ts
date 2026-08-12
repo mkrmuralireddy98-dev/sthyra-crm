@@ -1,5 +1,5 @@
 /**
- * Plumb Org Service — tenancy, RBAC, project membership.
+ * Sthyra CRM Org Service — tenancy, RBAC, project membership.
  *
  * Architectural invariants (master plan §5, §9):
  *  - Every record carries `region` — data residency is non-negotiable.

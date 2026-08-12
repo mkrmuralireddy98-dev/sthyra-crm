@@ -1,5 +1,5 @@
 /**
- * Plumb Membership Service — RBAC, user↔org and user↔project bindings.
+ * Sthyra CRM Membership Service — RBAC, user↔org and user↔project bindings.
  *
  * The membership service is the bridge that makes RBAC actually work
  * across services. Instead of asking "is this user an org_owner?" everywhere,

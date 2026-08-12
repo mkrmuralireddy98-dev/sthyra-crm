@@ -1,6 +1,6 @@
-# Plumb Dashboard (Next.js 14, App Router)
+# Sthyra CRM Dashboard (Next.js 14, App Router)
 
-Minimal Phase-0 dashboard shell. Consumes `@plumb/tokens` for the visual system
+Minimal Phase-0 dashboard shell. Consumes `@sthyra-crm/tokens` for the visual system
 and proxies requests to the org-service / project-service via server-side
 fetch, propagating the request-id end-to-end.
 
@@ -9,9 +9,9 @@ fetch, propagating the request-id end-to-end.
 ```bash
 # In project root:
 docker compose up -d postgres
-pnpm --filter=@plumb/org-service start:pg &
-pnpm --filter=@plumb/project-service start:inmem &
-pnpm --filter=@plumb/dashboard dev
+pnpm --filter=@sthyra-crm/org-service start:pg &
+pnpm --filter=@sthyra-crm/project-service start:inmem &
+pnpm --filter=@sthyra-crm/dashboard dev
 ```
 
 Then open http://localhost:3000.
@@ -27,14 +27,14 @@ Then open http://localhost:3000.
 - **Server Components** by default for data fetching (no client-side waterfall).
 - **`lib/api.ts`** is the only place that talks to the backend services. Request-id
   is generated per request and forwarded as `x-request-id`.
-- **Tokens** are imported from `@plumb/tokens` and emitted via CSS vars in
+- **Tokens** are imported from `@sthyra-crm/tokens` and emitted via CSS vars in
   `app/layout.tsx`. Light/dark mode switch hooks into the token set.
 - **No three.js, no WebGL, no AR view** — that's Phase 1+, not Phase 0.
 
 ## Tests
 
 ```bash
-pnpm --filter=@plumb/dashboard test
+pnpm --filter=@sthyra-crm/dashboard test
 ```
 
 (Tests are unit tests over the API client; full e2e test/browser work is Phase 1.)

@@ -1,8 +1,8 @@
 import Fastify, { type FastifyInstance } from 'fastify';
 import { randomUUID } from 'node:crypto';
 import { MembershipService, type OrgRole, type ProjectRole } from './index.js';
-import { emit, installRequestIdPlugin } from '@plumb/observability';
-import { installAuthPlugin } from '@plumb/auth';
+import { emit, installRequestIdPlugin } from '@sthyra-crm/observability';
+import { installAuthPlugin } from '@sthyra-crm/auth';
 
 interface BuildServerOptions {
   service: MembershipService;
@@ -37,7 +37,7 @@ export function buildServer(opts: BuildServerOptions): FastifyInstance {
     const detail = err instanceof Error ? err.message : String(err);
     emit('error', 'unhandled_error', { detail });
     reply.type('application/problem+json').status(500).send({
-      type: 'https://plumb.dev/errors/internal',
+      type: 'https://sthyra-crm.dev/errors/internal',
       title: 'Internal Server Error',
       status: 500,
       detail,
@@ -133,7 +133,7 @@ function problem(
   trace_id: string,
 ): Record<string, unknown> {
   return {
-    type: `https://plumb.dev/errors/${code}`,
+    type: `https://sthyra-crm.dev/errors/${code}`,
     title,
     status,
     detail,

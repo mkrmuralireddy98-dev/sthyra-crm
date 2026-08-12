@@ -22,33 +22,33 @@ flowchart TB
     R53["🌐 Route 53<br/>latency-based routing"]:::gw
 
     subgraph USE1["us-east-1 · PRIMARY"]
-        EKS1["EKS: plumb-control<br/>+ plumb-realtime<br/>+ plumb-gpu"]:::cluster
+        EKS1["EKS: sthyra-crm-control<br/>+ sthyra-crm-realtime<br/>+ sthyra-crm-gpu"]:::cluster
         RDS1["🗄️ RDS Aurora<br/>PRIMARY<br/>(writer + 2 standby)"]:::db
         S3USE1["🪣 S3 raw-360<br/>active"]:::storage
     end
 
     subgraph USW2["us-west-2 · warm DR"]
-        EKS2["EKS: plumb-control"]:::cluster
+        EKS2["EKS: sthyra-crm-control"]:::cluster
         RDS2["🗄️ RDS Global DB<br/>read replica<br/>RPO ≤ 1s"]:::db
         S3USW2["🪣 S3 CRR"]:::storage
     end
 
     subgraph EUW1["eu-west-1 · EU GDPR"]
-        EKS3["EKS: plumb-control<br/>(EU-resident)"]:::cluster
+        EKS3["EKS: sthyra-crm-control<br/>(EU-resident)"]:::cluster
         RDS3["🗄️ RDS Global DB<br/>read replica<br/>(tenant-pinned)"]:::db
         S3EUW1["🪣 S3 CRR<br/>(EU-resident)"]:::storage
     end
 
     subgraph APSE2["ap-southeast-2"]
-        EKS4["EKS: plumb-control"]:::cluster
+        EKS4["EKS: sthyra-crm-control"]:::cluster
     end
 
     subgraph APNE1["ap-northeast-1"]
-        EKS5["EKS: plumb-control"]:::cluster
+        EKS5["EKS: sthyra-crm-control"]:::cluster
     end
 
     subgraph KSAC1["ksa-central-1 · KSA PDPL"]
-        EKS6["EKS: plumb-control"]:::cluster
+        EKS6["EKS: sthyra-crm-control"]:::cluster
     end
 
     subgraph USGE1["us-gov-east-1 · FedRAMP — ISOLATED"]

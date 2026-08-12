@@ -1,5 +1,5 @@
 /**
- * Plumb observability — structured logging + request-id propagation.
+ * Sthyra CRM observability — structured logging + request-id propagation.
  *
  * Every request gets an `x-request-id` (incoming header or freshly minted).
  * The same id appears in:
@@ -30,7 +30,7 @@ export interface LogLine {
   fields?: LogFields;
 }
 
-const DEFAULT_SERVICE_NAME = process.env.SERVICE_NAME ?? 'plumb-service';
+const DEFAULT_SERVICE_NAME = process.env.SERVICE_NAME ?? 'sthyra-crm-service';
 
 const requestIdStore = new AsyncLocalStorage<string>();
 

@@ -61,7 +61,7 @@ describe('api client', () => {
     setFetch(async () =>
       new Response(
         JSON.stringify({
-          type: 'https://plumb.dev/errors/conflict',
+          type: 'https://sthyra-crm.dev/errors/conflict',
           title: 'Organization already exists',
           status: 409,
           detail: 'already exists',

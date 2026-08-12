@@ -41,12 +41,12 @@ export default function NewOrgPage() {
         The org is the top-level tenant. All projects, captures, and users belong to it.
       </p>
 
-      <form onSubmit={onSubmit} className="plumb-card" style={{ display: 'grid', gap: 'var(--space-4)' }}>
+      <form onSubmit={onSubmit} className="sthyra-crm-card" style={{ display: 'grid', gap: 'var(--space-4)' }}>
         <label style={{ display: 'grid', gap: 'var(--space-2)' }}>
           <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--fontWeight-medium)' }}>Organization name</span>
           <input
             required
-            className="plumb-input"
+            className="sthyra-crm-input"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Hudson Tower GC"
@@ -55,7 +55,7 @@ export default function NewOrgPage() {
 
         <label style={{ display: 'grid', gap: 'var(--space-2)' }}>
           <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--fontWeight-medium)' }}>Region</span>
-          <select className="plumb-input" value={region} onChange={(e) => setRegion(e.target.value as typeof region)}>
+          <select className="sthyra-crm-input" value={region} onChange={(e) => setRegion(e.target.value as typeof region)}>
             {REGIONS.map((r) => (
               <option key={r} value={r}>
                 {r}
@@ -66,7 +66,7 @@ export default function NewOrgPage() {
 
         <label style={{ display: 'grid', gap: 'var(--space-2)' }}>
           <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--fontWeight-medium)' }}>Plan</span>
-          <select className="plumb-input" value={plan} onChange={(e) => setPlan(e.target.value as typeof plan)}>
+          <select className="sthyra-crm-input" value={plan} onChange={(e) => setPlan(e.target.value as typeof plan)}>
             {PLANS.map((p) => (
               <option key={p} value={p}>
                 {p}
@@ -91,10 +91,10 @@ export default function NewOrgPage() {
         )}
 
         <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
-          <Link href="/" className="plumb-button plumb-button--ghost">
+          <Link href="/" className="sthyra-crm-button sthyra-crm-button--ghost">
             Cancel
           </Link>
-          <button type="submit" className="plumb-button" disabled={submitting || !name}>
+          <button type="submit" className="sthyra-crm-button" disabled={submitting || !name}>
             {submitting ? 'Creating…' : 'Create org'}
           </button>
         </div>

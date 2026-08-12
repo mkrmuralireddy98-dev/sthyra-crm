@@ -27,7 +27,7 @@ export function buildServer(opts: BuildServerOptions): FastifyInstance {
     const trace_id = randomUUID();
     const detail = err instanceof Error ? err.message : String(err);
     reply.type('application/problem+json').status(500).send({
-      type: 'https://plumb.dev/errors/internal',
+      type: 'https://sthyra-crm.dev/errors/internal',
       title: 'Internal Server Error',
       status: 500,
       detail,
@@ -43,7 +43,7 @@ export function buildServer(opts: BuildServerOptions): FastifyInstance {
     if (!body || typeof body !== 'object') {
       reply.type('application/problem+json').status(422);
       return {
-        type: 'https://plumb.dev/errors/validation_failed',
+        type: 'https://sthyra-crm.dev/errors/validation_failed',
         title: 'Validation failed',
         status: 422,
         detail: 'request body must be a JSON object',
@@ -68,7 +68,7 @@ export function buildServer(opts: BuildServerOptions): FastifyInstance {
       const field = deriveFieldFromMessage(message, false);
       reply.type('application/problem+json').status(422);
       return {
-        type: 'https://plumb.dev/errors/validation_failed',
+        type: 'https://sthyra-crm.dev/errors/validation_failed',
         title: field ? `Invalid ${field}` : 'Validation failed',
         status: 422,
         detail: message,
@@ -83,7 +83,7 @@ export function buildServer(opts: BuildServerOptions): FastifyInstance {
     if (!orgId) {
       reply.type('application/problem+json').status(422);
       return {
-        type: 'https://plumb.dev/errors/validation_failed',
+        type: 'https://sthyra-crm.dev/errors/validation_failed',
         title: 'Missing orgId',
         status: 422,
         detail: 'orgId query parameter is required',
@@ -101,7 +101,7 @@ export function buildServer(opts: BuildServerOptions): FastifyInstance {
     if (!project) {
       reply.type('application/problem+json').status(404);
       return {
-        type: 'https://plumb.dev/errors/not_found',
+        type: 'https://sthyra-crm.dev/errors/not_found',
         title: 'Project not found',
         status: 404,
         detail: `No project with id "${id}".`,
@@ -123,7 +123,7 @@ export function buildServer(opts: BuildServerOptions): FastifyInstance {
       const status = isAlreadyArchived ? 409 : 404;
       reply.type('application/problem+json').status(status);
       return {
-        type: `https://plumb.dev/errors/${isAlreadyArchived ? 'conflict' : 'not_found'}`,
+        type: `https://sthyra-crm.dev/errors/${isAlreadyArchived ? 'conflict' : 'not_found'}`,
         title: isAlreadyArchived ? 'Project already archived' : 'Project not found',
         status,
         detail: message,

@@ -1,8 +1,8 @@
 {
-  "name": "@plumb/org-service",
+  "name": "@sthyra-crm/org-service",
   "version": "0.1.0",
   "private": true,
-  "description": "Plumb Org Service — tenancy, RBAC, project membership",
+  "description": "Sthyra CRM Org Service — tenancy, RBAC, project membership",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -21,8 +21,8 @@
     "start:pg": "node dist/postgres-cli.js"
   },
   "dependencies": {
-    "@plumb/observability": "workspace:*",
-    "@plumb/tokens": "workspace:*",
+    "@sthyra-crm/observability": "workspace:*",
+    "@sthyra-crm/tokens": "workspace:*",
     "fastify": "^5.0.0",
     "pg": "^8.13.0"
   },

@@ -1,8 +1,8 @@
 {
-  "name": "@plumb/tokens",
+  "name": "@sthyra-crm/tokens",
   "version": "0.1.0",
   "private": true,
-  "description": "Plumb design tokens — the single source of truth for the visual system",
+  "description": "Sthyra CRM design tokens — the single source of truth for the visual system",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

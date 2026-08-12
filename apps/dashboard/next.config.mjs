@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  transpilePackages: ['@plumb/tokens', '@plumb/observability'],
+  transpilePackages: ['@sthyra-crm/tokens', '@sthyra-crm/observability'],
   experimental: {
     typedRoutes: false,
   },

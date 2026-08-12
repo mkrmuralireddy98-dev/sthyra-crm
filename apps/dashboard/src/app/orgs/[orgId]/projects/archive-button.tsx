@@ -29,7 +29,7 @@ export function ArchiveButton({ projectId }: Props) {
     <>
       <button
         type="button"
-        className="plumb-button plumb-button--ghost"
+        className="sthyra-crm-button sthyra-crm-button--ghost"
         onClick={onArchive}
         disabled={isPending}
         aria-label="Archive project"

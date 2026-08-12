@@ -1,5 +1,5 @@
 /**
- * Plumb auth — bearer-token middleware shared by every backend service.
+ * Sthyra CRM auth — bearer-token middleware shared by every backend service.
  *
  * Design:
  *   - Each service installs `installAuthPlugin({ userServiceUrl })`.
@@ -16,7 +16,7 @@
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { randomUUID } from 'node:crypto';
-import { emit } from '@plumb/observability';
+import { emit } from '@sthyra-crm/observability';
 
 export interface Principal {
   readonly userId: string;
@@ -54,7 +54,7 @@ export async function installAuthPlugin(
     const auth = req.headers.authorization;
     if (!auth || !auth.startsWith('Bearer ')) {
       reply.type('application/problem+json').status(401).send({
-        type: 'https://plumb.dev/errors/unauthorized',
+        type: 'https://sthyra-crm.dev/errors/unauthorized',
         title: 'Missing bearer token',
         status: 401,
         detail: 'Authorization: Bearer <token> header is required',
@@ -67,7 +67,7 @@ export async function installAuthPlugin(
     const token = auth.slice('Bearer '.length).trim();
     if (!token) {
       reply.type('application/problem+json').status(401).send({
-        type: 'https://plumb.dev/errors/unauthorized',
+        type: 'https://sthyra-crm.dev/errors/unauthorized',
         title: 'Empty bearer token',
         status: 401,
         detail: 'Bearer token is empty',
@@ -83,7 +83,7 @@ export async function installAuthPlugin(
         : await verifyRemote(opts.userServiceUrl, token, req.headers['x-request-id']);
       if (!principal) {
         reply.type('application/problem+json').status(401).send({
-          type: 'https://plumb.dev/errors/unauthorized',
+          type: 'https://sthyra-crm.dev/errors/unauthorized',
           title: 'Invalid or expired token',
           status: 401,
           detail: 'Token is invalid, expired, or revoked',
@@ -96,7 +96,7 @@ export async function installAuthPlugin(
     } catch (err) {
       emit('error', 'auth_verify_failed', { detail: err instanceof Error ? err.message : String(err) });
       reply.type('application/problem+json').status(503).send({
-        type: 'https://plumb.dev/errors/auth_unavailable',
+        type: 'https://sthyra-crm.dev/errors/auth_unavailable',
         title: 'Auth service unavailable',
         status: 503,
         detail: 'Could not reach the user-service for token verification',

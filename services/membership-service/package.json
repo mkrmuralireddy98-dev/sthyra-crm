@@ -1,8 +1,8 @@
 {
-  "name": "@plumb/membership-service",
+  "name": "@sthyra-crm/membership-service",
   "version": "0.1.0",
   "private": true,
-  "description": "Plumb Membership Service — RBAC, user↔org and user↔project bindings",
+  "description": "Sthyra CRM Membership Service — RBAC, user↔org and user↔project bindings",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -20,9 +20,9 @@
     "start:inmem": "node dist/cli.js"
   },
   "dependencies": {
-    "@plumb/auth": "workspace:*",
-    "@plumb/observability": "workspace:*",
-    "@plumb/tokens": "workspace:*",
+    "@sthyra-crm/auth": "workspace:*",
+    "@sthyra-crm/observability": "workspace:*",
+    "@sthyra-crm/tokens": "workspace:*",
     "fastify": "^5.0.0"
   },
   "devDependencies": {

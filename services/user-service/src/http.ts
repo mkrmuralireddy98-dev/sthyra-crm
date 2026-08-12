@@ -5,7 +5,7 @@ import {
   type ProvisionInput,
   type Role,
 } from './index.js';
-import { emit, installRequestIdPlugin } from '@plumb/observability';
+import { emit, installRequestIdPlugin } from '@sthyra-crm/observability';
 
 interface BuildServerOptions {
   service: UserService;
@@ -37,7 +37,7 @@ export function buildServer(opts: BuildServerOptions): FastifyInstance {
     const detail = err instanceof Error ? err.message : String(err);
     emit('error', 'unhandled_error', { detail });
     reply.type('application/problem+json').status(500).send({
-      type: 'https://plumb.dev/errors/internal',
+      type: 'https://sthyra-crm.dev/errors/internal',
       title: 'Internal Server Error',
       status: 500,
       detail,
@@ -53,7 +53,7 @@ export function buildServer(opts: BuildServerOptions): FastifyInstance {
     if (!body || typeof body !== 'object') {
       reply.type('application/problem+json').status(422);
       return {
-        type: 'https://plumb.dev/errors/validation_failed',
+        type: 'https://sthyra-crm.dev/errors/validation_failed',
         title: 'Validation failed',
         status: 422,
         detail: 'request body must be a JSON object',
@@ -84,7 +84,7 @@ export function buildServer(opts: BuildServerOptions): FastifyInstance {
       const status = isDuplicate ? 409 : 422;
       reply.type('application/problem+json').status(status);
       return {
-        type: `https://plumb.dev/errors/${isDuplicate ? 'conflict' : 'validation_failed'}`,
+        type: `https://sthyra-crm.dev/errors/${isDuplicate ? 'conflict' : 'validation_failed'}`,
         title: isDuplicate ? 'User already exists' : 'Validation failed',
         status,
         detail: message,
@@ -100,7 +100,7 @@ export function buildServer(opts: BuildServerOptions): FastifyInstance {
     if (!user) {
       reply.type('application/problem+json').status(404);
       return {
-        type: 'https://plumb.dev/errors/not_found',
+        type: 'https://sthyra-crm.dev/errors/not_found',
         title: 'User not found',
         status: 404,
         detail: `No user with id "${id}".`,
@@ -131,7 +131,7 @@ export function buildServer(opts: BuildServerOptions): FastifyInstance {
       const message = err instanceof Error ? err.message : String(err);
       reply.type('application/problem+json').status(404);
       return {
-        type: 'https://plumb.dev/errors/not_found',
+        type: 'https://sthyra-crm.dev/errors/not_found',
         title: 'User not found',
         status: 404,
         detail: message,
@@ -146,7 +146,7 @@ export function buildServer(opts: BuildServerOptions): FastifyInstance {
     if (!token) {
       reply.type('application/problem+json').status(422);
       return {
-        type: 'https://plumb.dev/errors/validation_failed',
+        type: 'https://sthyra-crm.dev/errors/validation_failed',
         title: 'Missing token',
         status: 422,
         detail: 'Authorization header with Bearer token is required',
@@ -158,7 +158,7 @@ export function buildServer(opts: BuildServerOptions): FastifyInstance {
     if (!verified) {
       reply.type('application/problem+json').status(401);
       return {
-        type: 'https://plumb.dev/errors/unauthorized',
+        type: 'https://sthyra-crm.dev/errors/unauthorized',
         title: 'Invalid or expired token',
         status: 401,
         detail: 'Token is invalid, expired, or revoked',

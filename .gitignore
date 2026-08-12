@@ -47,3 +47,6 @@ docs/_backend.html
 
 # JD PDF build artifact
 docs/jobs/_jd-assembled.html
+
+# Pandoc-generated HTML (regenerated from .md on demand)
+STHYRA-*.html

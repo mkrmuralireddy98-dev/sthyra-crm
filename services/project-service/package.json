@@ -1,8 +1,8 @@
 {
-  "name": "@plumb/project-service",
+  "name": "@sthyra-crm/project-service",
   "version": "0.1.0",
   "private": true,
-  "description": "Plumb Project Service — projects, membership, status",
+  "description": "Sthyra CRM Project Service — projects, membership, status",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -21,7 +21,7 @@
     "start:pg": "node dist/postgres-cli.js"
   },
   "dependencies": {
-    "@plumb/tokens": "workspace:*",
+    "@sthyra-crm/tokens": "workspace:*",
     "fastify": "^5.0.0",
     "pg": "^8.13.0"
   },

@@ -3,12 +3,12 @@
  * Build script: assemble a flowcharts PDF from markdown + Mermaid SVGs.
  *
  * Usage: node build-flowcharts.mjs <charts-dir> <output-pdf>
- * Example: node docs/build-flowcharts.mjs docs/dev-flowcharts PLUMB-DEV-FLOWCHARTS.pdf
+ * Example: node docs/build-flowcharts.mjs docs/dev-flowcharts STHYRA-DEV-FLOWCHARTS.pdf
  *
  * 1. Reads <charts-dir>/_intro.md.
  * 2. Resolves `\flowchart{NAME}` and `\devflow{NAME}` directives to inline SVG
  *    from <charts-dir>/<NAME>.svg.
- * 3. Renders styled HTML (Plumb dark theme).
+ * 3. Renders styled HTML (Sthyra CRM dark theme).
  * 4. Renders PDF via headless Chrome.
  */
 
@@ -21,7 +21,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, '..');
 
 const chartsDir = resolve(process.argv[2] ?? 'docs/flowcharts');
-const pdfPath = resolve(process.argv[3] ?? 'PLUMB-VISUAL-FLOWCHARTS.pdf');
+const pdfPath = resolve(process.argv[3] ?? 'STHYRA-VISUAL-FLOWCHARTS.pdf');
 const htmlPath = resolve(chartsDir, '_assembled.html');
 
 const introPath = resolve(chartsDir, '_intro.md');

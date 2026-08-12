@@ -4,7 +4,7 @@
  *
  * To run locally:
  *   docker compose -f ../../docker-compose.yml up postgres -d
- *   DATABASE_URL=postgres://plumb:plumb@localhost:5432/plumb pnpm start:pg
+ *   DATABASE_URL=postgres://sthyra-crm:sthyra-crm@localhost:5432/sthyra-crm pnpm start:pg
  */
 
 import { Pool } from 'pg';

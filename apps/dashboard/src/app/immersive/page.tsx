@@ -21,7 +21,7 @@ export default function ImmersivePage() {
     >
       <div style={{ maxWidth: 720, textAlign: 'center' }}>
         <span
-          className="plumb-badge"
+          className="sthyra-crm-badge"
           style={{ marginBottom: 'var(--space-4)', display: 'inline-block' }}
         >
           Coming with the 360 viewer · Phase 1
@@ -34,16 +34,16 @@ export default function ImmersivePage() {
           and inspector mode that surfaces drift, trade attribution, and ETAs — straight from the product.
         </p>
         <div style={{ marginTop: 'var(--space-8)', display: 'flex', gap: 'var(--space-3)', justifyContent: 'center' }}>
-          <Link href="/" className="plumb-button plumb-button--ghost">
+          <Link href="/" className="sthyra-crm-button sthyra-crm-button--ghost">
             ← Back
           </Link>
-          <a href="mailto:hello@plumb.dev" className="plumb-button">
+          <a href="mailto:hello@sthyra-crm.dev" className="sthyra-crm-button">
             Book a walkthrough
           </a>
         </div>
 
         <div
-          className="plumb-card"
+          className="sthyra-crm-card"
           style={{ marginTop: 'var(--space-12)', textAlign: 'left', display: 'grid', gap: 'var(--space-3)' }}
         >
           <strong>What ships here in Phase 1:</strong>

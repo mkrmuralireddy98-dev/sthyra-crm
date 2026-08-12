@@ -139,7 +139,7 @@ standing access — every connection is via SSO + SSM Session Manager.
 - **CloudTrail** records every API call (including psql queries, which
   generate RDS API calls)
 - **Object Lock + Compliance mode** prevents audit export tampering
-- **DB-level role separation** (`plumb_audit_ro`) prevents admins from
+- **DB-level role separation** (`sthyra_crm_audit_ro`) prevents admins from
   masquerading as application users
 - **Tamper-evident audit log** — every entry has a hash chain anchored to S3
 

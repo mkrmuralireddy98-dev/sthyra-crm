@@ -24,7 +24,7 @@ flowchart TB
     subgraph AWS["AWS Region: us-east-1"]
         ALB["Application Load Balancer<br/>TLS 1.3 termination"]:::control
 
-        subgraph REALTIME["EKS: plumb-realtime (Phoenix Channels cluster)"]
+        subgraph REALTIME["EKS: sthyra-crm-realtime (Phoenix Channels cluster)"]
             PHX["⚡ realtime-gateway<br/>(Elixir Phoenix Channels)<br/>presence + WebRTC SFU coordination + timeline sync"]:::live
         end
 
@@ -34,18 +34,18 @@ flowchart TB
 
         subgraph MEDIA["Media"]
             IVS["🎥 IVS Real-time<br/>(audio/video mix)"]:::live
-            S3LIVE["🪣 S3: plumb-live-<br/>walkthrough recordings<br/>(auto-minutes via Transcribe + Bedrock)"]:::cache
+            S3LIVE["🪣 S3: sthyra-crm-live-<br/>walkthrough recordings<br/>(auto-minutes via Transcribe + Bedrock)"]:::cache
         end
 
         subgraph TILES["Tile-server"]
-            TILE["🧱 S3: plumb-tiles<br/>project / capture / L / frame<br/>3D tile pyramid + Gaussian splats"]:::cache
+            TILE["🧱 S3: sthyra-crm-tiles<br/>project / capture / L / frame<br/>3D tile pyramid + Gaussian splats"]:::cache
             CF["☁️ CloudFront + Lambda@Edge<br/>(signed URLs per viewer)"]:::control
         end
     end
 
-    Owner -->|"wss://live.plumb.dev/ws/{id}"| ALB
-    GCPM -->|"wss://live.plumb.dev/ws/{id}"| ALB
-    Lender -->|"wss://live.plumb.dev/ws/{id}"| ALB
+    Owner -->|"wss://live.sthyra-crm.dev/ws/{id}"| ALB
+    GCPM -->|"wss://live.sthyra-crm.dev/ws/{id}"| ALB
+    Lender -->|"wss://live.sthyra-crm.dev/ws/{id}"| ALB
 
     ALB -->|"sticky session by walkthrough-id"| PHX
     PHX <-->|"pointer pos, view, chat"| PRES
