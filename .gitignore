@@ -44,3 +44,6 @@ docs/**/_assembled.html
 # Playbook build artifacts
 docs/_frontend.html
 docs/_backend.html
+
+# JD PDF build artifact
+docs/jobs/_jd-assembled.html
