@@ -31,8 +31,8 @@ coverage/
 
 # typescript
 *.tsbuildinfo
-PLUMB-PHASE-0-REPORT.html
-PLUMB-SYSTEM-ARCHITECTURE.html
+# Pandoc-generated HTML (regenerated from .md on demand)
+STHYRA-*.html
 
 # Visual flowcharts build artifacts
 docs/flowcharts/_assembled.html
@@ -49,4 +49,3 @@ docs/_backend.html
 docs/jobs/_jd-assembled.html
 
 # Pandoc-generated HTML (regenerated from .md on demand)
-STHYRA-*.html
