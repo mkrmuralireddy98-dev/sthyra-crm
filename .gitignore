@@ -40,3 +40,7 @@ docs/flowcharts/_assembled.html
 # Docs build artifacts
 docs/_features-catalog.html
 docs/**/_assembled.html
+
+# Playbook build artifacts
+docs/_frontend.html
+docs/_backend.html

@@ -1,7 +1,7 @@
 ---
-title: "Plumb — Visual Flowcharts"
+title: "Sthyra CRM — Visual Flowcharts"
 subtitle: "AWS Architecture with Real Diagrams"
-author: "Engineering Team · Plumb"
+author: "Engineering Team · Sthyra CRM"
 date: "August 2026"
 geometry: "margin=2cm,top=2.5cm"
 fontsize: 11pt
@@ -11,13 +11,13 @@ monofont: "Menlo"
 
 \newpage
 
-# Plumb — Visual Flowcharts
+# Sthyra CRM — Visual Flowcharts
 
-This document complements `PLUMB-SYSTEM-ARCHITECTURE.md` with rendered
+This document complements `STHYRA-SYSTEM-ARCHITECTURE.md` with rendered
 flowcharts. Each diagram is generated from a Mermaid source file in
 `docs/flowcharts/` and rendered to SVG via `@mermaid-js/mermaid-cli`.
 
-The diagrams use the **Plumb design system colors** per `packages/tokens`:
+The diagrams use the **Sthyra CRM design system colors** per `packages/tokens`:
 
 - **Teal #00B894** — primary action, control plane, services
 - **Amber #F5A524** — warnings, storage, GPU, pipelines
@@ -29,7 +29,7 @@ The diagrams use the **Plumb design system colors** per `packages/tokens`:
 
 ## 1. User Opens the Dashboard
 
-A VDC PM lands on `https://app.plumb.dev`. CloudFront serves cached static
+A VDC PM lands on `https://app.sthyra-crm.dev`. CloudFront serves cached static
 assets from S3; uncached API requests fan through WAF → API Gateway →
 Next.js SSR → the relevant backend services. The org-service and
 project-service are called in parallel from the page component.
@@ -39,7 +39,7 @@ project-service are called in parallel from the page component.
 **Key properties:**
 - All CloudFront → ALB traffic is HTTPS (TLS 1.3)
 - API Gateway validates the Cognito JWT on every request
-- `x-request-id` is propagated through every hop (per `@plumb/observability`)
+- `x-request-id` is propagated through every hop (per `@sthyra-crm/observability`)
 - Next.js SSR fetch uses `force-dynamic` so the home page is always fresh
 - HTML is CDN-cached for 60s; API responses are not cached
 

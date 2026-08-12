@@ -4,8 +4,8 @@ flowchart LR
     classDef svc fill:#161A22,stroke:#00B894,color:#F2F4F7
     classDef gate fill:#262C36,stroke:#F5A524,color:#F2F4F7
 
-    Bank["🏦 Bank inspector / Owner's rep<br/>(no Plumb account)"]:::ext
-    Link["Receives share link<br/>https://plumb.dev/s/{token}"]:::ext
+    Bank["🏦 Bank inspector / Owner's rep<br/>(no Sthyra CRM account)"]:::ext
+    Link["Receives share link<br/>https://sthyra-crm.dev/s/{token}"]:::ext
     GW{{"API Gateway:<br/>· token exists?<br/>· signed?<br/>· not expired?<br/>· scope matches?"}}:::gate
     Deny["401/410 problem+json"]:::gate
     JWT["Issue short-lived viewer JWT<br/>(5 min, read-only,<br/>project-scoped)"]:::svc

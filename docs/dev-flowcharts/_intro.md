@@ -1,8 +1,8 @@
-# Plumb — Developer Flow Diagrams
+# Sthyra CRM — Developer Flow Diagrams
 
-> **For:** Software developers implementing Plumb · **Version:** 1.0
+> **For:** Software developers implementing Sthyra CRM · **Version:** 1.0
 >
-> Ten flow diagrams showing the request flows, state machines, and data pipelines you will implement. Each diagram is paired with the architectural invariants that must hold in code. Colors follow `@plumb/tokens`: teal = control flow, amber = decisions/warnings/storage, dark = context.
+> Ten flow diagrams showing the request flows, state machines, and data pipelines you will implement. Each diagram is paired with the architectural invariants that must hold in code. Colors follow `@sthyra-crm/tokens`: teal = control flow, amber = decisions/warnings/storage, dark = context.
 
 ---
 
@@ -13,7 +13,7 @@ What happens on every login: federated IdP → Cognito token → API Gateway val
 \devflow{dev-01-auth-flow}
 
 **Developer rules:**
-- Use the `@plumb/auth` plugin — it does steps 6–9 (JWT validate, principal attach, 401/403 problem+json). Don't reimplement.
+- Use the `@sthyra-crm/auth` plugin — it does steps 6–9 (JWT validate, principal attach, 401/403 problem+json). Don't reimplement.
 - Every mutating route honors `Idempotency-Key`; every error carries `trace_id` (RFC 7807).
 - Phase 2: service-to-service calls switch from bearer JWT to SPIFFE SVIDs (TTL ≤ 1 h) — the plugin interface stays the same.
 
@@ -55,14 +55,14 @@ Issues flow open → assigned → in_progress → ready_for_review → closed, w
 
 **Developer rules:**
 - Every transition emits a domain event → notify (Slack/Teams/email) + AuditLog entry.
-- BCF 3.0 topic sync on close (Plumb Model ↔ external BIM tools).
+- BCF 3.0 topic sync on close (Sthyra CRM Model ↔ external BIM tools).
 - Punch-list and progress rollups consume `issue.closed` events — never poll.
 
 ---
 
 ## 5. BIM-vs-Reality Alignment Pipeline
 
-The math behind Plumb Track: how captures, floorplans, and BIM models fuse into per-trade percent-complete.
+The math behind Sthyra CRM Track: how captures, floorplans, and BIM models fuse into per-trade percent-complete.
 
 \devflow{dev-05-bim-alignment}
 
@@ -95,7 +95,7 @@ Every domain event can fan out to partner integrations. Delivery must be at-leas
 \devflow{dev-07-webhook-delivery}
 
 **Developer rules:**
-- HMAC-signed payloads; signature header `X-Plumb-Signature`; replay via `X-Plumb-Event-Id` dedup.
+- HMAC-signed payloads; signature header `X-Sthyra CRM-Signature`; replay via `X-Sthyra CRM-Event-Id` dedup.
 - Exponential backoff + jitter, max 5 attempts, then DLQ + alert.
 - SLA tiers: Public (best-effort) / Partner (24 h delivery) / Enterprise (99.9% + replay + audit trail).
 
@@ -144,8 +144,8 @@ From `capture.ready` to the EV S-curve on the dashboard, in one event-driven flo
 
 | Flow | Package/service | Test seam | Verify with |
 |---|---|---|---|
-| 1 Auth | `packages/auth`, `services/user-service` | `verifyToken` option | `pnpm --filter=@plumb/auth test` |
-| 2 Capture | `services/capture-service` (P1) | FakePgClient + Step Functions mock | `pnpm --filter=@plumb/capture-service test` |
+| 1 Auth | `packages/auth`, `services/user-service` | `verifyToken` option | `pnpm --filter=@sthyra-crm/auth test` |
+| 2 Capture | `services/capture-service` (P1) | FakePgClient + Step Functions mock | `pnpm --filter=@sthyra-crm/capture-service test` |
 | 3 Sync | `apps/mobile-kmm` (P1) | JVM unit tests + mocked remote | `gradle :mobile-kmm:jvmTest` |
 | 4 Issues | `services/field-service` (P1) | Event capture on service | Event emitted assertions |
 | 5 Alignment | `services/imgproc-service` (P1) | Synthetic Blender fixtures | CI numerical gate ±3/±5% |

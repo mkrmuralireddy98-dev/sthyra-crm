@@ -1,8 +1,8 @@
-# Plumb — Complete Features & Functions Catalog
+# Sthyra CRM — Complete Features & Functions Catalog
 
-> **For:** Technical Architect · **Source:** Plumb Master Plan (461-line synthesis of 9 specialist agents) · **Version:** 1.0
+> **For:** Technical Architect · **Source:** Sthyra CRM Master Plan (461-line synthesis of 9 specialist agents) · **Version:** 1.0
 
-This catalog enumerates every function the Plumb platform must deliver, organized by product, with dependencies, data touched, and release phase. Use it to scope architecture, estimate effort, and assign workstreams.
+This catalog enumerates every function the Sthyra CRM platform must deliver, organized by product, with dependencies, data touched, and release phase. Use it to scope architecture, estimate effort, and assign workstreams.
 
 ---
 
@@ -17,7 +17,7 @@ This catalog enumerates every function the Plumb platform must deliver, organize
 
 ---
 
-# 1. Plumb Capture (360° reality capture)
+# 1. Sthyra CRM Capture (360° reality capture)
 
 | ID | Function | Details | Data | Phase |
 |---|---|---|---|---|
@@ -35,7 +35,7 @@ This catalog enumerates every function the Plumb platform must deliver, organize
 
 ---
 
-# 2. Plumb Field (field notes & issues)
+# 2. Sthyra CRM Field (field notes & issues)
 
 | ID | Function | Details | Data | Phase |
 |---|---|---|---|---|
@@ -51,7 +51,7 @@ This catalog enumerates every function the Plumb platform must deliver, organize
 
 ---
 
-# 3. Plumb Track (progress tracking)
+# 3. Sthyra CRM Track (progress tracking)
 
 | ID | Function | Details | Data | Phase |
 |---|---|---|---|---|
@@ -64,7 +64,7 @@ This catalog enumerates every function the Plumb platform must deliver, organize
 
 ---
 
-# 4. Plumb Air (drone coordination)
+# 4. Sthyra CRM Air (drone coordination)
 
 | ID | Function | Details | Data | Phase |
 |---|---|---|---|---|
@@ -77,7 +77,7 @@ This catalog enumerates every function the Plumb platform must deliver, organize
 
 ---
 
-# 5. Plumb Model (BIM coordination, was "BIM+")
+# 5. Sthyra CRM Model (BIM coordination, was "BIM+")
 
 | ID | Function | Details | Data | Phase |
 |---|---|---|---|---|
@@ -92,7 +92,7 @@ This catalog enumerates every function the Plumb platform must deliver, organize
 
 ---
 
-# 6. Plumb Copilot (AI assistant)
+# 6. Sthyra CRM Copilot (AI assistant)
 
 | ID | Function | Details | Data | Phase |
 |---|---|---|---|---|
@@ -107,18 +107,18 @@ This catalog enumerates every function the Plumb platform must deliver, organize
 
 ---
 
-# 7. Plumb Voice (hands-free)
+# 7. Sthyra CRM Voice (hands-free)
 
 | ID | Function | Details | Data | Phase |
 |---|---|---|---|---|
-| F-07-01 | "Hey Plumb" wake word | On-device, low-power always-listening | — | P1 (EN) / P2 (multi) |
+| F-07-01 | "Hey Sthyra CRM" wake word | On-device, low-power always-listening | — | P1 (EN) / P2 (multi) |
 | F-07-02 | On-device ASR | Whisper tiny/base; offline dictation | — | P1 |
 | F-07-03 | Multilingual | EN/ES/FR/DE/PT/HI/ZH at launch | — | P2 |
 | F-07-04 | Speech-to-intent | Field commands: "log issue", "start capture", "find RFI" | Intent | P2 |
 
 ---
 
-# 8. Plumb Live (multi-stakeholder walkthroughs)
+# 8. Sthyra CRM Live (multi-stakeholder walkthroughs)
 
 | ID | Function | Details | Data | Phase |
 |---|---|---|---|---|
@@ -129,7 +129,7 @@ This catalog enumerates every function the Plumb platform must deliver, organize
 
 ---
 
-# 9. Plumb Twin (digital twin)
+# 9. Sthyra CRM Twin (digital twin)
 
 | ID | Function | Details | Data | Phase |
 |---|---|---|---|---|
@@ -140,7 +140,7 @@ This catalog enumerates every function the Plumb platform must deliver, organize
 
 ---
 
-# 10. Plumb ESG
+# 10. Sthyra CRM ESG
 
 | ID | Function | Details | Data | Phase |
 |---|---|---|---|---|
@@ -151,7 +151,7 @@ This catalog enumerates every function the Plumb platform must deliver, organize
 
 ---
 
-# 11. Plumb Claims (legal-grade capture)
+# 11. Sthyra CRM Claims (legal-grade capture)
 
 | ID | Function | Details | Data | Phase |
 |---|---|---|---|---|
@@ -161,7 +161,7 @@ This catalog enumerates every function the Plumb platform must deliver, organize
 
 ---
 
-# 12. Plumb Edge (on-device AI)
+# 12. Sthyra CRM Edge (on-device AI)
 
 | ID | Function | Details | Data | Phase |
 |---|---|---|---|---|
@@ -172,7 +172,7 @@ This catalog enumerates every function the Plumb platform must deliver, organize
 
 ---
 
-# 13. Plumb Admin & Trust
+# 13. Sthyra CRM Admin & Trust
 
 | ID | Function | Details | Data | Phase |
 |---|---|---|---|---|

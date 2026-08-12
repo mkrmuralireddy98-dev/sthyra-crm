@@ -1,8 +1,8 @@
-# Plumb — Full-Stack Engineering Playbook
+# Sthyra CRM — Full-Stack Engineering Playbook
 
-> **For:** A full-stack engineer assigned to take Plumb from current state to Phase 1 MVP.
+> **For:** A full-stack engineer assigned to take Sthyra CRM from current state to Phase 1 MVP.
 > **Time to complete:** ~10 weeks full-time for one engineer, ~4 weeks for a team of 3.
-> **Read first:** `README.md` (this repo), `PLUMB-SYSTEM-ARCHITECTURE.md` (AWS plan), `PLUMB-FEATURES-CATALOG.md` (every function), `PLUMB-DEV-FLOWCHARTS.md` (10 flows).
+> **Read first:** `README.md` (this repo), `STHYRA-SYSTEM-ARCHITECTURE.md` (AWS plan), `STHYRA-FEATURES-CATALOG.md` (every function), `STHYRA-DEV-FLOWCHARTS.md` (10 flows).
 
 This playbook is organized as **9 sequential phases**. Each phase has:
 - A clear **definition of done**
@@ -22,13 +22,13 @@ Use it as a sprint board. Tick tasks as you finish them.
 ```bash
 # These are committed alongside the code:
 cat README.md
-cat PLUMB-PHASE-0-REPORT.md            # 44 pages
-cat PLUMB-SYSTEM-ARCHITECTURE.md       # 62 pages
-cat PLUMB-FEATURES-CATALOG.md          # 9 pages
-cat PLUMB-DEV-FLOWCHARTS.md            # 27 pages
+cat STHYRA-PHASE-0-REPORT.md            # 44 pages
+cat STHYRA-SYSTEM-ARCHITECTURE.md       # 62 pages
+cat STHYRA-FEATURES-CATALOG.md          # 9 pages
+cat STHYRA-DEV-FLOWCHARTS.md            # 27 pages
 
 # And the original synthesis:
-cat ~/.hermes/plans/2026-08-08_090307-plumb-visual-intelligence-platform.md
+cat ~/.hermes/plans/2026-08-08_090307-sthyra-crm-visual-intelligence-platform.md
 ```
 **Time:** 2–3 hours. Don't skip this — every later decision depends on what you learn here.
 
@@ -59,19 +59,19 @@ docker compose up -d postgres
 
 # Terminal 2: org-service against Postgres
 DATABASE_URL=postgres://plumb:plumb@localhost:5432/plumb \
-  pnpm --filter=@plumb/org-service start:pg &
+  pnpm --filter=@sthyra-crm/org-service start:pg &
 
 # Terminal 3: project-service
-pnpm --filter=@plumb/project-service start:inmem &
+pnpm --filter=@sthyra-crm/project-service start:inmem &
 
 # Terminal 4: user-service
-pnpm --filter=@plumb/user-service start:inmem &
+pnpm --filter=@sthyra-crm/user-service start:inmem &
 
 # Terminal 5: membership-service
-pnpm --filter=@plumb/membership-service start:inmem &
+pnpm --filter=@sthyra-crm/membership-service start:inmem &
 
 # Terminal 6: dashboard
-pnpm --filter=@plumb/dashboard dev
+pnpm --filter=@sthyra-crm/dashboard dev
 
 # Smoke test
 curl http://localhost:8080/v1/health   # → 200 {"status":"ok"}
@@ -86,7 +86,7 @@ open http://localhost:3000              # dashboard
 4. `services/org-service/src/index.ts` — Repository pattern, Region union
 5. `services/org-service/src/postgres-repo.ts` — parameterized SQL pattern
 6. `services/org-service/src/http.ts` — RFC 7807, Idempotency-Key
-7. `services/membership-service/src/http.ts` — `@plumb/auth` integration
+7. `services/membership-service/src/http.ts` — `@sthyra-crm/auth` integration
 8. `apps/dashboard/src/lib/api.ts` — server-side fetch + request-id
 
 **Verification checklist:**
@@ -144,7 +144,7 @@ CREATE INDEX IF NOT EXISTS tokens_expires_at_idx ON tokens (expires_at);
 2. GREEN: implement until tests pass
 3. REFACTOR: extract shared `PgClient`/`FakePgClient` to a new `packages/pg-test-utils/` if it's getting duplicated
 
-**Test command:** `pnpm --filter=@plumb/user-service test` — expect ≥15 passing tests.
+**Test command:** `pnpm --filter=@sthyra-crm/user-service test` — expect ≥15 passing tests.
 
 ### Task 1.2 — Membership-service Postgres repo
 
@@ -182,14 +182,14 @@ const service = new OrgService(repo);
 **Verification checklist:**
 - [ ] All 4 services start:pg against Postgres successfully
 - [ ] All 4 services start:inmem still work
-- [ ] `docker compose down && docker compose up -d postgres` then `pnpm --filter=@plumb/*-service start:pg` works
+- [ ] `docker compose down && docker compose up -d postgres` then `pnpm --filter=@sthyra-crm/*-service start:pg` works
 - [ ] Integration tests pass with real Postgres in CI
 
 ---
 
 ## Phase 2 — Real Authentication (OIDC + SAML) (Week 2)
 
-**Definition of done:** Users can log in via their employer's IdP (Okta/Entra/Auth0). The `@plumb/auth` package verifies JWTs locally without an HTTP round-trip.
+**Definition of done:** Users can log in via their employer's IdP (Okta/Entra/Auth0). The `@sthyra-crm/auth` package verifies JWTs locally without an HTTP round-trip.
 
 ### Task 2.1 — OIDC discovery + JWKS cache
 
@@ -197,7 +197,7 @@ const service = new OrgService(repo);
 - `services/user-service/src/oidc.ts` — OIDC discovery, JWKS cache, ID-token verification
 - `services/user-service/src/http.ts` — new endpoints:
   - `GET /v1/auth/oidc/login?provider={id}` → redirect to provider
-  - `GET /v1/auth/oidc/callback?provider={id}&code={code}` → exchange, mint Plumb JWT
+  - `GET /v1/auth/oidc/callback?provider={id}&code={code}` → exchange, mint Sthyra CRM JWT
   - `GET /v1/auth/jwks` → return public JWKS
 
 **Pattern:**
@@ -230,12 +230,12 @@ Replace the HTTP call to user-service with:
 import { jwtVerify, createLocalJWKSet } from 'jose';
 const jwks = createLocalJWKSet(jwksCache);
 const { payload } = await jwtVerify(token, jwks, {
-  issuer: ISSUER, audience: 'plumb-api',
+  issuer: ISSUER, audience: 'sthyra-crm-api',
 });
 return {
   userId: payload.sub!,
-  orgId: payload['x-plumb-org'] as string,
-  role: payload['x-plumb-role'] as string,
+  orgId: payload['x-sthyra-crm-org'] as string,
+  role: payload['x-sthyra-crm-role'] as string,
 };
 ```
 
@@ -475,7 +475,7 @@ services/bim-service/
 └── ...
 ```
 
-Use `web-ifc` or `IFC.js` for IFC parsing. Tessellate to glTF on upload, store in S3 `plumb-bim-{region}/`.
+Use `web-ifc` or `IFC.js` for IFC parsing. Tessellate to glTF on upload, store in S3 `sthyra-crm-bim-{region}/`.
 
 ### Task 6.2 — BIM viewer component
 
@@ -612,7 +612,7 @@ services/integration-hub/
 │   │   ├── bim360.ts
 │   │   ├── p6.ts
 │   │   └── ...
-│   ├── transform.ts       # vendor → Plumb type mapping
+│   ├── transform.ts       # vendor → Sthyra CRM type mapping
 │   └── *.test.ts
 ```
 
@@ -625,7 +625,7 @@ Per-vendor OAuth flow. Store credentials in AWS Secrets Manager. Refresh-token r
 Most-requested. Implement:
 - OAuth connect flow
 - Webhook subscription
-- Project sync (Procore project → Plumb project)
+- Project sync (Procore project → Sthyra CRM project)
 - RFI sync (bidirectional)
 
 ### Task 8.4 — ACC + P6 next
@@ -640,7 +640,7 @@ Most-requested. Implement:
 Per dev flowchart §7: HMAC-signed, exponential backoff, DLQ, 3-tier SLA.
 
 **Verification checklist:**
-- [ ] Procore test tenant: project created in Plumb appears in Procore within 30s
+- [ ] Procore test tenant: project created in Sthyra CRM appears in Procore within 30s
 - [ ] ACC test tenant: BIM model uploads sync
 - [ ] P6 test tenant: schedule sync with percent-complete updates
 - [ ] Webhook delivery with retry + DLQ + audit log
@@ -704,15 +704,15 @@ spec:
 
 ```bash
 # From a fresh laptop or CI
-curl https://app.plumb.dev/v1/health
+curl https://app.sthyra-crm.dev/v1/health
 # → 200 OK
 
 # Auth flow
-curl -X POST https://api.plumb.dev/v1/auth/oidc/login?provider=okta
+curl -X POST https://api.sthyra-crm.dev/v1/auth/oidc/login?provider=okta
 # → 302 to Okta
 
 # Issue creation
-ISSUE_ID=$(curl -X POST https://api.plumb.dev/v1/projects/$PROJECT/issues \
+ISSUE_ID=$(curl -X POST https://api.sthyra-crm.dev/v1/projects/$PROJECT/issues \
   -H "Authorization: Bearer $JWT" \
   -d '{"type":"rfi","body":"test"}' | jq -r .id)
 ```
@@ -744,14 +744,14 @@ git checkout -b feat/copilot-streaming
 
 # 3. Write the failing test FIRST
 vim services/copilot-service/src/streaming.test.ts
-pnpm --filter=@plumb/copilot-service test
+pnpm --filter=@sthyra-crm/copilot-service test
 # Expect: red
 
 # 4. Implement
 vim services/copilot-service/src/streaming.ts
 
 # 5. Run tests
-pnpm --filter=@plumb/copilot-service test
+pnpm --filter=@sthyra-crm/copilot-service test
 # Expect: green
 
 # 6. Typecheck and lint
@@ -798,7 +798,7 @@ These are pinned in the master plan. Don't second-guess:
 | Tenancy data-modeled (every record carries `region`) | Compliance invariant |
 | Repository pattern (InMemory for tests, Postgres for prod) | Standard testing seam |
 | REST + RFC 7807 + Idempotency-Key at the edge | Pinned in §9 |
-| Request-ID via `@plumb/observability` | Every log has request_id |
+| Request-ID via `@sthyra-crm/observability` | Every log has request_id |
 | Strict TypeScript (`noUncheckedIndexedAccess`, etc.) | Real bugs caught during dev |
 | Teal+amber palette (not cyan+copper) | Field-safety: amber reserved for warnings |
 | pnpm workspaces (not Yarn/npm) | Already set up; switching costs weeks |
