@@ -1,0 +1,24 @@
+{
+  "name": "@sthyra-crm/capture-service",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Sthyra CRM Capture Service — chunked-resumable 360° reality-capture ingestion + async pipeline",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "node --import tsx --test src/**/*.test.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "start:inmem": "node dist/cli.js"
+  },
+  "dependencies": {
+    "@sthyra-crm/observability": "workspace:*",
+    "fastify": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}
