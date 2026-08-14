@@ -126,24 +126,20 @@ export function transition(state: PipelineState, event: PipelineEvent): Pipeline
  );
  }
  const next = nextStage(event.stage);
- // currentStage stays at the just-succeeded stage when pipeline completes
- // (align). When the pipeline is mid-flight, currentStage advances to
- // the next pending stage so the orchestrator knows what to run next.
- const updated: PipelineState = {
- ...state,
- stages: {
+ const now = new Date();
+ const advancedStages: Record<Stage, StageState> = {
  ...state.stages,
- [event.stage]: {
- ...stage,
- status: 'succeeded',
- finishedAt: new Date(),
- artifacts: event.artifacts ?? stage.artifacts,
- },
- },
- currentStage: next ?? event.stage, // align success → stay at 'align'
+ [event.stage]: { ...stage, status: 'succeeded', finishedAt: now, artifacts: event.artifacts ?? stage.artifacts },
+ };
+ if (next !== null) {
+ advancedStages[next] = { ...state.stages[next], status: 'running', attempt: 1, startedAt: now };
+ }
+ return {
+ ...state,
+ stages: advancedStages,
+ currentStage: next ?? event.stage,
  pipelineStatus: next === null ? 'ready' : 'processing',
  };
- return updated;
  }
 
  case 'stage-failed': {
