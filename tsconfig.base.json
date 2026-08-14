@@ -17,6 +17,10 @@
     "declarationMap": true,
     "sourceMap": true,
     "isolatedModules": true,
-    "verbatimModuleSyntax": false
+    "verbatimModuleSyntax": false,
+    "baseUrl": ".",
+    "paths": {
+      "@sthyra-crm/*": ["packages/*/src", "services/*/src"]
+    }
   }
 }
