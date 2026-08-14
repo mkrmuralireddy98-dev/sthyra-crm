@@ -1,0 +1,147 @@
+{
+ "Comment": "Sthyra CRM capture pipeline: decode → sfm → mesh → segment → align. The 5 stages mirror ./state-machine.ts STAGES_IN_ORDER. Every stage has retry (3 attempts, exponential backoff) + Catch (DLQ on States.ALL). Phase 1 MVP: all stages are local stubs. Phase 1.b: replace Task resources with real Step Functions tasks invoking Lambda / Fargate.",
+ "StartAt": "decode",
+ "States": {
+ "decode": {
+ "Type": "Task",
+ "Comment": "Demux 360° mp4 → per-frame images. Real impl: AWS Batch job with ffmpeg. MVP stub: ./stages/decode.ts.",
+ "Resource": "arn:aws:states:::lambda:invoke",
+ "Parameters": {
+ "FunctionName": "${DecodeStageFn}",
+ "Payload.$": "$"
+ },
+ "TimeoutSeconds": 1800,
+ "Retry": [
+ {
+ "ErrorEquals": ["States.TaskFailed", "States.Timeout"],
+ "IntervalSeconds": 2,
+ "MaxAttempts": 3,
+ "BackoffRate": 2.0,
+ "JitterSeconds": 1
+ }
+ ],
+ "Catch": [
+ {
+ "ErrorEquals": ["States.ALL"],
+ "Next": "DlqState",
+ "ResultPath": "$.error"
+ }
+ ],
+ "Next": "sfm"
+ },
+ "sfm": {
+ "Type": "Task",
+ "Comment": "Structure-from-motion: COLMAP / GLOMAP. Real impl: GPU job on Fargate. MVP stub: ./stages/sfm.ts.",
+ "Resource": "arn:aws:states:::lambda:invoke",
+ "Parameters": {
+ "FunctionName": "${SfmStageFn}",
+ "Payload.$": "$"
+ },
+ "TimeoutSeconds": 3600,
+ "Retry": [
+ {
+ "ErrorEquals": ["States.TaskFailed", "States.Timeout"],
+ "IntervalSeconds": 4,
+ "MaxAttempts": 3,
+ "BackoffRate": 2.0,
+ "JitterSeconds": 2
+ }
+ ],
+ "Catch": [
+ {
+ "ErrorEquals": ["States.ALL"],
+ "Next": "DlqState",
+ "ResultPath": "$.error"
+ }
+ ],
+ "Next": "mesh"
+ },
+ "mesh": {
+ "Type": "Task",
+ "Comment": "Dense reconstruction → textured mesh. Real impl: OpenMVS / RealityCapture. MVP stub: ./stages/mesh.ts.",
+ "Resource": "arn:aws:states:::lambda:invoke",
+ "Parameters": {
+ "FunctionName": "${MeshStageFn}",
+ "Payload.$": "$"
+ },
+ "TimeoutSeconds": 3600,
+ "Retry": [
+ {
+ "ErrorEquals": ["States.TaskFailed", "States.Timeout"],
+ "IntervalSeconds": 4,
+ "MaxAttempts": 3,
+ "BackoffRate": 2.0,
+ "JitterSeconds": 2
+ }
+ ],
+ "Catch": [
+ {
+ "ErrorEquals": ["States.ALL"],
+ "Next": "DlqState",
+ "ResultPath": "$.error"
+ }
+ ],
+ "Next": "segment"
+ },
+ "segment": {
+ "Type": "Task",
+ "Comment": "Semantic segmentation of the mesh (walls, doors, fixtures). Real impl: ML inference endpoint. MVP stub: ./stages/segment.ts.",
+ "Resource": "arn:aws:states:::lambda:invoke",
+ "Parameters": {
+ "FunctionName": "${SegmentStageFn}",
+ "Payload.$": "$"
+ },
+ "TimeoutSeconds": 1800,
+ "Retry": [
+ {
+ "ErrorEquals": ["States.TaskFailed", "States.Timeout"],
+ "IntervalSeconds": 2,
+ "MaxAttempts": 3,
+ "BackoffRate": 2.0,
+ "JitterSeconds": 1
+ }
+ ],
+ "Catch": [
+ {
+ "ErrorEquals": ["States.ALL"],
+ "Next": "DlqState",
+ "ResultPath": "$.error"
+ }
+ ],
+ "Next": "align"
+ },
+ "align": {
+ "Type": "Task",
+ "Comment": "ICP / point-to-plane alignment to BIM model if available. Real impl: PCL/Open3D. MVP stub: ./stages/align.ts.",
+ "Resource": "arn:aws:states:::lambda:invoke",
+ "Parameters": {
+ "FunctionName": "${AlignStageFn}",
+ "Payload.$": "$"
+ },
+ "TimeoutSeconds": 1200,
+ "Retry": [
+ {
+ "ErrorEquals": ["States.TaskFailed", "States.Timeout"],
+ "IntervalSeconds": 2,
+ "MaxAttempts": 3,
+ "BackoffRate": 2.0,
+ "JitterSeconds": 1
+ }
+ ],
+ "Catch": [
+ {
+ "ErrorEquals": ["States.ALL"],
+ "Next": "DlqState",
+ "ResultPath": "$.error"
+ }
+ ],
+ "End": true
+ },
+ "DlqState": {
+ "Type": "Fail",
+ "Comment": "Terminal failure state. The state machine catches this in ./dlq.ts and emits a structured log + SQS DLQ entry.",
+ "Error": "PipelineFailed",
+ "Cause": "Pipeline execution failed after retries exhausted. See context.error for the originating stage and error message."
+ }
+ }
+}

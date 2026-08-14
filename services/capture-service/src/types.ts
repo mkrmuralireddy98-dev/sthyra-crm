@@ -63,7 +63,7 @@ export interface CreateCaptureInput {
 }
 
 export interface DomainEvent {
- readonly type: 'capture.initiated' | 'capture.uploaded' | 'capture.archived';
+ readonly type: 'capture.initiated' | 'capture.uploaded' | 'capture.failed' | 'capture.archived';
  readonly captureId: string;
  readonly orgId: string;
  readonly projectId: string;
