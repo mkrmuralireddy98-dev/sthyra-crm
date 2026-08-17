@@ -33,12 +33,15 @@ import {
  InMemoryCaptureRepository,
  InMemoryIdempotencyStore,
 } from './repo-memory.js';
+import { InMemoryEventBus } from './realtime/index.js';
+import { captureEventStreamer } from './realtime/sse.js';
 import type { Capture } from './types.js';
 
 export interface BuildServerDeps {
  readonly service?: CaptureService;
  readonly repo?: import('./repository.js').CaptureRepository;
  readonly idempotency?: import('./repository.js').IdempotencyStore;
+ readonly bus?: import('./realtime/index.js').EventBus;
 }
 
 interface ProblemJson {
@@ -74,14 +77,24 @@ function getIdempotencyKey(req: { headers: Record<string, string | string[] | un
  return (Array.isArray(k) ? k[0] : k ?? '').toString().trim();
 }
 
-export function buildCaptureServer(deps: BuildServerDeps = {}): FastifyInstance {
+export async function buildCaptureServer(deps: BuildServerDeps = {}): Promise<FastifyInstance> {
  const app = Fastify({ logger: false });
+ const bus = deps.bus ?? new InMemoryEventBus();
  const service =
  deps.service ??
  new CaptureService({
  repo: deps.repo ?? new InMemoryCaptureRepository(),
  idempotency: deps.idempotency ?? new InMemoryIdempotencyStore(),
+ onEvent: (e) => { void bus.publish(e); },
  });
+
+ // Wire SSE endpoint for realtime push (Slice 5)
+ // Registered synchronously to avoid 'app is not ready' race in tests.
+ const streamer = captureEventStreamer({
+ bus,
+ repo: deps.repo ?? new InMemoryCaptureRepository(),
+ });
+ await streamer(app);
 
  // request-id propagation (Constitution §VI)
  app.addHook('onRequest', (req, reply, done) => {

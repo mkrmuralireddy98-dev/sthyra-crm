@@ -28,7 +28,7 @@ async function inject(app: FastifyInstance, opts: { method: string; url: string;
  return result;
 }
 
-function makeApp(): FastifyInstance {
+async function makeApp(): Promise<FastifyInstance> {
  const repo = new InMemoryCaptureRepository();
  const idempotency = new InMemoryIdempotencyStore();
  const service = new CaptureService({ repo, idempotency });
@@ -38,8 +38,8 @@ function makeApp(): FastifyInstance {
 describe('capture-service HTTP — Phase 1 MVP', () => {
  let app: FastifyInstance;
 
- beforeEach(() => {
- app = makeApp();
+ beforeEach(async () => {
+ app = await makeApp();
  });
 
  describe('GET /v1/health', () => {
