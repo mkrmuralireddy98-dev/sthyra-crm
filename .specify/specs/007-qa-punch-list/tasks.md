@@ -101,3 +101,25 @@ Slices 1 + 2a + 2b + 3 shipped. Slice 4 (closeout SSE) deferred to Phase 7.b.
 - mobile-bff-service: 82 tests
 - Whole project: 782 tests
 - 74 commits on main
+
+## Status — Phase 7 COMPLETE (2026-08-17)
+
+All 4 slices shipped. 158 field-service tests passing (was 130, +28 new).
+
+### Slices
+
+- ✅ Slice 1 Schema + types + state machine (T-001 to T-005)
+- ✅ Slice 2a Closeout report (T-017 to T-018, 9 tests)
+- ✅ Slice 2b Service layer (addPhoto + inspect)
+- ✅ Slice 3 HTTP routes (FR-2 + FR-4 + FR-5, 14 tests)
+- ✅ Slice 4 Closeout SSE (FR-8, 5 tests)
+
+### Numbers
+
+- field-service: 158 tests (130 pre-Phase 7 + 28 Phase 7)
+- capture-service: 276 tests
+- bim-viewer-service: 83 tests
+- ai-copilot-service: 74 tests
+- mobile-bff-service: 82 tests
+- Whole project: 787 tests
+- 77 commits on main, all pushed
