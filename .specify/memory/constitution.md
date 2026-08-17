@@ -247,3 +247,18 @@ For all other principles, deviation requires:
 
 *This constitution is the binding governance for Sthyra CRM. When in
 doubt, read this before re-deciding.*
+
+---
+
+## Phase 2 Reaffirmation (2026-08-17)
+
+Constitution v1.0.0 still applies. No amendments.
+
+Phase 2 = second feature spec (Field Service). All 7 principles govern:
+- §I Test-First — RED → GREEN → REFACTOR
+- §II Multi-Tenant — every read/write scoped by orgId
+- §III Strict TypeScript — tsc --noEmit clean
+- §IV REST + RFC 7807 + Idempotency-Key — same conventions
+- §V Repository Pattern — new FieldServiceRepository contract
+- §VI Observability — x-request-id, structured logs, /v1/metrics
+- §VII No Re-Decision — reuse patterns from Phase 1 (capture-service)
