@@ -376,3 +376,18 @@ T-001 → T-002 → T-003 → T-004 → T-006 → T-007 → T-008 → T-009 → 
 - [ ] All HTTP errors are `application/problem+json`
 - [ ] All file paths in plan.md exist (no speculation)
 - [ ] PR signed off by Security Lead (per Constitution §Compliance)
+
+## Status — Phase 1 MVP complete (2026-08-14)
+
+All 30 tasks complete:
+- Slice 1 (Foundations): T-001 to T-005
+- Slice 2 (HTTP API): T-006 to T-010
+- Slice 3 (Storage): T-011 to T-014
+- Slice 4 (Pipeline orchestrator): T-015 to T-022
+- Slice 5 (Realtime push): T-023 to T-025
+- Slice 6 (Observability): T-026 to T-028
+- Slice 7 (E2E): T-029 to T-030
+
+**Test count: 287 across whole project, 0 failures.**
+
+Phase 1.b backlog: Postgres wiring + real GPU stages.
