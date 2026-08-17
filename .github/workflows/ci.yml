@@ -97,3 +97,64 @@ jobs:
       - name: Audit (warn-only on Day 1)
         run: pnpm audit --audit-level=high
         continue-on-error: true
+
+
+  capture-service-validation:
+    name: capture-service validation (compose + Dockerfile + tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [unit-tests]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 11 }
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # Verify the docker-compose YAML actually parses (regression test
+      # for the indentation bug we hit earlier).
+      - name: Validate docker-compose.integration.yml
+        run: |
+          python3 -c "
+          import yaml
+          config = yaml.safe_load(open('docker-compose.integration.yml'))
+          assert config['services']['postgres']['image'] == 'postgres:16'
+          assert config['services']['redis']['image'] == 'redis:7-alpine'
+          assert 'capture-service' in config['services']
+          assert 'DATABASE_URL' in str(config['services']['capture-service']['environment'])
+          print('DOCKER_COMPOSE_OK')
+          "
+
+      # Verify the Dockerfile is syntactically reasonable.
+      - name: Validate Dockerfile
+        run: |
+          head -1 services/capture-service/Dockerfile
+          grep -q 'FROM node:22-alpine AS builder' services/capture-service/Dockerfile
+          grep -q 'CMD \["node"' services/capture-service/Dockerfile
+          echo "DOCKERFILE_OK"
+
+      # Run the docker-compose.test.ts structural tests (these run in
+      # the unit-tests job too, but this is the dedicated validation
+      # pass for production CI).
+      - name: capture-service docker-compose tests
+        run: pnpm --filter @sthyra-crm/capture-service test
+
+      # Smoke-test the CLI boots and serves /v1/health.
+      - name: CLI smoke test
+        run: |
+          pnpm --filter @sthyra-crm/capture-service build
+          cd services/capture-service
+          PORT=9099 node dist/cli.js &
+          CLI_PID=$!
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            if curl -s http://127.0.0.1:9099/v1/health > /dev/null; then break; fi
+            sleep 1
+          done
+          curl -s http://127.0.0.1:9099/v1/health | grep -q '"status":"ok"'
+          curl -s http://127.0.0.1:9099/v1/metrics | grep -q 'capture_pipeline_runs_total'
+          echo "CLI_SMOKE_OK"
+          kill $CLI_PID || true
+          wait $CLI_PID 2>/dev/null || true
