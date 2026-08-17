@@ -28,6 +28,8 @@ services:
       - sthyra-crm-pg-data-int:/var/lib/postgresql/data
       - ./services/capture-service/migrations/001-init.sql:/docker-entrypoint-initdb.d/001-init.sql:ro
       - ./services/field-service/migrations/001-init.sql:/docker-entrypoint-initdb.d/002-field-init.sql:ro
+      - ./services/bim-viewer-service/migrations/001-init.sql:/docker-entrypoint-initdb.d/003-bim-init.sql:ro
+      - ./services/field-service/migrations/001-init.sql:/docker-entrypoint-initdb.d/002-field-init.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U sthyra_crm -d sthyra_crm"]
       interval: 5s
@@ -81,6 +83,37 @@ services:
       HOST: "0.0.0.0"
     ports:
       - "9091:9091"
+
+  field-service:
+    build:
+      context: .
+      dockerfile: services/field-service/Dockerfile
+    container_name: sthyra-crm-field-int
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://sthyra_crm:sthyra_crm_dev_password@postgres:5432/sthyra_crm
+      PORT: "9091"
+      HOST: "0.0.0.0"
+    ports:
+      - "9091:9091"
+
+  bim-viewer-service:
+    build:
+      context: .
+      dockerfile: services/bim-viewer-service/Dockerfile
+    container_name: sthyra-crm-bim-int
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://sthyra_crm:sthyra_crm_dev_password@postgres:5432/sthyra_crm
+      PORT: "9092"
+      HOST: "0.0.0.0"
+    ports:
+      - "9092:9092"
+
 
 volumes:
   sthyra-crm-pg-data-int:
