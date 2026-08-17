@@ -41,3 +41,26 @@ T-021 Dockerfile
 T-022 docker-compose integration (port 9095)
 
 ## Status — pending /speckit.implement
+
+## Status — Phase 8 COMPLETE (2026-08-17)
+
+All 5 slices shipped. 65 track-service tests passing.
+
+### Slices
+
+- ✅ Slice 1 Foundations (T-001 to T-005, 3 tests)
+- ✅ Slice 2 Pure core (T-006 to T-009, 25 tests)
+- ✅ Slice 3 Service layer (T-010 to T-013, 16 tests)
+- ✅ Slice 4 HTTP API (T-014 to T-018, 18 tests)
+- ✅ Slice 5 CLI + E2E + Dockerfile (T-019 to T-022, 3 tests)
+
+### Numbers
+
+- track-service: 65 tests
+- capture-service: 276 tests
+- field-service: 158 tests
+- bim-viewer-service: 83 tests
+- ai-copilot-service: 74 tests
+- mobile-bff-service: 82 tests
+- Whole project: 852 tests
+- 82 commits on main
