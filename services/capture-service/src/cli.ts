@@ -86,7 +86,17 @@ export async function startPostgresServer(
  installMetricsPlugin(app);
 
  const repo = new PostgresCaptureRepository({ pg: pgClient });
- const idempotency = new InMemoryIdempotencyStore(); // Phase 1.b: Redis
+ // Use Redis if REDIS_URL is set, else in-memory.
+ let idempotency: { get<T>(key: string): Promise<T | null>; set<T>(key: string, value: T, ttlSeconds?: number): Promise<void>; };
+ if (process.env.REDIS_URL) {
+ const { RedisIdempotencyStore, createDefaultRedisClient } = await import('./redis-idempotency.js');
+ const redisClient = await createDefaultRedisClient({ url: process.env.REDIS_URL });
+ idempotency = new RedisIdempotencyStore({ redis: redisClient });
+ emit('info', 'redis_idempotency_connected', { url: 'redacted' });
+ } else {
+ idempotency = new InMemoryIdempotencyStore();
+ emit('warn', 'redis_idempotency_disabled', { reason: 'REDIS_URL not set' });
+ }
  const bus = new InMemoryEventBus(); // Phase 1.b: Redis pub/sub
  const { PostgresOutboxWriter } = await import('./outbox-writer.js');
  const { OutboxDispatcher } = await import('./outbox.js');
