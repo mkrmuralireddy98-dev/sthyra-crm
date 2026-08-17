@@ -23,6 +23,8 @@ import { STAGES_IN_ORDER } from '../state-machine.js';
 import type { Stage, StageState } from '../state-machine.js';
 import { FfmpegDecodeStage } from './ffmpeg-decode.js';
 import { RealFfmpegRunner } from './ffmpeg-runner.js';
+import { ColmapSfmStage } from './colmap-sfm.js';
+import { RealColmapRunner } from './colmap-runner.js';
 
 export { STAGES_IN_ORDER };
 
@@ -93,7 +95,7 @@ export function allRealStageRunners(): Readonly<Record<Stage, StageRunner>> {
 
  return {
  decode: new FfmpegDecodeStage({ runner: new RealFfmpegRunner() }),
- sfm: makeStubStageRunner('sfm'),
+ sfm: new ColmapSfmStage({ runner: new RealColmapRunner() }),
  mesh: makeStubStageRunner('mesh'),
  segment: makeStubStageRunner('segment'),
  align: makeStubStageRunner('align'),
