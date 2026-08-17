@@ -25,9 +25,7 @@ import {
  type SignedUrlOptions,
 } from './index.js';
 
-export interface S3Client {
- send(cmd: {
- input: {
+export interface S3CommandInput {
  Bucket?: string;
  Key?: string;
  Body?: Buffer | string;
@@ -38,8 +36,14 @@ export interface S3Client {
  PartNumber?: number;
  MultipartUpload?: unknown;
  Parts?: { ETag: string; PartNumber: number }[];
- };
- }): Promise<unknown>;
+}
+
+export interface S3Command {
+ input: S3CommandInput;
+}
+
+export interface S3Client {
+ send(cmd: S3Command): Promise<unknown>;
 }
 
 export interface S3StorageOptions {

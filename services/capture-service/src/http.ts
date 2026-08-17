@@ -23,6 +23,7 @@
 
 import Fastify, { type FastifyInstance } from 'fastify';
 import { randomUUID } from 'node:crypto';
+import { currentRequestId, installRequestIdPlugin, emit } from '@sthyra-crm/observability';
 import {
  CaptureService,
  DuplicateClientCaptureIdError,
@@ -35,6 +36,7 @@ import {
 } from './repo-memory.js';
 import { InMemoryEventBus } from './realtime/index.js';
 import { captureEventStreamer } from './realtime/sse.js';
+import { installMetricsPlugin, metrics } from './metrics.js';
 import type { Capture } from './types.js';
 
 export interface BuildServerDeps {
@@ -89,24 +91,23 @@ export async function buildCaptureServer(deps: BuildServerDeps = {}): Promise<Fa
  });
 
  // Wire SSE endpoint for realtime push (Slice 5)
- // Registered synchronously to avoid 'app is not ready' race in tests.
  const streamer = captureEventStreamer({
  bus,
  repo: deps.repo ?? new InMemoryCaptureRepository(),
  });
  await streamer(app);
 
- // request-id propagation (Constitution §VI)
- app.addHook('onRequest', (req, reply, done) => {
- const incoming = req.headers['x-request-id'];
- const id = typeof incoming === 'string' && incoming.length > 0 ? incoming : randomUUID();
- (req as { requestId?: string }).requestId = id;
- void reply.header('x-request-id', id);
- done();
- });
+ // Install /v1/metrics endpoint (Constitution §VI — observability)
+ installMetricsPlugin(app);
 
- function requestIdOf(req: unknown): string {
- return (req as { requestId?: string }).requestId ?? randomUUID();
+ // Track active uploads via the idempotency store size (best-effort)
+ // Production: explicit counter from CaptureService.
+
+ // Request-id propagation + structured logging (Constitution §VI)
+ installRequestIdPlugin(app);
+
+ function requestIdOf(_req: unknown): string {
+ return currentRequestId() ?? randomUUID();
  }
 
  // ── Health ─────────────────────────────────────────────────────
@@ -134,6 +135,18 @@ export async function buildCaptureServer(deps: BuildServerDeps = {}): Promise<Fa
  // Idempotency hit detection: peek the store before calling service.
  const cacheKey = `idem:${orgId}:${idempotencyKey}`;
  const isReplay = (await (deps.idempotency ?? new InMemoryIdempotencyStore()).get<unknown>(cacheKey)) !== null;
+
+ // Bump active-uploads counter (Constitution §VI)
+ metrics.incActiveUpload();
+
+ // Structured log: capture creation requested (Constitution §VI)
+ emit('info', 'capture_create_requested', {
+ orgId,
+ projectId,
+ idempotencyKey,
+ kind: body.kind,
+ clientCaptureId: body.clientCaptureId,
+ });
 
  try {
  const result = await service.create(orgId, projectId, idempotencyKey, {
