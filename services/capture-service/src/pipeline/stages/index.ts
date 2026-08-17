@@ -29,6 +29,8 @@ import { OpenMvsMeshStage } from './openmvs-mesh.js';
 import { RealOpenMvsRunner } from './openmvs-runner.js';
 import { SegmentStage } from './segment-inference.js';
 import { HttpSegmentInferenceClient } from './segment-client.js';
+import { IcpAlignStage } from './icp-align.js';
+import { RealIcpRunner } from './icp-runner.js';
 
 export { STAGES_IN_ORDER };
 
@@ -102,7 +104,7 @@ export function allRealStageRunners(): Readonly<Record<Stage, StageRunner>> {
  sfm: new ColmapSfmStage({ runner: new RealColmapRunner() }),
  mesh: new OpenMvsMeshStage({ runner: new RealOpenMvsRunner() }),
  segment: new SegmentStage({ client: new HttpSegmentInferenceClient() }),
- align: makeStubStageRunner('align'),
+ align: new IcpAlignStage({ runner: new RealIcpRunner() }),
  };
 }
 
