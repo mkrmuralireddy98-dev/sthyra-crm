@@ -25,6 +25,10 @@ import { FfmpegDecodeStage } from './ffmpeg-decode.js';
 import { RealFfmpegRunner } from './ffmpeg-runner.js';
 import { ColmapSfmStage } from './colmap-sfm.js';
 import { RealColmapRunner } from './colmap-runner.js';
+import { OpenMvsMeshStage } from './openmvs-mesh.js';
+import { RealOpenMvsRunner } from './openmvs-runner.js';
+import { SegmentStage } from './segment-inference.js';
+import { HttpSegmentInferenceClient } from './segment-client.js';
 
 export { STAGES_IN_ORDER };
 
@@ -96,8 +100,8 @@ export function allRealStageRunners(): Readonly<Record<Stage, StageRunner>> {
  return {
  decode: new FfmpegDecodeStage({ runner: new RealFfmpegRunner() }),
  sfm: new ColmapSfmStage({ runner: new RealColmapRunner() }),
- mesh: makeStubStageRunner('mesh'),
- segment: makeStubStageRunner('segment'),
+ mesh: new OpenMvsMeshStage({ runner: new RealOpenMvsRunner() }),
+ segment: new SegmentStage({ client: new HttpSegmentInferenceClient() }),
  align: makeStubStageRunner('align'),
  };
 }
