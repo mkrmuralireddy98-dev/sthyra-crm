@@ -115,6 +115,25 @@ services:
       - "9092:9092"
 
 
+  ai-copilot-service:
+    build:
+      context: .
+      dockerfile: services/ai-copilot-service/Dockerfile
+    container_name: sthyra-crm-copilot-int
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://sthyra_crm:sthyra_crm_dev_password@postgres:5432/sthyra_crm
+      CAPTURE_SERVICE_URL: http://capture-service:9090
+      FIELD_SERVICE_URL: http://field-service:9091
+      BIM_VIEWER_SERVICE_URL: http://bim-viewer-service:9092
+      PORT: "9093"
+      HOST: "0.0.0.0"
+    ports:
+      - "9093:9093"
+
+
 volumes:
   sthyra-crm-pg-data-int:
     driver: local
