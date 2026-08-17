@@ -134,6 +134,35 @@ services:
       - "9093:9093"
 
 
+  mobile-bff-service:
+    build:
+      context: .
+      dockerfile: services/mobile-bff-service/Dockerfile
+    container_name: sthyra-crm-mobile-int
+    depends_on:
+      postgres:
+        condition: service_healthy
+      capture-service:
+        condition: service_started
+      field-service:
+        condition: service_started
+      bim-viewer-service:
+        condition: service_started
+      ai-copilot-service:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgres://sthyra_crm:sthyra_crm_dev_password@postgres:5432/sthyra_crm
+      MOBILE_JWT_SECRET: sthyra-crm-mobile-jwt-secret-32b-padded
+      CAPTURE_SERVICE_URL: http://capture-service:9090
+      FIELD_SERVICE_URL: http://field-service:9091
+      BIM_VIEWER_SERVICE_URL: http://bim-viewer-service:9092
+      AI_COPILOT_SERVICE_URL: http://ai-copilot-service:9093
+      PORT: "9094"
+      HOST: "0.0.0.0"
+    ports:
+      - "9094:9094"
+
+
 volumes:
   sthyra-crm-pg-data-int:
     driver: local
