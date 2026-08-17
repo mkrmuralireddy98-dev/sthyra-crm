@@ -44,6 +44,8 @@ export interface CaptureServiceDeps {
  readonly idempotency: IdempotencyStore;
  readonly onEvent?: (event: DomainEvent) => void;
  readonly chunkSizeBytes?: number;
+ /** Optional outbox writer — persists events to event_outbox for cross-instance delivery. */
+ readonly outboxWriter?: (event: DomainEvent) => Promise<void>;
  readonly uploadSessionTtlSeconds?: number;
 }
 
@@ -61,6 +63,7 @@ export class CaptureService {
  private readonly repo: CaptureRepository;
  private readonly idempotency: IdempotencyStore;
  private readonly onEvent: (e: DomainEvent) => void;
+ private readonly outboxWriter: (event: DomainEvent) => Promise<void>;
  private readonly chunkSizeBytes: number;
  private readonly uploadSessionTtlSeconds: number;
 
@@ -68,8 +71,14 @@ export class CaptureService {
  this.repo = deps.repo;
  this.idempotency = deps.idempotency;
  this.onEvent = deps.onEvent ?? (() => {});
+    this.outboxWriter = deps.outboxWriter ?? (async () => {});
  this.chunkSizeBytes = deps.chunkSizeBytes ?? DEFAULT_CHUNK_SIZE_BYTES;
  this.uploadSessionTtlSeconds = deps.uploadSessionTtlSeconds ?? DEFAULT_UPLOAD_SESSION_TTL_SECONDS;
+ }
+
+ private async emit(event: DomainEvent): Promise<void> {
+ this.onEvent(event);
+ await this.outboxWriter(event);
  }
 
  async create(orgId: string, projectId: string, idempotencyKey: string, input: CreateCaptureInput): Promise<CreateCaptureResult> {
@@ -129,7 +138,7 @@ export class CaptureService {
  const result: CreateCaptureResult = { capture, uploadSession };
  await this.idempotency.set<IdempotentResult>(cacheKey, { result, orgId });
 
- this.onEvent({
+ await this.emit({
  type: 'capture.initiated',
  captureId: capture.id,
  orgId: capture.orgId,
@@ -152,7 +161,7 @@ export class CaptureService {
  const cap = await this.repo.findCapture(orgId, id);
  if (!cap) throw new CaptureServiceError(`capture not found: ${id}`, 'not_found');
  await this.repo.archiveCapture(orgId, id);
- this.onEvent({
+ await this.emit({
  type: 'capture.archived',
  captureId: id,
  orgId,
@@ -196,7 +205,7 @@ export class CaptureService {
  }
  await this.repo.completeUploadSession(orgId, uploadSessionId);
  await this.repo.updateCaptureStatus(orgId, session.captureId, 'processing', { sha256 });
- this.onEvent({
+ await this.emit({
  type: 'capture.uploaded',
  captureId: session.captureId,
  orgId,
