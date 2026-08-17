@@ -41,3 +41,27 @@ T-121 Dockerfile
 T-122 docker-compose integration (port 9096)
 
 ## Status — pending /speckit.implement
+
+## Status — Phase 9 COMPLETE (2026-08-17)
+
+All 5 slices shipped. 31 report-service tests passing.
+
+### Slices
+
+- ✅ Slice 1 Foundations (T-001 to T-005, 2 tests)
+- ✅ Slice 2 Pure core (T-006 to T-009, 15 tests)
+- ✅ Slice 3 Service layer (T-010 to T-013, 14 tests)
+- ✅ Slice 4 HTTP API (T-014 to T-018)
+- ✅ Slice 5 CLI + Dockerfile + integration (T-019 to T-022)
+
+### Numbers
+
+- report-service: 31 tests
+- capture-service: 276 tests
+- field-service: 158 tests
+- bim-viewer-service: 83 tests
+- ai-copilot-service: 74 tests
+- mobile-bff-service: 82 tests
+- track-service: 65 tests
+- Whole project: 883 tests
+- 87 commits on main
