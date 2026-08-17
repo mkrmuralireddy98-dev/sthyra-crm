@@ -248,3 +248,23 @@
 ## Status — to be updated by /speckit.implement
 
 Phase 2 status: pending
+
+## Status — Phase 2 complete (2026-08-17)
+
+All 7 slices shipped. All 30 tasks complete. 130 field-service tests passing.
+
+### Slices
+
+- ✅ Slice 1 — Foundations (T-001 to T-005): package, types, IssueRepository, InMemory + Postgres, SQL migration
+- ✅ Slice 2 — State machine + history + pagination (T-006 to T-009): pure transitionStatus, status-history, HMAC pagination
+- ✅ Slice 3 — Service layer (T-010 to T-013): IssueService.create / update / resolve / reopen / comment / list
+- Slice 4 — HTTP layer (T-014 to T-021): 8 routes, RFC 7807 errors, cross-tenant 404, idempotency replay
+- Slice 5 — Realtime (T-022 to T-024): InMemoryEventBus, SSE with history replay
+- Slice 6 — Observability (T-025 to T-027): installRequestIdPlugin, structured logs
+- Slice 7 — E2E (T-028 to T-030): CLI + Dockerfile + docker-compose integration
+
+### Test counts (2026-08-17)
+
+- Field-service: 130 tests
+- Whole project: 520 tests (Phase 1: 387, Phase 2 added 133)
+- 44 commits on main, all pushed to https://github.com/mkrmuralireddy98-dev/sthyra-crm
