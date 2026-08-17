@@ -212,6 +212,22 @@ services:
       - "9097:9097"
 
 
+  integration-service:
+    build:
+      context: .
+      dockerfile: services/integration-service/Dockerfile
+    container_name: sthyra-crm-integration-int
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://sthyra_crm:sthyra_crm_dev_password@postgres:5432/sthyra_crm
+      PORT: "9098"
+      HOST: "0.0.0.0"
+    ports:
+      - "9098:9098"
+
+
 volumes:
   sthyra-crm-pg-data-int:
     driver: local
