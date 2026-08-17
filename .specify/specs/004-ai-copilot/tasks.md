@@ -58,3 +58,26 @@ T-031 CI validation job
 ## Status — pending /speckit.implement
 
 Phase 4 status: pending
+
+## Status — Phase 4 complete (2026-08-17)
+
+All 7 slices shipped. 74 ai-copilot-service tests passing.
+
+### Slices
+
+- ✅ Slice 1 Foundations (T-001 to T-003): package, types, CopilotRepository
+- ✅ Slice 2 Pure core: intent classifier, slot extractor, reply composer, state machine
+- ✅ Slice 3 Tool router: routes intents → capture/field/bim service calls
+- ✅ Slice 4 Service layer: CopilotService.submit + pagination HMAC
+- ✅ Slice 5 HTTP API + SSE: 8 routes with RFC 7807 + InMemoryEventBus
+- ✅ Slice 6 Observability: request-id wired; metrics deferred
+- ✅ Slice 7 E2E + Dockerfile + integration
+
+### Numbers
+
+- ai-copilot-service: 74 tests
+- capture-service: 276 tests
+- field-service: 130 tests
+- bim-viewer-service: 83 tests
+- Whole project: 677 tests
+- 58 commits on main, all pushed
