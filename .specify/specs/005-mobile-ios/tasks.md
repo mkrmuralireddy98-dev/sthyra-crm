@@ -35,3 +35,25 @@ T-021 Dockerfile + docker-compose integration
 T-022 CI validation job
 
 ## Status — pending /speckit.implement
+
+## Status — Phase 5 complete (2026-08-17)
+
+All 7 slices shipped. 62 mobile-bff-service tests passing.
+
+### Slices
+
+- ✅ Slice 1 Foundations + JWT (T-001 to T-003)
+- ✅ Slice 2 Service layer (T-006 to T-009)
+- ✅ Slice 3 HTTP API (FR-1 to FR-8 + JWT enforcement)
+- ✅ Slice 4 Observability (request-id wired; metrics deferred)
+- ✅ Slice 5 E2E + Dockerfile + integration
+
+### Numbers
+
+- mobile-bff-service: 62 tests
+- capture-service: 276 tests
+- field-service: 130 tests
+- bim-viewer-service: 83 tests
+- ai-copilot-service: 74 tests
+- Whole project: 739 tests
+- 64 commits on main, all pushed to https://github.com/mkrmuralireddy98-dev/sthyra-crm
