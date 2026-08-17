@@ -99,14 +99,15 @@ export async function startPostgresServer(
  }
  const bus = new InMemoryEventBus(); // Phase 1.b: Redis pub/sub
  const { PostgresOutboxWriter } = await import('./outbox-writer.js');
- const { OutboxDispatcher } = await import('./outbox.js');
+ const { MultiInstanceOutboxDispatcher } = await import('./outbox-multi.js');
  const outboxWriter = new PostgresOutboxWriter({ pg: pgClient });
  const captureApp = await buildCaptureServer({ repo, idempotency, bus, outboxWriter: outboxWriter.write.bind(outboxWriter) });
  void app;
  await captureApp.listen({ port, host });
 
- // Start the outbox dispatcher — drains event_outbox into the bus every 1000ms
- const dispatcher = new OutboxDispatcher({
+ // Multi-instance safe outbox dispatcher — uses FOR UPDATE SKIP LOCKED
+ // so multiple capture-service instances can run concurrently.
+ const dispatcher = new MultiInstanceOutboxDispatcher({
  pg: pgClient,
  sink: async (row) => {
  await bus.publish({
@@ -120,7 +121,7 @@ export async function startPostgresServer(
  pollIntervalMs: 1000,
  });
  dispatcher.start();
- emit('info', 'outbox_dispatcher_started', { pollIntervalMs: 1000 });
+ emit('info', 'outbox_dispatcher_started', { pollIntervalMs: 1000, mode: 'multi-instance' });
 
  return {
  port,
