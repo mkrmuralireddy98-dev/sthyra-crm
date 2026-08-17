@@ -10,6 +10,7 @@ import type {
 export interface MobileRepository {
  insertSession(session: MobileSession): Promise<void>;
  findSession(orgId: string, id: string): Promise<MobileSession | null>;
+ findSessionByClientId(orgId: string, clientSessionId: string): Promise<MobileSession | null>;
  updateSession(orgId: string, id: string, patch: Partial<MobileSession>): Promise<void>;
  softDeleteSession(orgId: string, id: string): Promise<void>;
  insertChunk(chunk: MobileChunk): Promise<void>;
