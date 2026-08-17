@@ -21,6 +21,8 @@
 
 import { STAGES_IN_ORDER } from '../state-machine.js';
 import type { Stage, StageState } from '../state-machine.js';
+import { FfmpegDecodeStage } from './ffmpeg-decode.js';
+import { RealFfmpegRunner } from './ffmpeg-runner.js';
 
 export { STAGES_IN_ORDER };
 
@@ -76,8 +78,21 @@ export function makeStubStageRunner(
 }
 
 export function allStageRunners(): Readonly<Record<Stage, StageRunner>> {
+ return allRealStageRunners();
+}
+
+/**
+ * Phase 1.b real runners — uses FfmpegDecodeStage for the decode step
+ * and stub runners for the GPU-bound stages (sfm, mesh, segment, align)
+ * that are Phase 1.b+ work. Drop in real implementations as they're
+ * ready (COLMAP, OpenMVS, ML inference, ICP alignment).
+ */
+export function allRealStageRunners(): Readonly<Record<Stage, StageRunner>> {
+ // Lazy-import to avoid the FfmpegDecodeStage deps leaking into the
+ // stub-only tests.
+
  return {
- decode: makeStubStageRunner('decode'),
+ decode: new FfmpegDecodeStage({ runner: new RealFfmpegRunner() }),
  sfm: makeStubStageRunner('sfm'),
  mesh: makeStubStageRunner('mesh'),
  segment: makeStubStageRunner('segment'),
