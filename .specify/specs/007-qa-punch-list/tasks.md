@@ -73,3 +73,31 @@ Slices 1 + 2 shipped. Slices 3-4 deferred (HTTP/SSE/CLI E2E).
 - mobile-bff-service: 82 tests
 - Whole project: 768 tests
 - 72 commits on main, all pushed to https://github.com/mkrmuralireddy98-dev/sthyra-crm
+
+## Status — Phase 7 Slice 3 complete (2026-08-17)
+
+Slices 1 + 2a + 2b + 3 shipped. Slice 4 (closeout SSE) deferred to Phase 7.b.
+
+### Slices
+
+- ✅ Slice 1 Schema + types + state machine (T-001 to T-005)
+
+- ✅ Slice 2a Closeout report (T-017 to T-018)
+
+- ✅ Slice 2b Service layer (addPhoto + inspect)
+
+- ✅ Slice 3 HTTP routes (FR-2 photos + FR-4 inspect + FR-5 closeout)
+
+- ⏳ Slice 4 Closeout SSE + CLI E2E — Phase 7.b
+
+
+### Numbers
+
+- field-service: 153 tests (was 130 pre-Phase 7, +23 new)
+- capture-service: 276 tests
+- field-service: 130 tests (pre-Phase 7) + 23 (Phase 7)
+- bim-viewer-service: 83 tests
+- ai-copilot-service: 74 tests
+- mobile-bff-service: 82 tests
+- Whole project: 782 tests
+- 74 commits on main
