@@ -28,3 +28,24 @@ T-011 migrations/002-push-channel.sql (Postgres)
 T-012 docker-compose integration: same container, new SQL mount
 
 ## Status — pending /speckit.implement
+
+## Status — Phase 6 complete (2026-08-17)
+
+All 4 slices shipped. 82 mobile-bff-service tests passing (was 62).
+
+### Slices
+
+- ✅ Slice 1 Push channel (pushChannel + fcmAppId)
+- ✅ Slice 2 i18n (en-US + de-DE catalogs)
+- ✅ Slice 3 Tests (i18n + android-compat)
+- ✅ Slice 4 Migration + integration
+
+### Numbers
+
+- mobile-bff-service: 82 tests
+- capture-service: 276 tests
+- field-service: 130 tests
+- bim-viewer-service: 83 tests
+- ai-copilot-service: 74 tests
+- Whole project: 759 tests
+- 67 commits on main
