@@ -1,0 +1,11 @@
+node_modules
+.git
+.DS_Store
+*.log
+*.pdf
+docs
+.specify
+*.test.ts
+.dev-storage
+.github
+.vscode

@@ -1,0 +1,63 @@
+# Sthyra CRM Capture Service — INTEGRATION stack (Phase 1.b)
+#
+# Usage:
+#   docker-compose -f docker-compose.integration.yml up -d --build
+#   curl http://localhost:9090/v1/health
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: sthyra-crm-postgres-int
+    environment:
+      POSTGRES_USER: sthyra_crm
+      POSTGRES_PASSWORD: sthyra_crm
+      POSTGRES_DB: sthyra_crm
+    ports:
+      - "5432:5432"
+    volumes:
+      - sthyra-crm-pg-data-int:/var/lib/postgresql/data
+      - ./services/capture-service/migrations/001-init.sql:/docker-entrypoint-initdb.d/001-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sthyra_crm -d sthyra_crm"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: sthyra-crm-redis-int
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  capture-service:
+    build:
+      context: .
+      dockerfile: services/capture-service/Dockerfile
+    container_name: sthyra-crm-capture-int
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://sthyra_crm:sthyra_crm@postgres:5432/sthyra_crm
+      REDIS_URL: redis://redis:6379
+      STHYRA_CRM_STORAGE: local
+      STHYRA_CRM_STORAGE_ROOT: /var/lib/sthyra-crm/storage
+      PORT: "9090"
+      HOST: "0.0.0.0"
+    ports:
+      - "9090:9090"
+    volumes:
+      - sthyra-crm-storage-int:/var/lib/sthyra-crm/storage
+
+volumes:
+  sthyra-crm-pg-data-int:
+    driver: local
+  sthyra-crm-storage-int:
+    driver: local

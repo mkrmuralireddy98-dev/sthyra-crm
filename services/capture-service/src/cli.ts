@@ -14,7 +14,9 @@ import { buildCaptureServer } from './http.js';
 import { InMemoryCaptureRepository, InMemoryIdempotencyStore } from './repo-memory.js';
 import { PostgresCaptureRepository, type PgClient } from './postgres-repo.js';
 import { InMemoryEventBus } from './realtime/index.js';
-import { installMetricsPlugin, metrics } from './metrics.js';
+import { installMetricsPlugin, metrics, type Metrics } from './metrics.js';
+import { OtelMetrics } from './metrics-otel-impl.js';
+import { FakeOtelMeter } from './metrics-otel.js';
 import { installRequestIdPlugin, emit } from '@sthyra-crm/observability';
 
 const DEFAULT_PORT = 9090;
@@ -84,6 +86,26 @@ export async function startPostgresServer(
  const app = Fastify({ logger: false, disableRequestLogging: true });
  installRequestIdPlugin(app);
  installMetricsPlugin(app);
+
+ // Phase 1.b: swap the in-memory metrics singleton for OTel when
+ // OTEL_ENABLED=true. Tests use FakeOtelMeter; production wires the
+ // real @opentelemetry/sdk-metrics.
+ if (process.env.OTEL_ENABLED === 'true') {
+ const otelMeter = new FakeOtelMeter();
+ const otelMetrics: Metrics = new OtelMetrics({ meter: otelMeter });
+ // Replace the singleton — http.ts uses `metrics.*` via this binding.
+ (metrics as unknown as { incPipelineRun: Metrics['incPipelineRun'] }).incPipelineRun =
+ otelMetrics.incPipelineRun.bind(otelMetrics);
+ (metrics as unknown as { incDlq: Metrics['incDlq'] }).incDlq = otelMetrics.incDlq.bind(otelMetrics);
+ (metrics as unknown as { incActiveUpload: Metrics['incActiveUpload'] }).incActiveUpload =
+ otelMetrics.incActiveUpload.bind(otelMetrics);
+ (metrics as unknown as { decActiveUpload: Metrics['decActiveUpload'] }).decActiveUpload =
+ otelMetrics.decActiveUpload.bind(otelMetrics);
+ (metrics as unknown as { recordPipelineDuration: Metrics['recordPipelineDuration'] }).recordPipelineDuration =
+ otelMetrics.recordPipelineDuration.bind(otelMetrics);
+ (metrics as unknown as { snapshot: Metrics['snapshot'] }).snapshot = otelMetrics.snapshot.bind(otelMetrics);
+ emit('info', 'otel_metrics_enabled', { mode: 'fake-otel-meter' });
+ }
 
  const repo = new PostgresCaptureRepository({ pg: pgClient });
  // Use Redis if REDIS_URL is set, else in-memory.
