@@ -44,6 +44,8 @@ export interface S3Command {
 
 export interface S3Client {
  send(cmd: S3Command): Promise<unknown>;
+ /** Phase 1.b: explicit delete for production wiring (avoids relying on send() heuristics). */
+ deleteObject?(bucket: string, key: string): Promise<void>;
 }
 
 export interface S3StorageOptions {
@@ -88,14 +90,21 @@ export class S3Storage implements BlobStorage {
  }
 
  async get(key: string): Promise<Buffer> {
- // For simplicity in Phase 1, the get uses GetObject via a stubbed
- // S3Client interface. Production uses @aws-sdk/client-s3's GetObjectCommand.
- // The contract here mirrors the BlobStorage.get signature.
+ // For the real AWS SDK, Body is a Node Readable stream. We consume it.
  const result = (await this.s3.send({
  input: { Bucket: this.bucket, Key: key },
- })) as { Body?: Buffer | Uint8Array } | undefined;
+ })) as { Body?: Buffer | Uint8Array | NodeJS.ReadableStream } | undefined;
  if (!result?.Body) throw new Error(`storage key not found: ${key}`);
- return Buffer.from(result.Body);
+ // If it's a stream (AWS SDK v3), consume it
+ if (typeof (result.Body as NodeJS.ReadableStream).on === 'function') {
+ return await new Promise<Buffer>((resolve, reject) => {
+ const chunks: Buffer[] = [];
+ (result.Body as NodeJS.ReadableStream).on('data', (c) => chunks.push(Buffer.from(c as Buffer | Uint8Array | string)));
+ (result.Body as NodeJS.ReadableStream).on('end', () => resolve(Buffer.concat(chunks)));
+ (result.Body as NodeJS.ReadableStream).on('error', reject);
+ });
+ }
+ return Buffer.from(result.Body as Buffer | Uint8Array);
  }
 
  async head(key: string): Promise<ObjectInfo> {
@@ -124,6 +133,10 @@ export class S3Storage implements BlobStorage {
  }
 
  async delete(key: string): Promise<void> {
+ if (this.s3.deleteObject) {
+ await this.s3.deleteObject(this.bucket, key);
+ return;
+ }
  await this.s3.send({ input: { Bucket: this.bucket, Key: key } });
  }
 
