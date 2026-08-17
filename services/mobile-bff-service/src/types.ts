@@ -39,13 +39,17 @@ readonly sizeBytes: number;
 readonly receivedAt: Date;
 }
 
+export type PushChannel = 'apns' | 'fcm';
+
 export interface MobileDeviceToken {
-readonly id: string;
-readonly orgId: string;
-readonly userId: string;
-readonly deviceId: string;
-readonly apnsToken: string;
-readonly registeredAt: Date;
+  readonly id: string;
+  readonly orgId: string;
+  readonly userId: string;
+  readonly deviceId: string;
+  readonly apnsToken: string;
+  readonly pushChannel: PushChannel;
+  readonly fcmAppId: string | null;
+  readonly registeredAt: Date;
 }
 
 export interface CreateSessionInput {
@@ -81,10 +85,12 @@ readonly coordinates: Coordinates;
 }
 
 export interface RegisterDeviceTokenInput {
-readonly orgId: string;
-readonly userId: string;
-readonly deviceId: string;
-readonly apnsToken: string;
+  readonly orgId: string;
+  readonly userId: string;
+  readonly deviceId: string;
+  readonly apnsToken: string;
+  readonly pushChannel?: PushChannel;
+  readonly fcmAppId?: string | null;
 }
 
 export interface MobileJwtClaims {

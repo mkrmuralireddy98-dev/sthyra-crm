@@ -170,6 +170,11 @@ export class MobileSessionService {
     if (!input.userId) throw new Error('userId required');
     if (!input.deviceId) throw new Error('deviceId required');
     if (!input.apnsToken) throw new Error('apnsToken required');
+    const pushChannel = input.pushChannel ?? 'apns';
+    if (pushChannel === 'fcm' && !input.fcmAppId) {
+      // FCM registrations MUST include fcmAppId; APNs default doesn't need one
+      throw new Error('fcmAppId required for pushChannel=fcm');
+    }
 
     const id = `dev_${randomUUID().replace(/-/g, '').slice(0, 22)}`;
     const token: MobileDeviceToken = {
@@ -178,6 +183,8 @@ export class MobileSessionService {
       userId: input.userId,
       deviceId: input.deviceId,
       apnsToken: input.apnsToken,
+      pushChannel,
+      fcmAppId: input.fcmAppId ?? null,
       registeredAt: this.now(),
     };
     // Upsert: delete old token for same (orgId, deviceId) first

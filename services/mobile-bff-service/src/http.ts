@@ -287,7 +287,7 @@ export async function buildMobileServer(deps: BuildServerDeps = {}): Promise<Fas
     const traceId = rid();
     const claims = await requireClaims(req, reply);
     if (!claims || typeof claims !== 'object' || !('orgId' in claims)) return;
-    const body = req.body as { apnsToken?: string } | undefined;
+    const body = req.body as { apnsToken?: string; pushChannel?: 'apns' | 'fcm'; fcmAppId?: string } | undefined;
     if (!body || typeof body !== 'object' || !body.apnsToken) {
       return problem(reply, 400, 'https://sthyra-crm.dev/errors/invalid-input', 'Invalid body', 'apnsToken required', 'invalid_input', traceId);
     }
@@ -295,8 +295,14 @@ export async function buildMobileServer(deps: BuildServerDeps = {}): Promise<Fas
       const token = await service.registerDeviceToken({
         orgId: claims.orgId, userId: claims.userId,
         deviceId: claims.deviceId, apnsToken: body.apnsToken,
+        pushChannel: body.pushChannel,
+        fcmAppId: body.fcmAppId ?? null,
       });
-      return reply.code(201).send({ deviceId: token.deviceId, registeredAt: token.registeredAt.toISOString() });
+      return reply.code(201).send({
+        deviceId: token.deviceId,
+        registeredAt: token.registeredAt.toISOString(),
+        pushChannel: token.pushChannel,
+      });
     } catch (err) {
       return problem(reply, 400, 'https://sthyra-crm.dev/errors/invalid-input', 'Register failed', (err as Error).message, 'invalid_input', traceId);
     }
