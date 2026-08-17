@@ -12,6 +12,7 @@ import { encodeCursor } from './pagination.js';
 import type { IssueRepository } from './repository.js';
 import { InMemoryEventBus } from './realtime/index.js';
 import { installRealtimePlugin } from './realtime/sse.js';
+import { computeCloseoutReport } from './closeout.js';
 
 export interface BuildServerDeps {
  readonly service?: IssueService;
@@ -242,6 +243,89 @@ export async function buildFieldServer(deps: BuildServerDeps = {}): Promise<Fast
  }
  return problem(reply, 400, 'https://sthyra-crm.dev/errors/invalid-input', 'Reopen failed', message, 'invalid_input', traceId);
  }
+ });
+
+
+ // ─── Phase 7 FR-2: POST photos ─────────────────────────
+ app.post('/v1/projects/:projectId/issues/:issueId/photos', async (req, reply) => {
+ const traceId = rid();
+ const orgId = getTenant(req);
+ if (!orgId) return problem(reply, 401, 'https://sthyra-crm.dev/errors/unauthorized', 'Missing tenant', 'x-tenant-id header is required', 'unauthorized', traceId);
+ const issueId = ((req.params as { issueId?: string }).issueId ?? '').trim();
+ if (!issueId) return problem(reply, 400, 'https://sthyra-crm.dev/errors/invalid-input', 'Invalid issueId', 'issueId is required', 'invalid_input', traceId);
+ const body = req.body as { sha256?: string; contentType?: string; caption?: string; sizeBytes?: number } | undefined;
+ if (!body || !body.sha256 || !body.contentType || typeof body.sizeBytes !== 'number') {
+ return problem(reply, 400, 'https://sthyra-crm.dev/errors/invalid-input', 'Invalid body', 'sha256, contentType, sizeBytes required', 'invalid_input', traceId);
+ }
+ if (body.sizeBytes > 10 * 1024 * 1024) {
+ return problem(reply, 413, 'https://sthyra-crm.dev/errors/photo-too-large', 'Photo too large', `photo exceeds 10MB: ${body.sizeBytes}`, 'photo_too_large', traceId);
+ }
+ const issue = await repo.findIssue(orgId, issueId);
+ if (!issue) return problem(reply, 404, 'https://sthyra-crm.dev/errors/not-found', 'Issue not found', `no issue ${issueId} in this tenant`, 'not_found', traceId);
+ if (issue.orgId !== orgId) return problem(reply, 404, 'https://sthyra-crm.dev/errors/not-found', 'Issue not found', 'cross-tenant', 'not_found', traceId);
+ try {
+ const photo = await service.addPhoto(orgId, issueId, {
+ sha256: body.sha256,
+ contentType: body.contentType,
+ caption: body.caption ?? null,
+ sizeBytes: body.sizeBytes,
+ data: Buffer.alloc(0), // MVP: data in body, not stored separately
+ });
+ return reply.code(201).send({
+ photoId: photo.id,
+ sha256: photo.sha256,
+ sizeBytes: photo.sizeBytes,
+ capturedAt: photo.capturedAt.toISOString(),
+ });
+ } catch (err) {
+ const message = (err as Error).message;
+ if (/too many photos/.test(message)) {
+ return problem(reply, 422, 'https://sthyra-crm.dev/errors/too-many-photos', 'Too many photos', message, 'too_many_photos', traceId);
+ }
+ return problem(reply, 400, 'https://sthyra-crm.dev/errors/invalid-input', 'Photo upload failed', message, 'invalid_input', traceId);
+ }
+ });
+
+ // ─── Phase 7 FR-4: POST inspect (pass/fail) ──────────
+ app.post('/v1/projects/:projectId/issues/:issueId/inspect', async (req, reply) => {
+ const traceId = rid();
+ const orgId = getTenant(req);
+ if (!orgId) return problem(reply, 401, 'https://sthyra-crm.dev/errors/unauthorized', 'Missing tenant', 'x-tenant-id header is required', 'unauthorized', traceId);
+ const issueId = ((req.params as { issueId?: string }).issueId ?? '').trim();
+ if (!issueId) return problem(reply, 400, 'https://sthyra-crm.dev/errors/invalid-input', 'Invalid issueId', 'issueId is required', 'invalid_input', traceId);
+ const body = req.body as { inspectorId?: string; outcome?: string; note?: string } | undefined;
+ if (!body || typeof body.inspectorId !== 'string' || (body.outcome !== 'pass' && body.outcome !== 'fail')) {
+ return problem(reply, 400, 'https://sthyra-crm.dev/errors/invalid-input', 'Invalid body', 'inspectorId, outcome (pass|fail) required', 'invalid_input', traceId);
+ }
+ try {
+ const updated = await service.inspect(orgId, issueId, {
+ inspectorId: body.inspectorId,
+ outcome: body.outcome,
+ note: body.note ?? null,
+ });
+ return reply.code(200).send(updated);
+ } catch (err) {
+ const message = (err as Error).message;
+ if (/not found/i.test(message)) {
+ return problem(reply, 404, 'https://sthyra-crm.dev/errors/not-found', 'Issue not found', message, 'not_found', traceId);
+ }
+ if (/cannot inspect/.test(message)) {
+ return problem(reply, 409, 'https://sthyra-crm.dev/errors/wrong-state', 'Wrong state', message, 'wrong_state', traceId);
+ }
+ return problem(reply, 400, 'https://sthyra-crm.dev/errors/invalid-input', 'Inspect failed', message, 'invalid_input', traceId);
+ }
+ });
+
+ // ─── Phase 7 FR-5: GET closeout ────────────────────────
+ app.get('/v1/projects/:projectId/closeout', async (req, reply) => {
+ const traceId = rid();
+ const orgId = getTenant(req);
+ if (!orgId) return problem(reply, 401, 'https://sthyra-crm.dev/errors/unauthorized', 'Missing tenant', 'x-tenant-id header is required', 'unauthorized', traceId);
+ const projectId = ((req.params as { projectId?: string }).projectId ?? '').trim();
+ if (!projectId) return problem(reply, 400, 'https://sthyra-crm.dev/errors/invalid-input', 'Invalid projectId', 'projectId is required', 'invalid_input', traceId);
+ const all = await service.list(orgId, projectId);
+ const report = computeCloseoutReport(all.items);
+ return reply.code(200).send(report);
  });
 
  // SSE endpoint (T-023)

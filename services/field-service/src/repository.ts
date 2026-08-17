@@ -3,7 +3,7 @@
  */
 
 import type {
- Issue, Comment, StatusHistoryEntry, IssueFilter, IssueStatus,
+ Issue, Comment, StatusHistoryEntry, IssueFilter, IssueStatus, IssuePhoto,
  Severity, Coordinates, CreateIssueInput, PatchIssueInput,
 } from './types.js';
 
@@ -26,5 +26,8 @@ export interface IssueRepository {
  listStatusHistory(orgId: string, issueId: string): Promise<readonly StatusHistoryEntry[]>;
  insertIdempotencyKey(orgId: string, key: string, result: { readonly issueId: string }, ttlSeconds?: number): Promise<void>;
  getIdempotencyResult<T>(orgId: string, key: string): Promise<T | null>;
+ insertPhoto(photo: IssuePhoto): Promise<void>;
+ listPhotos(orgId: string, issueId: string): Promise<readonly IssuePhoto[]>;
+ findPhoto(orgId: string, issueId: string, photoId: string): Promise<IssuePhoto | null>;
  nextId(): number;
 }

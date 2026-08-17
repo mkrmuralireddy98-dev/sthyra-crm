@@ -12,6 +12,7 @@ import type {
  StatusHistoryEntry,
  IssueFilter,
  IssueStatus,
+ IssuePhoto,
  Severity,
  Coordinates,
  CreateIssueInput,
@@ -28,6 +29,7 @@ export class InMemoryIssueRepository implements IssueRepository {
  private readonly issues = new Map<string, Issue>();
  private readonly comments = new Map<string, Comment>();
  private readonly statusHistory = new Map<string, StatusHistoryEntry[]>();
+ private readonly photos = new Map<string, IssuePhoto>();
  private readonly idem = new Map<string, IdempotencyEntry>();
  private readonly idCounter = { history: 0 };
 
@@ -153,6 +155,7 @@ export class InMemoryIssueRepository implements IssueRepository {
  orgId: string,
  id: string,
  status: IssueStatus,
+ IssuePhoto,
  _actorId: string,
  _reason: string | null,
  ): Promise<void> {
@@ -256,6 +259,27 @@ export class InMemoryIssueRepository implements IssueRepository {
  const id = cursor.slice(idx + 1);
  if (!ts || !id) return null;
  return { createdAt: ts, id };
+ }
+
+ /**
+ * Phase 7 — photo storage.
+ */
+ async insertPhoto(photo: IssuePhoto): Promise<void> {
+ this.photos.set('photo:' + photo.orgId + ':' + photo.id, photo);
+ }
+
+ async listPhotos(orgId: string, issueId: string): Promise<readonly IssuePhoto[]> {
+ const out: IssuePhoto[] = [];
+ for (const p of this.photos.values()) {
+ if (p.orgId === orgId && p.issueId === issueId) out.push(p);
+ }
+ return out.sort((a, b) => a.capturedAt.getTime() - b.capturedAt.getTime());
+ }
+
+ async findPhoto(orgId: string, issueId: string, photoId: string): Promise<IssuePhoto | null> {
+ const p = this.photos.get('photo:' + orgId + ':' + photoId);
+ if (!p || p.issueId !== issueId) return null;
+ return p;
  }
 
  /** Allocates a fresh status_history id (monotonic). */

@@ -21,6 +21,7 @@ import type {
  Issue,
  IssueStatus,
  IssueFilter,
+ IssuePhoto,
  CreateIssueInput,
  CommentInput,
  ResolveInput,
@@ -232,6 +233,74 @@ export class IssueService {
 
  this.emit({ type: 'issue.commented', issueId, orgId, projectId: issue.projectId, occurredAt: now });
  return { id, text: input.text, createdAt: now };
+ }
+
+
+ // ─── T-007: Phase 7 addPhoto (FR-2) ───────────────────────
+ async addPhoto(
+ orgId: string,
+ issueId: string,
+ input: { sha256: string; contentType: string; caption?: string | null; sizeBytes: number; data: Buffer },
+ ): Promise<IssuePhoto> {
+ if (input.sizeBytes > 10 * 1024 * 1024) {
+ throw new Error(`photo too large: ${input.sizeBytes} > ${10 * 1024 * 1024}`);
+ }
+ const photos = await this.repo.listPhotos(orgId, issueId);
+ if (photos.length >= 20) {
+ throw new Error(`too many photos: ${photos.length} >= 20`);
+ }
+ const photo: IssuePhoto = {
+ id: `pho_${randomUUID().replace(/-/g, '').slice(0, 22)}`,
+ orgId,
+ issueId,
+ sha256: input.sha256,
+ contentType: input.contentType,
+ caption: input.caption ?? null,
+ sizeBytes: input.sizeBytes,
+ capturedAt: this.now(),
+ };
+ await this.repo.insertPhoto(photo);
+ return photo;
+ }
+
+ // ─── T-008: Phase 7 inspect (FR-4) ─────────────────────────
+ async inspect(
+ orgId: string,
+ issueId: string,
+ input: { inspectorId: string; outcome: 'pass' | 'fail'; note?: string | null },
+ ): Promise<Issue> {
+ const issue = await this.find(orgId, issueId);
+ if (!issue) throw new Error(`issue not found: ${issueId}`);
+ if (issue.status !== 'resolved') {
+ throw new Error(`cannot inspect from status ${issue.status}; must be resolved`);
+ }
+ if (issue.orgId !== orgId) throw new Error('not found: ' + issueId);
+
+ const now = this.now();
+ if (input.outcome === 'pass') {
+ // resolved → closed (terminal)
+ await this.repo.updateIssue(orgId, issueId, { status: 'closed' as IssueStatus });
+ await this.repo.insertStatusHistory({
+ id: this.repo.nextId(), orgId, issueId,
+ fromStatus: 'resolved', toStatus: 'closed',
+ reason: `inspect pass: ${input.note ?? ''}`, actorId: input.inspectorId,
+ occurredAt: now,
+ });
+ this.emit({ type: 'issue.closed', issueId, orgId, projectId: issue.projectId, occurredAt: now });
+ } else {
+ // resolved → in_progress (reopened)
+ await this.repo.updateIssue(orgId, issueId, { status: 'in_progress', resolvedAt: null });
+ await this.repo.insertStatusHistory({
+ id: this.repo.nextId(), orgId, issueId,
+ fromStatus: 'resolved', toStatus: 'in_progress',
+ reason: `inspect fail: ${input.note ?? ''}`, actorId: input.inspectorId,
+ occurredAt: now,
+ });
+ this.emit({ type: 'issue.reopened', issueId, orgId, projectId: issue.projectId, occurredAt: now });
+ }
+ const updated = await this.find(orgId, issueId);
+ if (!updated) throw new Error('issue vanished');
+ return updated;
  }
 
  // ─── Helpers ──────────────────────────────────────────────────
