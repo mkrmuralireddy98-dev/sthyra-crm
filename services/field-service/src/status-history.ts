@@ -8,7 +8,7 @@
 import type { IssueStatus, StatusHistoryEntry } from './types.js';
 
 export interface StatusHistoryRecorder {
- insert(entry: StatusHistoryEntry): Promise<void>;
+ insertStatusHistory(entry: StatusHistoryEntry): Promise<void>;
  nextId(): number;
 }
 
@@ -39,6 +39,6 @@ export async function recordStatusChange(
  actorId: input.actorId,
  occurredAt: new Date(),
  };
- await recorder.insert(entry);
+ await recorder.insertStatusHistory(entry);
  return entry;
 }

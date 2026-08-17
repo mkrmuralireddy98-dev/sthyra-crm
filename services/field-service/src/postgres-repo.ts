@@ -333,4 +333,11 @@ export class PostgresIssueRepository implements IssueRepository {
  private encodeCursor(item: { readonly id: string; readonly createdAt: Date }): string {
  return `${item.createdAt.toISOString()}|${item.id}`;
  }
+
+  nextId(): number {
+ // Phase 2.b: real Postgres uses BIGSERIAL on status_history.id.
+ // For the in-Postgres repo this is a no-op; the BIGSERIAL handles it.
+ // We return 0 here; the actual ID is set by the database.
+ return 0;
+ }
 }

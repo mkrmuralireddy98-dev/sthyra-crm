@@ -7,7 +7,7 @@ function makeRecorder() {
  const entries: StatusHistoryEntry[] = [];
  let nextId = 1;
  const recorder: StatusHistoryRecorder = {
- async insert(entry) { entries.push(entry); },
+ async insertStatusHistory(entry) { entries.push(entry); },
  nextId: () => nextId++,
  };
  return { recorder, entries };

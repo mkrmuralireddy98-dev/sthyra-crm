@@ -114,3 +114,29 @@ export interface PaginationCursor {
  readonly id: string;
  readonly dir: 'next' | 'prev';
 }
+
+/**
+ * Factory: build a new Issue from CreateIssueInput + server-assigned id.
+ * Pure function (no I/O).
+ */
+export function makeIssueFromInput(input: CreateIssueInput, id: string, now: Date): Issue {
+ return {
+ id,
+ orgId: input.orgId,
+ projectId: input.projectId,
+ captureId: input.captureId ?? null,
+ clientIssueId: input.clientIssueId ?? null,
+ title: input.title,
+ description: input.description,
+ severity: input.severity,
+ status: 'open',
+ assignedTo: input.assignedTo ?? null,
+ coordinates: input.coordinates ?? null,
+ dueDate: input.dueDate ?? null,
+ createdBy: input.createdBy,
+ createdAt: now,
+ updatedAt: now,
+ resolvedAt: null,
+ deletedAt: null,
+ };
+}

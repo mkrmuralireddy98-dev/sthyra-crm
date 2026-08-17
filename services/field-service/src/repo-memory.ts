@@ -259,7 +259,7 @@ export class InMemoryIssueRepository implements IssueRepository {
  }
 
  /** Allocates a fresh status_history id (monotonic). */
- nextHistoryId(): number {
+ nextId(): number {
  this.idCounter.history += 1;
  return this.idCounter.history;
  }
