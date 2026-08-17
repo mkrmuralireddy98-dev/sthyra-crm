@@ -1,0 +1,20 @@
+{
+  "name": "@sthyra-crm/workflow-service",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/cli.js",
+  "scripts": {
+    "test": "tsx --test src/**/*.test.ts src/**/**/*.test.ts src/**/**/**/*.test.ts",
+    "start": "node dist/cli.js"
+  },
+  "dependencies": {
+    "@sthyra-crm/observability": "workspace:*",
+    "fastify": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.6.0"
+  }
+}
