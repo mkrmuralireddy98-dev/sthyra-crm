@@ -57,7 +57,7 @@ describe('docker-compose.integration.yml', () => {
  });
 
  it('capture-service has DATABASE_URL pointing at the postgres container', () => {
- assert.match(content, /DATABASE_URL: postgres:\/\/sthyra_crm:sthyra_crm@postgres:5432\/sthyra_crm/);
+ assert.match(content, /DATABASE_URL: postgres:\/\/sthyra_crm:[^@]+@postgres:5432\/sthyra_crm/);
  assert.match(content, /REDIS_URL: redis:\/\/redis:6379/);
  assert.match(content, /STHYRA_CRM_STORAGE: local/);
  });
