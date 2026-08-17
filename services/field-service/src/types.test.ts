@@ -16,8 +16,8 @@ describe('Field Service types', () => {
  });
 
  it('ISSUE_STATUSES has exactly 4 values', () => {
- assert.equal(ISSUE_STATUSES.length, 4);
- assert.deepEqual([...ISSUE_STATUSES].sort(), ['in_progress', 'open', 'resolved', 'wont_fix']);
+ assert.equal(ISSUE_STATUSES.length, 5);
+ assert.deepEqual([...ISSUE_STATUSES].sort(), ['closed', 'in_progress', 'open', 'resolved', 'wont_fix']);
  });
 
  it('Coordinates is a 3D coordinate triple', () => {

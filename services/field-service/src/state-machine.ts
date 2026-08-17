@@ -14,6 +14,7 @@
  * in_progress --resolve--> resolved
  * in_progress --wont-fix--> wont_fix
  * resolved --reopen--> open
+ * resolved --close--> closed (Phase 7 inspect pass; terminal)
  * wont_fix --reopen--> open
  *
  * Invalid: any self-transition, in_progress → open (must resolve first),
@@ -22,7 +23,7 @@
 
 import type { IssueStatus } from './types.js';
 
-export const ISSUE_STATUSES = ['open', 'in_progress', 'resolved', 'wont_fix'] as const;
+export const ISSUE_STATUSES = ['open', 'in_progress', 'resolved', 'closed', 'wont_fix'] as const;
 export type { IssueStatus };
 
 export interface StatusState {
@@ -37,12 +38,14 @@ export type StatusEvent =
  | { readonly type: 'claim'; readonly actorId: string; readonly retry?: boolean }
  | { readonly type: 'resolve'; readonly actorId: string; readonly reason: string }
  | { readonly type: 'wont_fix'; readonly actorId: string; readonly reason: string }
- | { readonly type: 'reopen'; readonly actorId: string; readonly reason: string };
+ | { readonly type: 'reopen'; readonly actorId: string; readonly reason: string }
+ | { readonly type: 'close'; readonly actorId: string };
 
 const TRANSITIONS: Readonly<Record<IssueStatus, readonly IssueStatus[]>> = {
  open: ['in_progress', 'resolved', 'wont_fix'],
  in_progress: ['resolved', 'wont_fix'],
- resolved: ['open'],
+ resolved: ['open', 'closed'],
+ closed: [],
  wont_fix: ['open'],
 };
 
@@ -79,6 +82,8 @@ export function transitionStatus(state: StatusState, event: StatusEvent): Status
  return 'wont_fix';
  case 'reopen':
  return 'open';
+ case 'close':
+ return 'closed';
  }
  })();
 
@@ -96,6 +101,7 @@ export function transitionStatus(state: StatusState, event: StatusEvent): Status
  actorId: event.actorId,
  reason: event.reason ?? null,
  resolvedAt: nextStatus === 'resolved' ? now : null,
+ closedAt: nextStatus === 'closed' ? now : null,
  attempt: nextAttempt,
  };
 }
