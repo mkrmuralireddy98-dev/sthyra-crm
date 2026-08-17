@@ -88,16 +88,38 @@ export async function startPostgresServer(
  const repo = new PostgresCaptureRepository({ pg: pgClient });
  const idempotency = new InMemoryIdempotencyStore(); // Phase 1.b: Redis
  const bus = new InMemoryEventBus(); // Phase 1.b: Redis pub/sub
-
- const captureApp = await buildCaptureServer({ repo, idempotency, bus });
+ const { PostgresOutboxWriter } = await import('./outbox-writer.js');
+ const { OutboxDispatcher } = await import('./outbox.js');
+ const outboxWriter = new PostgresOutboxWriter({ pg: pgClient });
+ const captureApp = await buildCaptureServer({ repo, idempotency, bus, outboxWriter: outboxWriter.write.bind(outboxWriter) });
  void app;
  await captureApp.listen({ port, host });
+
+ // Start the outbox dispatcher — drains event_outbox into the bus every 1000ms
+ const dispatcher = new OutboxDispatcher({
+ pg: pgClient,
+ sink: async (row) => {
+ await bus.publish({
+ type: row.event_type as 'capture.initiated' | 'capture.uploaded' | 'capture.failed' | 'capture.archived',
+ captureId: row.capture_id,
+ orgId: row.org_id,
+ projectId: row.project_id,
+ occurredAt: new Date(row.created_at),
+ });
+ },
+ pollIntervalMs: 1000,
+ });
+ dispatcher.start();
+ emit('info', 'outbox_dispatcher_started', { pollIntervalMs: 1000 });
 
  return {
  port,
  host,
  url: `http://127.0.0.1:${port}`,
- close: async () => { await captureApp.close(); },
+ close: async () => {
+ await dispatcher.stop();
+ await captureApp.close();
+ },
  };
 }
 
