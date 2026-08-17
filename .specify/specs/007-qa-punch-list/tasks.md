@@ -36,3 +36,40 @@ T-019 SSE closeout tests (4+ tests)
 T-120 CLI E2E + integration
 
 ## Status — pending /speckit.implement
+
+## Status — Phase 7 partial (2026-08-17)
+
+Slices 1 + 2 shipped. Slices 3-4 deferred (HTTP/SSE/CLI E2E).
+
+### Slices
+
+- ✅ Slice 1 Schema + types + state machine (T-001 to T-005)
+
+  + IssueKind, Trade, PunchData, IssuePhoto, CloseoutReport
+
+  + State machine: closed terminal via inspect(pass)
+
+- ✅ Slice 2a Closeout report (T-017 to T-018)
+
+  + computeCloseoutReport: pure aggregation
+
+  + 9 tests covering empty/all-open/half/all-closed/byStatus/byTrade/avgHours
+
+- ⏳ Slice 2b Service layer (punch item creation, addPhoto, inspect) — pending HTTP wiring
+
+- ⏳ Slice 3 HTTP routes (FR-2 photos, FR-4 inspect, FR-5 closeout endpoint, FR-8 SSE) — pending
+
+- ⏳ Slice 4 Closeout SSE + CLI E2E — pending
+
+
+### Numbers
+
+- field-service: 139 tests (was 130, +9 closeout)
+
+- capture-service: 276 tests
+- field-service: 130 tests (pre-Phase 7) + 9 (Phase 7 closeout)
+- bim-viewer-service: 83 tests
+- ai-copilot-service: 74 tests
+- mobile-bff-service: 82 tests
+- Whole project: 768 tests
+- 72 commits on main, all pushed to https://github.com/mkrmuralireddy98-dev/sthyra-crm
