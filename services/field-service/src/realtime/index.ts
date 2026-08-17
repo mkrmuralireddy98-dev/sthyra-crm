@@ -34,8 +34,10 @@ export class InMemoryEventBus implements IssueEventBus {
 
   async publish(event: IssueEvent): Promise<void> {
     const list = this.subs.get(event.issueId) ?? [];
+    const wildcard = this.subs.get('*__closeout__') ?? [];
+    const all = [...list, ...wildcard];
     await Promise.all(
-      list.map(async (sub) => {
+      all.map(async (sub) => {
         if (sub.orgId !== event.orgId) return;
         try {
           await sub.handler(event);

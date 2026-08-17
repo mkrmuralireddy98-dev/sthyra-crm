@@ -12,6 +12,7 @@ import { encodeCursor } from './pagination.js';
 import type { IssueRepository } from './repository.js';
 import { InMemoryEventBus } from './realtime/index.js';
 import { installRealtimePlugin } from './realtime/sse.js';
+import { installCloseoutSSE } from './realtime/closeout-sse.js';
 import { computeCloseoutReport } from './closeout.js';
 
 export interface BuildServerDeps {
@@ -330,6 +331,9 @@ export async function buildFieldServer(deps: BuildServerDeps = {}): Promise<Fast
 
  // SSE endpoint (T-023)
  await installRealtimePlugin({ app, bus, repo });
+
+ // Phase 7 FR-8: closeout SSE (project-scoped)
+ await installCloseoutSSE(app, bus);
 
  return app;
 }
