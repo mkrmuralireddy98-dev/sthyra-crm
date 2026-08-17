@@ -161,3 +161,25 @@
 
 Phase 3 status: pending
 
+
+## Status — Phase 3 complete (2026-08-17)
+
+All 7 slices shipped. 83 bim-viewer-service tests passing.
+
+### Slices
+
+- ✅ Slice 1 Foundations (T-001 to T-003): package, types, BimRepository
+- ✅ Slice 2 Spatial + IFC + state + diff + schema (T-006 to T-010): BboxTree, IFC parser, state machine, diff, SQL
+- ✅ Slice 3 Service layer (T-011 to T-014): upload, lookup, diff, delete, list
+- ✅ Slice 4 HTTP layer (T-015 to T-022): 8 routes with RFC 7807
+- ✅ Slice 5 Realtime (T-023 to T-024): InMemoryEventBus + SSE
+- ✅ Slice 6 Observability (T-025 to T-027): request-id wired; metrics deferred Phase 3.b
+- ✅ Slice 7 E2E + Dockerfile + integration (T-028 to T-030): CLI, Dockerfile, docker-compose
+
+### Numbers (2026-08-17)
+
+- bim-viewer-service: 83 tests
+- capture-service: 276 tests
+- field-service: 130 tests
+- Whole project: 603 tests
+- 50 commits on main, all pushed to https://github.com/mkrmuralireddy98-dev/sthyra-crm
