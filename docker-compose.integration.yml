@@ -195,6 +195,23 @@ services:
       - "9096:9096"
 
 
+  workflow-service:
+    build:
+      context: .
+      dockerfile: services/workflow-service/Dockerfile
+    container_name: sthyra-crm-workflow-int
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://sthyra_crm:sthyra_crm_dev_password@postgres:5432/sthyra_crm
+      WORKFLOW_SERVICE_TOKEN: sthyra-crm-workflow-service-token
+      PORT: "9097"
+      HOST: "0.0.0.0"
+    ports:
+      - "9097:9097"
+
+
 volumes:
   sthyra-crm-pg-data-int:
     driver: local
