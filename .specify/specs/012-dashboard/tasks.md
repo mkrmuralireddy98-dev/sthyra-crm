@@ -41,3 +41,29 @@ T-021 docker-compose integration (port 9099)
 T-022 CLI E2E tests
 
 ## Status — pending /speckit.implement
+
+## Status — Phase 12 COMPLETE (2026-08-17)
+
+All 5 slices shipped. 47 dashboard-service tests passing.
+
+### Slices
+- ✅ Slice 1 Foundations + layout (8 tests)
+- ✅ Slice 2 Service layer (16 tests)
+- ✅ Slice 3 HTTP routes (FR-1 to FR-8)
+- ✅ Slice 4 More routes
+- ✅ Slice 5 CLI + Dockerfile + integration (3 tests)
+
+### Numbers
+- dashboard-service: 47 tests
+- capture-service: 276 tests
+- field-service: 158 tests
+- bim-viewer-service: 83 tests
+- ai-copilot-service: 74 tests
+- mobile-bff-service: 82 tests
+- track-service: 65 tests
+- report-service: 31 tests
+- workflow-service: 37 tests
+- integration-service: 33 tests
+- Whole project: 999 tests
+- 100 commits on main
+
