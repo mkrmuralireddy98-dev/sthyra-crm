@@ -166,7 +166,10 @@ export async function buildFieldServer(deps: BuildServerDeps = {}): Promise<Fast
  });
  return reply.code(200).send(updated);
  } catch (err) {
- return problem(reply, 400, 'https://sthyra-crm.dev/errors/invalid-input', 'Update failed', (err as Error).message, 'invalid_input', traceId);
+ const message = (err as Error).message;
+ const code = /not found/i.test(message) ? 'not_found' : 'invalid_input';
+ const status = /not found/i.test(message) ? 404 : 400;
+ return problem(reply, status, 'https://sthyra-crm.dev/errors/not-found', 'Update failed', message, code, traceId);
  }
  });
 

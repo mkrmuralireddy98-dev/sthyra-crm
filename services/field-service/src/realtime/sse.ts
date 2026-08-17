@@ -45,12 +45,12 @@ export async function installRealtimePlugin(deps: RealtimePluginDeps): Promise<v
  return reply.send({ error: 'issue not found' });
  }
 
- void reply.header('content-type', 'text/event-stream');
- void reply.header('cache-control', 'no-cache');
- void reply.header('connection', 'keep-alive');
- void reply.header('x-accel-buffering', 'no');
-
- reply.raw.writeHead(200);
+ reply.raw.writeHead(200, {
+ 'content-type': 'text/event-stream',
+ 'cache-control': 'no-cache',
+ 'connection': 'keep-alive',
+ 'x-accel-buffering': 'no',
+ });
  // History replay
  const initial: IssueEvent = {
  type:
@@ -72,6 +72,18 @@ export async function installRealtimePlugin(deps: RealtimePluginDeps): Promise<v
  const heartbeat = setInterval(() => {
  reply.raw.write(`: heartbeat ${new Date().toISOString()}\n\n`);
  }, 30_000);
+
+ // ?once=1 closes the stream after history replay (used by tests).
+ const q = (req.query as { once?: string });
+ if (q.once === '1') {
+ // give the subscription a tick to flush any in-flight events
+ setTimeout(() => {
+ clearInterval(heartbeat);
+ unsub();
+ reply.raw.end();
+ }, 50);
+ return;
+ }
 
  reply.raw.on('close', () => {
  clearInterval(heartbeat);
