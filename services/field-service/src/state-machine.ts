@@ -31,6 +31,7 @@ export interface StatusState {
  readonly actorId: string | null;
  readonly reason: string | null;
  readonly resolvedAt: Date | null;
+ readonly closedAt: Date | null;
  readonly attempt: number;
 }
 
@@ -99,7 +100,7 @@ export function transitionStatus(state: StatusState, event: StatusEvent): Status
  return {
  status: nextStatus,
  actorId: event.actorId,
- reason: event.reason ?? null,
+ reason: event.type === 'claim' ? null : event.reason ?? null,
  resolvedAt: nextStatus === 'resolved' ? now : null,
  closedAt: nextStatus === 'closed' ? now : null,
  attempt: nextAttempt,

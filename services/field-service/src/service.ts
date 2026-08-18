@@ -32,7 +32,7 @@ import type {
 const DEFAULT_PAGE_LIMIT = 50;
 const DEFAULT_PAGINATION_SECRET = process.env.PAGINATION_SECRET ?? 'sthyra-crm-dev-pagination-secret-32b';
 
-export type IssueEventType = 'issue.created' | 'issue.updated' | 'issue.commented' | 'issue.resolved' | 'issue.reopened';
+export type IssueEventType = 'issue.created' | 'issue.updated' | 'issue.commented' | 'issue.resolved' | 'issue.reopened' | 'issue.closed';
 
 export interface IssueEvent {
  readonly type: IssueEventType;
@@ -279,7 +279,7 @@ export class IssueService {
  const now = this.now();
  if (input.outcome === 'pass') {
  // resolved → closed (terminal)
- await this.repo.updateIssue(orgId, issueId, { status: 'closed' as IssueStatus });
+ await this.repo.updateIssue(orgId, issueId, { status: 'closed' as IssueStatus, actorId: input.inspectorId });
  await this.repo.insertStatusHistory({
  id: this.repo.nextId(), orgId, issueId,
  fromStatus: 'resolved', toStatus: 'closed',
@@ -289,7 +289,7 @@ export class IssueService {
  this.emit({ type: 'issue.closed', issueId, orgId, projectId: issue.projectId, occurredAt: now });
  } else {
  // resolved → in_progress (reopened)
- await this.repo.updateIssue(orgId, issueId, { status: 'in_progress', resolvedAt: null });
+ await this.repo.updateIssue(orgId, issueId, { status: 'in_progress', actorId: input.inspectorId });
  await this.repo.insertStatusHistory({
  id: this.repo.nextId(), orgId, issueId,
  fromStatus: 'resolved', toStatus: 'in_progress',
