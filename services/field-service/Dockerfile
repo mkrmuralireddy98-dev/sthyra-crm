@@ -3,6 +3,7 @@ WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@11.5.2 --activate
 COPY pnpm-workspace.yaml package.json tsconfig.base.json .npmrc ./
 COPY packages/ ./packages/
+COPY services/ ./services/
 COPY services/field-service/ ./services/field-service/
 WORKDIR /app/services/field-service
 RUN pnpm install --frozen-lockfile=false --filter @sthyra-crm/field-service...

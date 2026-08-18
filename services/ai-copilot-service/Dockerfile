@@ -3,6 +3,7 @@ WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@11.5.2 --activate
 COPY pnpm-workspace.yaml package.json tsconfig.base.json ./
 COPY packages/ ./packages/
+COPY services/ ./services/
 COPY services/ai-copilot-service/ ./services/ai-copilot-service/
 WORKDIR /app/services/ai-copilot-service
 RUN pnpm install --frozen-lockfile=false --filter @sthyra-crm/ai-copilot-service...

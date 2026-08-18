@@ -8,6 +8,7 @@ COPY packages/auth/package.json ./packages/auth/
 COPY packages/tokens/package.json ./packages/tokens/
 RUN pnpm install --frozen-lockfile
 COPY packages/ ./packages/
+COPY services/ ./services/
 COPY services/capture-service/ ./services/capture-service/
 RUN pnpm --filter @sthyra-crm/capture-service build
 
