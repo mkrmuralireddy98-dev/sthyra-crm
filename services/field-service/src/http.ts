@@ -25,12 +25,12 @@ export interface BuildServerDeps {
 
 function getTenant(req: { headers: Record<string, string | string[] | undefined> }): string {
  const t = req.headers['x-tenant-id'];
- return (Array.isArray(t) ? t[0] : t ?? '').toString().trim();
+ return (Array.isArray(t) ? (t[0] ?? '') : (t ?? '')).toString().trim();
 }
 
 function getIdempotencyKey(req: { headers: Record<string, string | string[] | undefined> }): string {
  const k = req.headers['x-idempotency-key'];
- return (Array.isArray(k) ? k[0] : k ?? '').toString().trim();
+ return (Array.isArray(k) ? (k[0] ?? '') : (k ?? '')).toString().trim();
 }
 
 interface ProblemJson {

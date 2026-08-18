@@ -56,6 +56,7 @@ export function initialStatusState(): StatusState {
  actorId: null,
  reason: null,
  resolvedAt: null,
+ closedAt: null,
  attempt: 0,
  };
 }
@@ -100,7 +101,7 @@ export function transitionStatus(state: StatusState, event: StatusEvent): Status
  return {
  status: nextStatus,
  actorId: event.actorId,
- reason: event.type === 'claim' ? null : event.reason ?? null,
+ reason: event.type === 'claim' || event.type === 'close' ? null : (event as { reason: string }).reason ?? null,
  resolvedAt: nextStatus === 'resolved' ? now : null,
  closedAt: nextStatus === 'closed' ? now : null,
  attempt: nextAttempt,

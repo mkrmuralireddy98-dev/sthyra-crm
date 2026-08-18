@@ -314,6 +314,7 @@ export class IssueService {
  actorId: null,
  reason: null,
  resolvedAt: issue.resolvedAt,
+ closedAt: null,
  attempt: 0,
  };
  }

@@ -87,11 +87,12 @@ export class PostgresIssueRepository implements IssueRepository {
  coordinates: string | null; due_date: Date | null; created_by: string;
  created_at: Date; updated_at: Date; resolved_at: Date | null;
  deleted_at: Date | null;
+ kind: string | null; punch_data: string | null;
  }>(
  `SELECT id, org_id, project_id, capture_id, client_issue_id,
  title, description, severity, status, assigned_to,
  coordinates, due_date, created_by, created_at, updated_at,
- resolved_at, deleted_at
+ resolved_at, deleted_at, kind, punch_data
  FROM issues
  WHERE org_id = $1 AND id = $2 AND deleted_at IS NULL`,
  [orgId, id],
@@ -116,6 +117,8 @@ export class PostgresIssueRepository implements IssueRepository {
  updatedAt: row.updated_at,
  resolvedAt: row.resolved_at,
  deletedAt: row.deleted_at,
+ kind: (row.kind ?? 'standard') as 'standard' | 'punch',
+ punchData: row.punch_data ? JSON.parse(row.punch_data) as any : null,
  };
  }
 
@@ -339,5 +342,16 @@ export class PostgresIssueRepository implements IssueRepository {
  // For the in-Postgres repo this is a no-op; the BIGSERIAL handles it.
  // We return 0 here; the actual ID is set by the database.
  return 0;
+ }
+
+ // ─── Photo stubs (Phase 7 — not implemented in Postgres repo) ────────────
+ async insertPhoto(_photo: any): Promise<void> {
+ throw new Error('insertPhoto not implemented in PostgresIssueRepository');
+ }
+ async listPhotos(_orgId: string, _issueId: string): Promise<readonly any[]> {
+ return [];
+ }
+ async findPhoto(_orgId: string, _issueId: string, _photoId: string): Promise<any | null> {
+ return null;
  }
 }
