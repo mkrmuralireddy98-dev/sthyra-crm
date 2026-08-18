@@ -57,7 +57,11 @@ export class AwsS3Client implements S3Client {
  const input = cmd.input;
 
  if (input.Body !== undefined && input.Key !== undefined) {
- const PutObject = mod.PutObjectCommand;
+ // Cast through the constructor's specific type to avoid union-type inference issues
+ const PutObject = mod.PutObjectCommand as unknown as new (args: {
+ Bucket: string; Key: string; Body?: Buffer | Uint8Array;
+ ContentType?: string; Metadata?: Record<string, string>;
+ }) => { input: { Bucket: string; Key: string; Body?: Buffer | Uint8Array; ContentType?: string; Metadata?: Record<string, string> } };
  const body = typeof input.Body === 'string'
  ? new TextEncoder().encode(input.Body)
  : new Uint8Array(input.Body.buffer, input.Body.byteOffset, input.Body.byteLength);
@@ -120,7 +124,8 @@ export async function presignS3Url(input: {
  region: input.region,
  ...(input.credentials ? { credentials: input.credentials } : {}),
  });
- const Cmd = input.method === 'GET' ? mod.GetObjectCommand : mod.PutObjectCommand;
+ // eslint-disable-next-line @typescript-eslint/no-explicit-any
+ const Cmd: any = input.method === 'GET' ? mod.GetObjectCommand : mod.PutObjectCommand;
  const url = await presigner.getSignedUrl(
  client,
  new Cmd({ Bucket: input.bucket, Key: input.key }),

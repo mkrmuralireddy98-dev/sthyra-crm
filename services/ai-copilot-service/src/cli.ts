@@ -30,7 +30,7 @@ export async function startInMemoryServer(opts: { port?: number } = {}): Promise
  };
 }
 
-const isMain = process.argv[1] && process.argv[1].endsWith('cli.js');
+const isMain = (process.argv[1]?.endsWith('cli.js') || process.argv[1]?.endsWith('cli.ts'));
 if (isMain) {
  const port = Number.parseInt(process.env.PORT ?? '9093', 10);
  startInMemoryServer({ port }).then((s) => {

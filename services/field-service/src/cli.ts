@@ -60,7 +60,7 @@ export async function startPostgresServer(opts: { databaseUrl: string; port?: nu
  return startInMemoryServer({ port: opts.port });
 }
 
-const isMain = process.argv[1] && process.argv[1].endsWith('cli.js');
+const isMain = (process.argv[1]?.endsWith('cli.js') || process.argv[1]?.endsWith('cli.ts'));
 if (isMain) {
  const port = Number.parseInt(process.env.PORT ?? '9091', 10);
  const databaseUrl = process.env.DATABASE_URL;
