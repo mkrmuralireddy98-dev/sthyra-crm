@@ -84,20 +84,6 @@ services:
     ports:
       - "9091:9091"
 
-    build:
-      context: .
-      dockerfile: services/field-service/Dockerfile
-    container_name: sthyra-crm-field-int
-    depends_on:
-      postgres:
-        condition: service_healthy
-    environment:
-      DATABASE_URL: postgres://sthyra_crm:sthyra_crm_dev_password@postgres:5432/sthyra_crm
-      PORT: "9091"
-      HOST: "0.0.0.0"
-    ports:
-      - "9091:9091"
-
   bim-viewer-service:
     build:
       context: .
@@ -242,8 +228,8 @@ services:
     ports:
       - "9099:9099"
 
-
 volumes:
+
   sthyra-crm-pg-data-int:
     driver: local
   sthyra-crm-storage-int:
