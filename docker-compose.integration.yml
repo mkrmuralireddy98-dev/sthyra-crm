@@ -84,7 +84,6 @@ services:
     ports:
       - "9091:9091"
 
-  field-service:
     build:
       context: .
       dockerfile: services/field-service/Dockerfile
