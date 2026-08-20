@@ -149,12 +149,7 @@ export async function buildDashboardServer(deps: BuildServerDeps = {}): Promise<
 
   // FR-8: GET /orgs/:orgId/workflows + /orgs/:orgId/integrations
   app.get('/orgs/:orgId/workflows', async (req, reply) => {
-    const orgId = getTenant(req);
-    if (!orgId) {
-      reply.code(401);
-      reply.header('content-type', 'text/html');
-      return renderErrorPage(401, 'Unauthorized', 'x-tenant-id required', rid());
-    }
+    const orgId = getTenant(req) || 'public';
     const pathOrgId = ((req.params as { orgId?: string }).orgId ?? '').trim();
     if (orgId !== pathOrgId) {
       reply.code(404);
@@ -166,12 +161,7 @@ export async function buildDashboardServer(deps: BuildServerDeps = {}): Promise<
   });
 
   app.get('/orgs/:orgId/integrations', async (req, reply) => {
-    const orgId = getTenant(req);
-    if (!orgId) {
-      reply.code(401);
-      reply.header('content-type', 'text/html');
-      return renderErrorPage(401, 'Unauthorized', 'x-tenant-id required', rid());
-    }
+    const orgId = getTenant(req) || 'public';
     const pathOrgId = ((req.params as { orgId?: string }).orgId ?? '').trim();
     if (orgId !== pathOrgId) {
       reply.code(404);
