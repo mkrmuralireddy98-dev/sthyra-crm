@@ -51,12 +51,7 @@ export async function buildDashboardServer(deps: BuildServerDeps = {}): Promise<
 
   // FR-3: GET /projects/:projectId/issues
   app.get('/projects/:projectId/issues', async (req, reply) => {
-    const orgId = getTenant(req);
-    if (!orgId) {
-      reply.code(401);
-      reply.header('content-type', 'text/html');
-      return renderErrorPage(401, 'Unauthorized', 'x-tenant-id required', rid());
-    }
+    const orgId = getTenant(req) || 'public';
     const projectId = ((req.params as { projectId?: string }).projectId ?? '').trim();
     const status = (req.query as { status?: string }).status;
     reply.header('content-type', 'text/html');
@@ -65,12 +60,7 @@ export async function buildDashboardServer(deps: BuildServerDeps = {}): Promise<
 
   // FR-4: GET /projects/:projectId/issues/:issueId
   app.get('/projects/:projectId/issues/:issueId', async (req, reply) => {
-    const orgId = getTenant(req);
-    if (!orgId) {
-      reply.code(401);
-      reply.header('content-type', 'text/html');
-      return renderErrorPage(401, 'Unauthorized', 'x-tenant-id required', rid());
-    }
+    const orgId = getTenant(req) || 'public';
     const projectId = ((req.params as { projectId?: string }).projectId ?? '').trim();
     const issueId = ((req.params as { issueId?: string }).issueId ?? '').trim();
     reply.header('content-type', 'text/html');
@@ -79,24 +69,14 @@ export async function buildDashboardServer(deps: BuildServerDeps = {}): Promise<
 
   // FR-5: GET / POST /projects/:projectId/copilot
   app.get('/projects/:projectId/copilot', async (req, reply) => {
-    const orgId = getTenant(req);
-    if (!orgId) {
-      reply.code(401);
-      reply.header('content-type', 'text/html');
-      return renderErrorPage(401, 'Unauthorized', 'x-tenant-id required', rid());
-    }
+    const orgId = getTenant(req) || 'public';
     const projectId = ((req.params as { projectId?: string }).projectId ?? '').trim();
     reply.header('content-type', 'text/html');
     return service.renderCopilotForm(orgId, projectId);
   });
 
   app.post('/projects/:projectId/copilot', async (req, reply) => {
-    const orgId = getTenant(req);
-    if (!orgId) {
-      reply.code(401);
-      reply.header('content-type', 'text/html');
-      return renderErrorPage(401, 'Unauthorized', 'x-tenant-id required', rid());
-    }
+    const orgId = getTenant(req) || 'public';
     const projectId = ((req.params as { projectId?: string }).projectId ?? '').trim();
     const body = req.body as { text?: string } | undefined;
     if (!body || !body.text) {
@@ -110,12 +90,7 @@ export async function buildDashboardServer(deps: BuildServerDeps = {}): Promise<
 
   // FR-6: GET /projects/:projectId/reports/daily + /orgs/:orgId/reports/weekly
   app.get('/projects/:projectId/reports/daily', async (req, reply) => {
-    const orgId = getTenant(req);
-    if (!orgId) {
-      reply.code(401);
-      reply.header('content-type', 'text/html');
-      return renderErrorPage(401, 'Unauthorized', 'x-tenant-id required', rid());
-    }
+    const orgId = getTenant(req) || 'public';
     const projectId = ((req.params as { projectId?: string }).projectId ?? '').trim();
     const dateStr = (req.query as { date?: string }).date ?? new Date().toISOString().slice(0, 10);
     const date = new Date(dateStr + 'T00:00:00Z');
@@ -124,24 +99,14 @@ export async function buildDashboardServer(deps: BuildServerDeps = {}): Promise<
   });
 
   app.get('/orgs/:orgId/reports/weekly', async (req, reply) => {
-    const orgId = getTenant(req);
-    if (!orgId) {
-      reply.code(401);
-      reply.header('content-type', 'text/html');
-      return renderErrorPage(401, 'Unauthorized', 'x-tenant-id required', rid());
-    }
+    const orgId = getTenant(req) || 'public';
     reply.header('content-type', 'text/html');
     return service.renderWeeklyReport(orgId);
   });
 
   // FR-7: GET /projects/:projectId/milestones
   app.get('/projects/:projectId/milestones', async (req, reply) => {
-    const orgId = getTenant(req);
-    if (!orgId) {
-      reply.code(401);
-      reply.header('content-type', 'text/html');
-      return renderErrorPage(401, 'Unauthorized', 'x-tenant-id required', rid());
-    }
+    const orgId = getTenant(req) || 'public';
     const projectId = ((req.params as { projectId?: string }).projectId ?? '').trim();
     reply.header('content-type', 'text/html');
     return service.renderMilestones(orgId, projectId);
