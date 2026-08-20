@@ -273,10 +273,6 @@ services:
         condition: service_started
       capture-service:
         condition: service_started
-      org-service:
-        condition: service_started
-      project-service:
-        condition: service_started
     environment:
       PORT: "3000"
       HOST: "0.0.0.0"
