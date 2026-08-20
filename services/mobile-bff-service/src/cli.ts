@@ -17,7 +17,7 @@ export interface StartedServer {
 export async function startInMemoryServer(opts: { port?: number } = {}): Promise<StartedServer> {
   const repo = new InMemoryMobileRepository();
   const app = await buildMobileServer({ repo });
-  const address = await app.listen({ port: opts.port ?? 0, host: '127.0.0.1' });
+  const address = await app.listen({ port: opts.port ?? 0, host: process.env.HOST ?? '0.0.0.0' });
   const port = typeof address === 'string'
     ? Number(address.split(':').pop())
     : (opts.port ?? 0);
@@ -32,7 +32,7 @@ const isMain = (process.argv[1]?.endsWith('cli.js') || process.argv[1]?.endsWith
 if (isMain) {
   const port = Number.parseInt(process.env.PORT ?? '9094', 10);
   startInMemoryServer({ port }).then((s) => {
-    console.log(`mobile-bff-service listening on http://127.0.0.1:${s.port}`);
+    console.log(`mobile-bff-service listening on http://0.0.0.0:${s.port}`);
   }).catch((err: Error) => {
     console.error('mobile-bff-service failed to start:', err.message);
     process.exit(1);

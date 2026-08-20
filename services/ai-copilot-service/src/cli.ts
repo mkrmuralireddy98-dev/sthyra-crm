@@ -19,7 +19,7 @@ export async function startInMemoryServer(opts: { port?: number } = {}): Promise
  const repo = new InMemoryCopilotRepository();
  const bus = new InMemoryEventBus();
  const app = await buildCopilotServer({ repo, bus });
- const address = await app.listen({ port: opts.port ?? 0, host: '127.0.0.1' });
+ const address = await app.listen({ port: opts.port ?? 0, host: process.env.HOST ?? '0.0.0.0' });
  const port = typeof address === 'string'
  ? Number(address.split(':').pop())
  : (opts.port ?? 0);
@@ -34,7 +34,7 @@ const isMain = (process.argv[1]?.endsWith('cli.js') || process.argv[1]?.endsWith
 if (isMain) {
  const port = Number.parseInt(process.env.PORT ?? '9093', 10);
  startInMemoryServer({ port }).then((s) => {
- console.log(`ai-copilot-service listening on http://127.0.0.1:${s.port}`);
+ console.log(`ai-copilot-service listening on http://0.0.0.0:${s.port}`);
  }).catch((err: Error) => {
  console.error('ai-copilot-service failed to start:', err.message);
  process.exit(1);

@@ -27,7 +27,7 @@ export async function startInMemoryServer(opts: { port?: number } = {}): Promise
  repo: new InMemoryIssueRepository(),
  idempotency: new InMemoryIdempotencyStore(),
  });
- const address = await app.listen({ port: opts.port ?? 0, host: '127.0.0.1' });
+ const address = await app.listen({ port: opts.port ?? 0, host: process.env.HOST ?? '0.0.0.0' });
  // address is a string like 'http://127.0.0.1:54321' (Node 18+) or an object.
  const port = typeof address === 'string'
  ? Number(address.split(':').pop())
@@ -63,7 +63,7 @@ if (isMain) {
  const databaseUrl = process.env.DATABASE_URL;
  const start = databaseUrl ? startPostgresServer({ databaseUrl, port }) : startInMemoryServer({ port });
  start.then((s) => {
- console.log(`field-service listening on http://127.0.0.1:${s.port}`);
+ console.log(`field-service listening on http://0.0.0.0:${s.port}`);
  void randomUUID;
  }).catch((err: Error) => {
  console.error('field-service failed to start:', err.message);
