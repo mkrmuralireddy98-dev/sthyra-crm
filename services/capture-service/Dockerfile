@@ -19,10 +19,12 @@ COPY --from=builder /app/services/capture-service/package.json ./services/captur
 COPY --from=builder /app/services/capture-service/dist ./services/capture-service/dist
 COPY --from=builder /app/packages/observability/dist ./packages/observability/dist
 COPY --from=builder /app/packages/observability/package.json ./packages/observability/
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/node_modules/.pnpm ./node_modules/.pnpm
 COPY --from=builder /app/pnpm-workspace.yaml ./
 COPY --from=builder /app/package.json ./
+COPY --from=builder /app/tsconfig.base.json ./
+COPY packages/ ./packages/
+COPY services/ ./services/
+RUN pnpm install --frozen-lockfile --filter @sthyra-crm/capture-service --prod
 RUN mkdir -p /var/lib/sthyra-crm/storage
 ENV PORT=9090
 ENV HOST=0.0.0.0
