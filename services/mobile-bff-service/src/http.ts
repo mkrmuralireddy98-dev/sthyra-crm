@@ -104,6 +104,7 @@ export async function buildMobileServer(deps: BuildServerDeps = {}): Promise<Fas
     const traceId = rid();
     const claims = await requireClaims(req, reply);
     if (!claims || typeof claims !== 'object' || !('orgId' in claims)) return;
+    const c = claims as RequestClaims;
     const idem = getIdempotencyKey(req);
     if (!idem) return problem(reply, 400, 'https://sthyra-crm.dev/errors/missing-idempotency-key', 'Missing Idempotency-Key', 'x-idempotency-key header is required', 'missing_idempotency_key', traceId);
     const body = req.body as { projectId?: string; kind?: string; clientSessionId?: string } | undefined;
@@ -116,8 +117,8 @@ export async function buildMobileServer(deps: BuildServerDeps = {}): Promise<Fas
     }
     try {
       const session = await service.startSession({
-        orgId: claims.orgId,
-        userId: claims.userId,
+        orgId: c.orgId,
+        userId: c.userId,
         projectId: body.projectId,
         kind: body.kind as typeof validKinds[number],
         clientSessionId: body.clientSessionId ?? null,
@@ -128,7 +129,7 @@ export async function buildMobileServer(deps: BuildServerDeps = {}): Promise<Fas
         captureId: session.captureId,
         kind: session.kind,
         startedAt: session.createdAt.toISOString(),
-        deviceMeta: { deviceId: claims.deviceId },
+        deviceMeta: { deviceId: c.deviceId },
       });
     } catch (err) {
       return problem(reply, 400, 'https://sthyra-crm.dev/errors/invalid-input', 'Start failed', (err as Error).message, 'invalid_input', traceId);
@@ -140,6 +141,7 @@ export async function buildMobileServer(deps: BuildServerDeps = {}): Promise<Fas
     const traceId = rid();
     const claims = await requireClaims(req, reply);
     if (!claims || typeof claims !== 'object' || !('orgId' in claims)) return;
+    const c = claims as RequestClaims;
     const sessionId = ((req.params as { sessionId?: string }).sessionId ?? '').trim();
     const chunkIndexRaw = ((req.params as { chunkIndex?: string }).chunkIndex ?? '').trim();
     const chunkIndex = Number.parseInt(chunkIndexRaw, 10);
@@ -151,7 +153,7 @@ export async function buildMobileServer(deps: BuildServerDeps = {}): Promise<Fas
       return problem(reply, 400, 'https://sthyra-crm.dev/errors/invalid-input', 'Invalid body', 'sha256 and sizeBytes required', 'invalid_input', traceId);
     }
     try {
-      const result = await service.uploadChunk(claims.orgId, sessionId, {
+      const result = await service.uploadChunk(c.orgId, sessionId, {
         sessionId, chunkIndex, sha256: body.sha256, sizeBytes: body.sizeBytes,
       });
       // Idempotent replay: same chunkId → 200; new → 201
@@ -189,13 +191,14 @@ export async function buildMobileServer(deps: BuildServerDeps = {}): Promise<Fas
     const traceId = rid();
     const claims = await requireClaims(req, reply);
     if (!claims || typeof claims !== 'object' || !('orgId' in claims)) return;
+    const c = claims as RequestClaims;
     const sessionId = ((req.params as { sessionId?: string }).sessionId ?? '').trim();
     const body = req.body as { actualChunkCount?: number; totalSizeBytes?: number; sha256Root?: string } | undefined;
     if (!body || typeof body !== 'object' || typeof body.actualChunkCount !== 'number' || typeof body.totalSizeBytes !== 'number' || !body.sha256Root) {
       return problem(reply, 400, 'https://sthyra-crm.dev/errors/invalid-input', 'Invalid body', 'actualChunkCount, totalSizeBytes, sha256Root required', 'invalid_input', traceId);
     }
     try {
-      const finalized = await service.finalizeSession(claims.orgId, sessionId, {
+      const finalized = await service.finalizeSession(c.orgId, sessionId, {
         sessionId, actualChunkCount: body.actualChunkCount, totalSizeBytes: body.totalSizeBytes, sha256Root: body.sha256Root,
       });
       return reply.code(200).send({
@@ -221,6 +224,7 @@ export async function buildMobileServer(deps: BuildServerDeps = {}): Promise<Fas
     const traceId = rid();
     const claims = await requireClaims(req, reply);
     if (!claims || typeof claims !== 'object' || !('orgId' in claims)) return;
+    const c = claims as RequestClaims;
     const captureId = ((req.params as { captureId?: string }).captureId ?? '').trim();
     if (!captureId) return problem(reply, 400, 'https://sthyra-crm.dev/errors/invalid-input', 'Invalid captureId', 'captureId required', 'invalid_input', traceId);
     // Phase 5 MVP: stub status (Phase 5.b: call capture-service GET)
@@ -237,6 +241,7 @@ export async function buildMobileServer(deps: BuildServerDeps = {}): Promise<Fas
     const traceId = rid();
     const claims = await requireClaims(req, reply);
     if (!claims || typeof claims !== 'object' || !('orgId' in claims)) return;
+    const c = claims as RequestClaims;
     const idem = getIdempotencyKey(req);
     if (!idem) return problem(reply, 400, 'https://sthyra-crm.dev/errors/missing-idempotency-key', 'Missing Idempotency-Key', 'x-idempotency-key header is required', 'missing_idempotency_key', traceId);
     const body = req.body as { captureId?: string; title?: string; description?: string; severity?: string; coordinates?: { x: number; y: number; z: number } } | undefined;
@@ -249,7 +254,7 @@ export async function buildMobileServer(deps: BuildServerDeps = {}): Promise<Fas
     }
     try {
       const result = await service.raiseIssueFromCamera(
-        claims.orgId, claims.userId, body.captureId,
+        c.orgId, c.userId, body.captureId,
         body.title, body.description,
         body.severity as typeof validSev[number],
         body.coordinates,
@@ -265,13 +270,14 @@ export async function buildMobileServer(deps: BuildServerDeps = {}): Promise<Fas
     const traceId = rid();
     const claims = await requireClaims(req, reply);
     if (!claims || typeof claims !== 'object' || !('orgId' in claims)) return;
+    const c = claims as RequestClaims;
     const body = req.body as { projectId?: string; text?: string } | undefined;
     if (!body || typeof body !== 'object' || !body.projectId || !body.text) {
       return problem(reply, 400, 'https://sthyra-crm.dev/errors/invalid-input', 'Invalid body', 'projectId and text required', 'invalid_input', traceId);
     }
     try {
       const t0 = Date.now();
-      const result = await service.askCopilot(claims.orgId, claims.userId, body.projectId, body.text);
+      const result = await service.askCopilot(c.orgId, c.userId, body.projectId, body.text);
       return reply.code(200).send({
         replyText: result.replyText,
         intent: result.intent,
@@ -287,14 +293,15 @@ export async function buildMobileServer(deps: BuildServerDeps = {}): Promise<Fas
     const traceId = rid();
     const claims = await requireClaims(req, reply);
     if (!claims || typeof claims !== 'object' || !('orgId' in claims)) return;
+    const c = claims as RequestClaims;
     const body = req.body as { apnsToken?: string; pushChannel?: 'apns' | 'fcm'; fcmAppId?: string } | undefined;
     if (!body || typeof body !== 'object' || !body.apnsToken) {
       return problem(reply, 400, 'https://sthyra-crm.dev/errors/invalid-input', 'Invalid body', 'apnsToken required', 'invalid_input', traceId);
     }
     try {
       const token = await service.registerDeviceToken({
-        orgId: claims.orgId, userId: claims.userId,
-        deviceId: claims.deviceId, apnsToken: body.apnsToken,
+        orgId: c.orgId, userId: c.userId,
+        deviceId: c.deviceId, apnsToken: body.apnsToken,
         pushChannel: body.pushChannel,
         fcmAppId: body.fcmAppId ?? null,
       });
@@ -312,13 +319,14 @@ export async function buildMobileServer(deps: BuildServerDeps = {}): Promise<Fas
     const traceId = rid();
     const claims = await requireClaims(req, reply);
     if (!claims || typeof claims !== 'object' || !('orgId' in claims)) return;
+    const c = claims as RequestClaims;
     const deviceId = ((req.params as { deviceId?: string }).deviceId ?? '').trim();
     if (!deviceId) return problem(reply, 400, 'https://sthyra-crm.dev/errors/invalid-input', 'Invalid deviceId', 'deviceId required', 'invalid_input', traceId);
     // Tenant boundary: only unregister your own device
-    if (deviceId !== claims.deviceId) {
+    if (deviceId !== c.deviceId) {
       return problem(reply, 404, 'https://sthyra-crm.dev/errors/not-found', 'Device not found', 'no device with this id in this tenant', 'not_found', traceId);
     }
-    await service.unregisterDeviceToken(claims.orgId, deviceId);
+    await service.unregisterDeviceToken(c.orgId, deviceId);
     return reply.code(204).send();
   });
 

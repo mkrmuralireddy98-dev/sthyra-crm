@@ -28,7 +28,7 @@ export type CopilotEvent =
 
 export interface CopilotServiceDeps {
  readonly repo: CopilotRepository;
- readonly routerDeps: ToolRouterDeps;
+ readonly routerDeps?: ToolRouterDeps;
  readonly paginationSecret?: string;
  readonly onEvent?: (event: CopilotEvent) => void;
 }
@@ -49,13 +49,13 @@ export interface SubmitOutput {
 
 export class CopilotService {
  private readonly repo: CopilotRepository;
- private readonly routerDeps: ToolRouterDeps;
+ private readonly routerDeps?: ToolRouterDeps;
  private readonly paginationSecret: string;
  private readonly onEvent: (e: CopilotEvent) => void;
 
  constructor(deps: CopilotServiceDeps) {
  this.repo = deps.repo;
- this.routerDeps = deps.routerDeps;
+ this.routerDeps = deps.routerDeps ?? { fetchFn: globalThis.fetch, captureServiceUrl: "", fieldServiceUrl: "", bimViewerServiceUrl: "" };
  this.paginationSecret = deps.paginationSecret ?? DEFAULT_PAGINATION_SECRET;
  this.onEvent = deps.onEvent ?? (() => {});
  }
@@ -108,12 +108,13 @@ export class CopilotService {
  const intent: Intent = classifyIntent(input.text);
 
  // Route tools
- const { calls: toolCalls, errors: toolErrors } = await routeTools(intent, this.routerDeps, {
+ const rd = this.routerDeps ?? { fetchFn: globalThis.fetch, captureServiceUrl: '', fieldServiceUrl: '', bimViewerServiceUrl: '' };
+ const { calls: toolCalls, errors: toolErrors } = await routeTools(intent, rd, {
  orgId: input.orgId,
  projectId,
  });
 
- // Compose reply
+// Compose reply
  const replyText = composeReply(intent, toolCalls, toolErrors).text;
 
  // Persist assistant message

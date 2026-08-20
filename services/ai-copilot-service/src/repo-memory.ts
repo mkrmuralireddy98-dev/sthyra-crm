@@ -46,8 +46,9 @@ export class InMemoryCopilotRepository implements CopilotRepository {
  async archiveConversation(orgId: string, id: string): Promise<void> {
  const c = this.conversations.get(this.convKey(orgId, id));
  if (!c) return;
- (c as { state: ConversationState; archivedAt: Date | null }).state = 'archived';
- c.archivedAt = new Date();
+ const writable = c as { state: ConversationState; archivedAt: Date | null };
+ writable.state = 'archived';
+ writable.archivedAt = new Date();
  }
 
  async insertMessage(message: Message): Promise<void> {

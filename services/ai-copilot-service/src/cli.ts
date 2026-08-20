@@ -23,7 +23,7 @@ export async function startInMemoryServer(opts: { port?: number } = {}): Promise
  const port = typeof address === 'string'
  ? Number(address.split(':').pop())
  : (opts.port ?? 0);
- const service = new CopilotService({ repo });
+ const service = new CopilotService({ repo, routerDeps: undefined });
  return {
  app, service, port,
  async stop() { await app.close(); },

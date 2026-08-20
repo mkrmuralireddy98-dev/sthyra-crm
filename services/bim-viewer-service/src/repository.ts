@@ -37,5 +37,3 @@ export interface BimEvent {
 }
 
 export type BimEventSubscriber = (event: BimEvent) => void | Promise<void>;
-TYPES_EOF
-echo "wrote repository.ts"
