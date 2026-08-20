@@ -228,6 +228,41 @@ services:
     ports:
       - "9099:9099"
 
+  admin-service:
+    build:
+      context: .
+      dockerfile: services/admin-service/Dockerfile
+    container_name: sthyra-crm-admin-int
+    depends_on:
+      postgres:
+        condition: service_healthy
+      capture-service:
+        condition: service_started
+      field-service:
+        condition: service_started
+      bim-viewer-service:
+        condition: service_started
+      ai-copilot-service:
+        condition: service_started
+      mobile-bff-service:
+        condition: service_started
+      track-service:
+        condition: service_started
+      report-service:
+        condition: service_started
+      workflow-service:
+        condition: service_started
+      integration-service:
+        condition: service_started
+      dashboard-service:
+        condition: service_started
+    environment:
+      PORT: "9100"
+      HOST: "0.0.0.0"
+    ports:
+      - "9100:9100"
+
+
 volumes:
 
   sthyra-crm-pg-data-int:
