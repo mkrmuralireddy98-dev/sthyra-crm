@@ -21,6 +21,7 @@ COPY --from=builder /app/packages/observability/dist ./packages/observability/di
 COPY --from=builder /app/packages/observability/package.json ./packages/observability/
 COPY --from=builder /app/pnpm-workspace.yaml ./
 COPY --from=builder /app/package.json ./
+COPY --from=builder /app/pnpm-lock.yaml ./
 COPY --from=builder /app/tsconfig.base.json ./
 COPY packages/ ./packages/
 COPY services/ ./services/
