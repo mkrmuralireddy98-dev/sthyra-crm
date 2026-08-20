@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Sidebar } from '@/components/sidebar';
+import { LivePulse } from '@/components/live-pulse';
 import { randomUUID } from 'node:crypto';
 
 export const dynamic = 'force-dynamic';
@@ -61,18 +62,19 @@ export default async function IssuesPage({ params }: { params: { orgId: string }
  <Sidebar currentOrgId={tenantId} currentPath={`/orgs/${tenantId}/issues`} />
 
  <main className="main">
- <header className="page-header">
+ <header className="page-header fade-in">
  <div className="page-header-content">
  <h1 className="page-title">Field Issues</h1>
  <p className="page-subtitle">Punch list, RFIs, and defects across {projectId}</p>
  </div>
- <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+ <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
+ <LivePulse orgId={tenantId} initialCount={counts.total} />
  <span className="tenant-badge">{tenantId}</span>
  <button className="btn btn-primary">+ New issue</button>
  </div>
  </header>
 
- <section className="stats-grid" aria-label="Issue metrics">
+ <section className="stats-grid mount-stagger" aria-label="Issue metrics">
  <div className="stat-card">
  <div className="stat-label">Total issues</div>
  <div className="stat-value">{counts.total}</div>
@@ -93,7 +95,7 @@ export default async function IssuesPage({ params }: { params: { orgId: string }
  </div>
  </section>
 
- <section className="section">
+ <section className="section fade-in">
  <div className="section-header">
  <h2 className="section-title">All issues</h2>
  <span className="section-action">{issues.length} items</span>
@@ -101,7 +103,7 @@ export default async function IssuesPage({ params }: { params: { orgId: string }
 
  {issues.length === 0 ? (
  <div className="empty">
- <div className="empty-icon" aria-hidden="true">⚠</div>
+ <div className="empty-icon">⚠</div>
  <h3 className="empty-title">No issues yet</h3>
  <p className="empty-description">Issues created in the field will appear here. Track punch list items, RFIs, and defects in one place.</p>
  <button className="btn btn-primary">Create first issue</button>
@@ -124,9 +126,9 @@ export default async function IssuesPage({ params }: { params: { orgId: string }
  <td><StatusBadge status={issue.status} /></td>
  <td><SeverityBadge severity={issue.severity} /></td>
  <td><Link href={`/orgs/${tenantId}/issues/${issue.id}`}>{issue.title}</Link></td>
- <td><code style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-tertiary)' }}>{issue.kind}</code></td>
- <td><code style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-tertiary)' }}>{issue.trade ?? '—'}</code></td>
- <td><time style={{ color: 'var(--text-tertiary)', fontSize: '12px' }}>{new Date(issue.createdAt).toLocaleDateString()}</time></td>
+ <td><code style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-tertiary)' }}>{issue.kind}</code></td>
+ <td><code style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-tertiary)' }}>{issue.trade ?? '—'}</code></td>
+ <td><time style={{ color: 'var(--text-tertiary)', fontSize: 12 }}>{new Date(issue.createdAt).toLocaleDateString()}</time></td>
  </tr>
  ))}
  </tbody>
@@ -134,7 +136,7 @@ export default async function IssuesPage({ params }: { params: { orgId: string }
  )}
  </section>
 
- <footer style={{ marginTop: 'var(--space-9)', padding: 'var(--space-5) 0', borderTop: '1px solid var(--border-subtle)', color: 'var(--text-quaternary)', fontSize: '11px', fontFamily: 'var(--font-mono)' }}>
+ <footer style={{ marginTop: 'var(--space-9)', padding: 'var(--space-5) 0', borderTop: '1px solid var(--border-subtle)', color: 'var(--text-quaternary)', fontSize: 11, fontFamily: 'var(--font-mono)' }}>
  Request <code style={{ background: 'var(--bg-elevated)', padding: '2px 6px', borderRadius: 4 }}>{requestId}</code>
  </footer>
  </main>

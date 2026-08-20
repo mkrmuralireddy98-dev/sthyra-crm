@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { toCssVariables, type ColorMode } from '@sthyra-crm/tokens';
+import { CommandPalette } from '@/components/command-palette';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -16,7 +17,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
  <meta name="theme-color" content="#08090a" />
  <style id="sthyra-crm-tokens" dangerouslySetInnerHTML={{ __html: css }} />
  </head>
- <body>{children}</body>
+ <body>
+ {children}
+ <CommandPalette />
+ </body>
  </html>
  );
 }

@@ -65,7 +65,7 @@ export default async function DashboardHome() {
  <Sidebar currentOrgId={tenantId} currentPath="/" />
 
  <main className="main">
- <header className="page-header">
+ <header className="page-header fade-in">
  <div className="page-header-content">
  <h1 className="page-title">Dashboard</h1>
  <p className="page-subtitle">Real-time view of construction operations across all projects</p>
@@ -76,7 +76,7 @@ export default async function DashboardHome() {
  </div>
  </header>
 
- <section className="stats-grid" aria-label="Key metrics">
+ <section className="stats-grid mount-stagger" aria-label="Key metrics">
  <div className="stat-card">
  <div className="stat-label">Organizations</div>
  <div className="stat-value">{orgs.length}</div>
@@ -99,7 +99,7 @@ export default async function DashboardHome() {
  </div>
  </section>
 
- <section className="section" aria-label="Organizations">
+ <section className="section fade-in" aria-label="Organizations">
  <div className="section-header">
  <h2 className="section-title">Your organizations</h2>
  <Link href="/orgs" className="section-action">View all →</Link>
@@ -134,7 +134,7 @@ export default async function DashboardHome() {
  )}
  </section>
 
- <section className="section" aria-label="Quick actions">
+ <section className="section fade-in" aria-label="Quick actions">
  <div className="section-header">
  <h2 className="section-title">Quick actions</h2>
  </div>

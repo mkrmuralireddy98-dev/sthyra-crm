@@ -787,3 +787,54 @@ select {
  grid-template-columns: repeat(2, 1fr);
  }
 }
+
+/* ─── COMMAND PALETTE ANIMATIONS ─────────────────────────────────── */
+@keyframes cmd-fade-in {
+ from { opacity: 0; }
+ to { opacity: 1; }
+}
+
+@keyframes cmd-scale-in {
+ from { opacity: 0; transform: scale(0.96) translateY(-8px); }
+ to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes fade-in-up {
+ from { opacity: 0; transform: translateY(8px); }
+ to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-teal {
+ 0%, 100% { box-shadow: 0 0 0 0 rgba(0, 184, 148, 0.5); }
+ 50% { box-shadow: 0 0 0 8px rgba(0, 184, 148, 0); }
+}
+
+@keyframes shimmer {
+ 0% { background-position: -200% 0; }
+ 100% { background-position: 200% 0; }
+}
+
+/* ─── MOUNT ANIMATIONS ───────────────────────────────────────────── */
+.mount-fade {
+ animation: fade-in-up 400ms var(--ease-out) both;
+}
+
+.mount-stagger > * {
+ animation: fade-in-up 400ms var(--ease-out) both;
+}
+
+.mount-stagger > *:nth-child(1) { animation-delay: 0ms; }
+.mount-stagger > *:nth-child(2) { animation-delay: 60ms; }
+.mount-stagger > *:nth-child(3) { animation-delay: 120ms; }
+.mount-stagger > *:nth-child(4) { animation-delay: 180ms; }
+.mount-stagger > *:nth-child(5) { animation-delay: 240ms; }
+.mount-stagger > *:nth-child(6) { animation-delay: 300ms; }
+
+/* ─── ANIMATED ENTRANCES (for SSR-then-hydrate content) ──────────── */
+.fade-in {
+ animation: fade-in-up 400ms var(--ease-out) both;
+}
+
+.live-pulse-dot {
+ animation: pulse-teal 2s ease-in-out infinite;
+}
