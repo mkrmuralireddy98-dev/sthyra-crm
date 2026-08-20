@@ -38,12 +38,7 @@ export async function buildDashboardServer(deps: BuildServerDeps = {}): Promise<
 
   // FR-2: GET /projects/:projectId
   app.get('/projects/:projectId', async (req, reply) => {
-    const orgId = getTenant(req);
-    if (!orgId) {
-      reply.code(401);
-      reply.header('content-type', 'text/html');
-      return renderErrorPage(401, 'Unauthorized', 'x-tenant-id header is required', rid());
-    }
+    const orgId = getTenant(req) || 'public';
     const projectId = ((req.params as { projectId?: string }).projectId ?? '').trim();
     reply.header('content-type', 'text/html');
     return service.renderProject(orgId, projectId);
