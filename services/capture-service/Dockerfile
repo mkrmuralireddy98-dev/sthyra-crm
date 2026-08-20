@@ -20,6 +20,7 @@ COPY --from=builder /app/services/capture-service/dist ./services/capture-servic
 COPY --from=builder /app/packages/observability/dist ./packages/observability/dist
 COPY --from=builder /app/packages/observability/package.json ./packages/observability/
 COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/node_modules/.pnpm ./node_modules/.pnpm
 COPY --from=builder /app/pnpm-workspace.yaml ./
 COPY --from=builder /app/package.json ./
 RUN mkdir -p /var/lib/sthyra-crm/storage

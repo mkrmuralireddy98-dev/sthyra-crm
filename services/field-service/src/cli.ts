@@ -50,13 +50,10 @@ export async function startInMemoryServer(opts: { port?: number } = {}): Promise
 export async function startPostgresServer(opts: { databaseUrl: string; port?: number }): Promise<StartedServer> {
  // Phase 2.b: real Postgres wiring. The PostgresIssueRepository requires a
  // pg client; for the MVP we lazily import and instantiate it.
- const { PostgresIssueRepository } = await import('./postgres-repo.js');
- // Without a real pg pool, we fall back to in-memory + warn.
+ // Postgres mode would require a real pg pool + PostgresIssueRepository({ pg }).
+ // For the MVP integration stack, fall through to in-memory + warn.
  const warn = `field-service: Postgres mode requires a real pg client; using in-memory fallback. databaseUrl=${opts.databaseUrl.slice(0, 30)}...`;
  console.warn(warn);
- void warn;
- const repo = new (PostgresIssueRepository as unknown as { new (): InstanceType<typeof InMemoryIssueRepository> })();
- void repo;
  return startInMemoryServer({ port: opts.port });
 }
 
