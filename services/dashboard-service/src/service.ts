@@ -101,22 +101,48 @@ export class DashboardService {
  constructor(private readonly fetcher: DashboardFetcher) {}
 
  // ─── FR-1: home ─────────────────────────────────
- async renderHome(orgId: string): Promise<string> {
+async renderHome(orgId: string): Promise<string> {
  const projects = await this.fetcher.fetchProjects(orgId);
- const cards = projects.map((p) => `
- <div class="card">
- <h2>${escapeHtml(p.name)}</h2>
+ const projectCards = await Promise.all(projects.map(async (p: any) => {
+ let issueCount = 0;
+ try {
+ const issues = await this.fetcher.fetchIssues(orgId, p.id);
+ issueCount = issues.length;
+ } catch { /* ignore */ }
+ return `
+ <a class="project-card" href="/projects/${encodeURIComponent(p.id)}">
+ <div class="project-name">${escapeHtml(p.name)}</div>
+ <div class="project-meta">
  ${renderBadge(p.status)}
- <p class="value">${p.progressPct}%</p>
- <p><a href="/projects/${encodeURIComponent(p.id)}">Open</a></p>
- </div>`).join('');
- const body = projects.length === 0
- ? `<p class="muted">No projects yet.</p>`
- : `<div class="grid">${cards}</div>`;
+ <span>${issueCount} issue${issueCount === 1 ? '' : 's'}</span>
+ </div>
+ <div class="progress-bar"><div class="progress-fill" style="width:${p.progressPct}%"></div></div>
+ <div class="muted" style="font-size: 12px;">${p.progressPct}% complete</div>
+ </a>`;
+ }));
+ const totalProjects = projects.length;
+ const body = totalProjects === 0
+ ? `<div class="section"><div class="empty">
+ <div class="empty-title">No projects yet</div>
+ <div class="muted">Create your first project to get started.</div>
+ </div></div>`
+ : `
+ <div class="stats-grid">
+ <div class="stat-card"><div class="stat-label">Projects</div><div class="stat-value">${totalProjects}</div></div>
+ <div class="stat-card"><div class="stat-label">Workflows</div><div class="stat-value">—</div><div class="stat-trend">Configure automation</div></div>
+ <div class="stat-card"><div class="stat-label">Integrations</div><div class="stat-value">—</div><div class="stat-trend">Connect Procore, BIM360</div></div>
+ <div class="stat-card"><div class="stat-label">Reports</div><div class="stat-value">—</div><div class="stat-trend">View weekly summaries</div></div>
+ </div>
+ <div class="section">
+ <div class="section-title">All Projects</div>
+ <div class="project-grid">${projectCards.join('')}</div>
+ </div>`;
  return renderLayout({
  title: 'Projects',
  tenantId: orgId,
  body,
+ pageTitle: 'Projects',
+ pageSubtitle: 'Track construction issues, captures, and field reports across all projects.',
  navLinks: [
  { href: '/', label: 'Projects' },
  { href: '/orgs/' + encodeURIComponent(orgId) + '/workflows', label: 'Workflows' },

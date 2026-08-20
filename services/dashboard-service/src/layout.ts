@@ -14,10 +14,20 @@ export function renderLayout(opts: {
   readonly tenantId: string;
   readonly body: string;
   readonly navLinks?: readonly NavLink[];
+  readonly pageTitle?: string;
+  readonly pageSubtitle?: string;
 }): string {
   const nav = (opts.navLinks ?? [])
     .map((l) => `<a href="${escapeHtml(l.href)}">${escapeHtml(l.label)}</a>`)
-    .join('\n  ');
+    .join('\n      ');
+  const pageHeader = opts.pageTitle ? `
+<div class="page-header">
+  <div>
+    <div class="page-title">${escapeHtml(opts.pageTitle)}</div>
+    ${opts.pageSubtitle ? `<div class="page-subtitle">${escapeHtml(opts.pageSubtitle)}</div>` : ''}
+  </div>
+  <span class="tenant-tag">${escapeHtml(opts.tenantId)}</span>
+</div>` : '';
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -28,12 +38,16 @@ export function renderLayout(opts: {
 </head>
 <body>
   <div class="header">
-    <h1>Sthyra CRM</h1>
-    <div class="nav">
-      ${nav || `<span class="muted">Tenant: ${escapeHtml(opts.tenantId)}</span>`}
-    </div>
+    <a class="header-brand" href="/">
+      <span class="header-brand-mark">S</span>
+      Sthyra CRM
+    </a>
+    <nav class="nav">
+      ${nav || ''}
+    </nav>
   </div>
   <div class="container">
+    ${pageHeader}
     ${opts.body}
   </div>
 </body>
@@ -64,6 +78,13 @@ export function escapeHtml(s: string): string {
 }
 
 export function renderBadge(status: string): string {
- const cls = status === 'completed' ? '' : status === 'at_risk' || status === 'delayed' ? 'warning' : status === 'cancelled' ? 'error' : '';
+ const s = status.toLowerCase();
+ let cls = 'badge-neutral';
+ if (s === 'completed' || s === 'active' || s === 'connected' || s === 'open') cls = 'badge-success';
+ else if (s === 'at_risk' || s === 'delayed' || s === 'pending' || s === 'planning' || s === 'in_progress') cls = 'badge-warning';
+ else if (s === 'cancelled' || s === 'failed' || s === 'disconnected') cls = 'badge-danger';
+ else if (s === 'high' || s === 'critical') cls = 'badge-warning';
+ else if (s === 'medium') cls = 'badge-neutral';
+ else if (s === 'low') cls = 'badge-info';
  return `<span class="badge ${cls}">${escapeHtml(status)}</span>`;
 }
