@@ -11,7 +11,7 @@ export interface StartedServer {
 export async function startInMemoryServer(opts: { port?: number } = {}): Promise<StartedServer> {
   const fetcher = new StubDashboardFetcher();
   const app = await buildDashboardServer({ fetcher });
-  const address = await app.listen({ port: opts.port ?? 0, host: '127.0.0.1' });
+  const address = await app.listen({ port: opts.port ?? 0, host: process.env.HOST ?? '0.0.0.0' });
   const port = typeof address === 'string' ? Number(address.split(':').pop()) : (opts.port ?? 0);
   return {
     app, port,
