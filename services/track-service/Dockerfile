@@ -14,10 +14,10 @@ WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@11.5.2 --activate
 COPY --from=builder /app/pnpm-workspace.yaml /app/package.json /app/tsconfig.base.json ./
 COPY --from=builder /app/packages/ ./packages/
+COPY --from=builder /app/services/track-service/node_modules /app/services/track-service/node_modules
+COPY --from=builder /app/node_modules /app/node_modules
 COPY --from=builder /app/services/track-service/ ./services/track-service/
 WORKDIR /app/services/track-service
-COPY --from=builder /app/services/track-service/node_modules ./node_modules
-COPY --from=builder /app/node_modules /node_modules
 ENV PORT=9095
 EXPOSE 9095
 CMD ["node", "dist/cli.js"]

@@ -14,10 +14,10 @@ WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@11.5.2 --activate
 COPY --from=builder /app/pnpm-workspace.yaml /app/package.json /app/tsconfig.base.json ./
 COPY --from=builder /app/packages/ ./packages/
+COPY --from=builder /app/services/dashboard-service/node_modules /app/services/dashboard-service/node_modules
+COPY --from=builder /app/node_modules /app/node_modules
 COPY --from=builder /app/services/dashboard-service/ ./services/dashboard-service/
 WORKDIR /app/services/dashboard-service
-COPY --from=builder /app/services/dashboard-service/node_modules ./node_modules
-COPY --from=builder /app/node_modules /node_modules
 ENV PORT=9099
 EXPOSE 9099
 CMD ["node", "dist/cli.js"]
