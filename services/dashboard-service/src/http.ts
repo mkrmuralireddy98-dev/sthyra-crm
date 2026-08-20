@@ -31,13 +31,7 @@ export async function buildDashboardServer(deps: BuildServerDeps = {}): Promise<
 
   // FR-1: GET /
   app.get('/', async (req, reply) => {
-    const traceId = rid();
-    const orgId = getTenant(req);
-    if (!orgId) {
-      reply.code(401);
-      reply.header('content-type', 'text/html');
-      return renderErrorPage(401, 'Unauthorized', 'x-tenant-id header is required', traceId);
-    }
+    const orgId = getTenant(req) || 'public';
     reply.header('content-type', 'text/html');
     return service.renderHome(orgId);
   });
