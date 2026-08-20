@@ -6,11 +6,12 @@ import Fastify, { type FastifyInstance } from 'fastify';
 import { randomUUID } from 'node:crypto';
 import { installRequestIdPlugin, currentRequestId } from '@sthyra-crm/observability';
 import { DashboardService, StubDashboardFetcher } from './service.js';
+import type { HttpDashboardFetcher } from './fetcher-http.js';
 import { renderErrorPage } from './layout.js';
 
 export interface BuildServerDeps {
  readonly service?: DashboardService;
-  readonly fetcher?: StubDashboardFetcher;
+  readonly fetcher?: StubDashboardFetcher | HttpDashboardFetcher;
 }
 
 function getTenant(req: { headers: Record<string, string | string[] | undefined> }): string {

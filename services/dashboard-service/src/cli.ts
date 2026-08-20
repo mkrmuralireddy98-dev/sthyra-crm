@@ -13,7 +13,7 @@ export async function startInMemoryServer(opts: { port?: number } = {}): Promise
   // Use real HTTP fetcher in production (calls actual backend services)
   // Falls back to stub if USE_STUB_FETCHER=1
   const useStub = process.env.USE_STUB_FETCHER === '1';
-  const fetcher = useStub ? new StubDashboardFetcher() : new HttpDashboardFetcher();
+  const fetcher: any = useStub ? new StubDashboardFetcher() : new HttpDashboardFetcher();
   const app = await buildDashboardServer({ fetcher });
   const address = await app.listen({ port: opts.port ?? 0, host: process.env.HOST ?? '0.0.0.0' });
   const port = typeof address === 'string' ? Number(address.split(':').pop()) : (opts.port ?? 0);
@@ -21,4 +21,15 @@ export async function startInMemoryServer(opts: { port?: number } = {}): Promise
     app, port,
     async stop() { await app.close(); },
   };
+}
+
+const isMain = (process.argv[1]?.endsWith('cli.js') || process.argv[1]?.endsWith('cli.ts'));
+if (isMain) {
+  const port = Number.parseInt(process.env.PORT ?? '9099', 10);
+  startInMemoryServer({ port }).then((s) => {
+    console.log(`dashboard-service listening on http://0.0.0.0:${s.port}`);
+  }).catch((err: Error) => {
+    console.error('dashboard-service failed to start:', err.message);
+    process.exit(1);
+  });
 }
