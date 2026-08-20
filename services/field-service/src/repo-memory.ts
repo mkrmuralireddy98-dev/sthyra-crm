@@ -155,12 +155,12 @@ export class InMemoryIssueRepository implements IssueRepository {
  orgId: string,
  id: string,
  status: IssueStatus,
- IssuePhoto,
- _actorId: string,
- _reason: string | null,
- ): Promise<void> {
- await this.updateIssue(orgId, id, { status, actorId: '' });
+ actorId: string,
+ reason: string | null,
+): Promise<void> {
+ await this.updateIssue(orgId, id, { status, actorId });
  }
+
 
  async assignIssue(orgId: string, id: string, assignee: string | null): Promise<void> {
  await this.updateIssue(orgId, id, { assignedTo: assignee, actorId: '' });

@@ -78,7 +78,8 @@ export class WorkflowService {
 
   // ─── FR-3: updateWorkflow ──────────────────────────
   async updateWorkflow(orgId: string, id: string, input: UpdateWorkflowInput): Promise<Workflow> {
-    const patch: Partial<Workflow> = {};
+    type Writable<T> = { -readonly [K in keyof T]: T[K] };
+    const patch: Writable<Partial<Workflow>> = {};
     if (input.name !== undefined) patch.name = input.name;
     if (input.trigger !== undefined) patch.trigger = input.trigger;
     if (input.condition !== undefined) patch.condition = input.condition;

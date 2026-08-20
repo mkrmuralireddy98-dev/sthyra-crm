@@ -44,6 +44,7 @@ export interface BuildServerDeps {
  readonly repo?: import('./repository.js').CaptureRepository;
  readonly idempotency?: import('./repository.js').IdempotencyStore;
  readonly bus?: import('./realtime/index.js').EventBus;
+ readonly outboxWriter?: (event: import('./types.js').DomainEvent) => Promise<void>;
 }
 
 interface ProblemJson {

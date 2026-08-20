@@ -53,7 +53,7 @@ export function aggregateDaily(
 export function aggregateWeekly(
  orgId: string,
  weekStart: Date,
- projects: readonly Array<{ projectId: string; status: string; totalCaptures: number; issuesResolved: number; topBlocker: string | null; topWin: string | null; progressPct: number }>,
+ projects: ReadonlyArray<{ projectId: string; status: string; totalCaptures: number; issuesResolved: number; topBlocker: string | null; topWin: string | null; progressPct: number }>,
 ): WeeklyReport {
  const weekEnd = new Date(weekStart.getTime() + 7 * 86_400_000);
  const counts = { total: projects.length, active: 0, at_risk: 0, delayed: 0, completed: 0 };
@@ -147,7 +147,7 @@ export function aggregateDeepDive(
 
 export function aggregatePortfolio(
  orgId: string,
- projects: readonly Array<{ projectId: string; status: string; progressPct: number }>,
+ projects: ReadonlyArray<{ projectId: string; status: string; progressPct: number }>,
 ): PortfolioReport {
  const byStatus: Record<string, number> = {};
  const byCompletion: Record<string, number> = {
@@ -174,9 +174,9 @@ export function runCustom(
  captures: readonly CaptureSummary[],
  milestones: readonly MilestoneSummary[],
 ): CustomReportResult {
- const data: readonly Record<string, unknown>[] = req.entity === 'issues' ? issues as readonly Record<string, unknown>[]
- : req.entity === 'captures' ? captures as readonly Record<string, unknown>[]
- : milestones as readonly Record<string, unknown>[];
+ const data: readonly Record<string, unknown>[] = req.entity === 'issues' ? issues as unknown as readonly Record<string, unknown>[]
+ : req.entity === 'captures' ? captures as unknown as readonly Record<string, unknown>[]
+ : milestones as unknown as readonly Record<string, unknown>[];
 
  const filtered = data.filter((row) => {
  for (const [key, expected] of Object.entries(req.filter)) {

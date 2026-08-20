@@ -47,7 +47,7 @@ export class RealFfmpegRunner implements FfmpegRunner {
  const { mkdir } = await import('node:fs/promises');
  const { join } = await import('node:path');
 
- await mkdir(input.join(input.outputDir, 'frames'), { recursive: true });
+ await mkdir(join(input.outputDir, 'frames'), { recursive: true });
 
  return new Promise((resolve, reject) => {
  const args = [

@@ -6,7 +6,8 @@
   "main": "dist/cli.js",
   "scripts": {
     "test": "tsx --test src/**/*.test.ts src/**/**/*.test.ts src/**/**/**/*.test.ts",
-    "start": "node dist/cli.js"
+    "start": "node dist/cli.js",
+    "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
     "@sthyra-crm/auth": "workspace:*",

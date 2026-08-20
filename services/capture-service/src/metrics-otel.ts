@@ -39,7 +39,7 @@ export interface OtelSnapshot {
  * Tests use this to verify metrics are emitted with the right labels.
  */
 export class FakeOtelMeter implements OtelMeter {
- private readonly counts = new Map<string, Map<string, number>>();
+ private readonly counts = new Map<string, number>();
 
  private key(name: string, attrs?: Record<string, string>): string {
  return `${name}|${JSON.stringify(attrs ?? {})}`;

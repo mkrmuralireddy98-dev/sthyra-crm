@@ -114,6 +114,47 @@ importers:
         specifier: ^5.7.0
         version: 5.9.3
 
+  services/ai-copilot-service:
+    dependencies:
+      '@sthyra-crm/observability':
+        specifier: workspace:*
+        version: link:../../packages/observability
+      fastify:
+        specifier: ^5.0.0
+        version: 5.11.2
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.20.1
+      tsx:
+        specifier: ^4.19.0
+        version: 4.23.9
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+
+  services/bim-viewer-service:
+    dependencies:
+      '@sthyra-crm/capture-service':
+        specifier: workspace:*
+        version: link:../capture-service
+      '@sthyra-crm/observability':
+        specifier: workspace:*
+        version: link:../../packages/observability
+      fastify:
+        specifier: ^5.0.0
+        version: 5.11.2
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.20.1
+      tsx:
+        specifier: ^4.19.0
+        version: 4.23.9
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+
   services/capture-service:
     dependencies:
       '@sthyra-crm/observability':
@@ -122,6 +163,12 @@ importers:
       fastify:
         specifier: ^5.0.0
         version: 5.11.2
+      pg:
+        specifier: ^8.11.3
+        version: 8.22.0
+      redis:
+        specifier: ^4.6.13
+        version: 4.7.1
     devDependencies:
       '@aws-sdk/client-s3':
         specifier: ^3.1111.0
@@ -132,8 +179,71 @@ importers:
       '@types/node':
         specifier: ^22.0.0
         version: 22.20.1
+      '@types/pg':
+        specifier: ^8.11.5
+        version: 8.20.4
       tsx:
         specifier: ^4.19.0
+        version: 4.23.9
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+
+  services/dashboard-service:
+    dependencies:
+      '@sthyra-crm/observability':
+        specifier: workspace:*
+        version: link:../../packages/observability
+      '@sthyra-crm/tokens':
+        specifier: workspace:*
+        version: link:../../packages/tokens
+      fastify:
+        specifier: ^5.0.0
+        version: 5.11.2
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.20.1
+      tsx:
+        specifier: ^4.0.0
+        version: 4.23.9
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+
+  services/field-service:
+    dependencies:
+      '@sthyra-crm/observability':
+        specifier: workspace:*
+        version: link:../../packages/observability
+      fastify:
+        specifier: ^5.0.0
+        version: 5.11.2
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.20.1
+      tsx:
+        specifier: ^4.19.0
+        version: 4.23.9
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+
+  services/integration-service:
+    dependencies:
+      '@sthyra-crm/observability':
+        specifier: workspace:*
+        version: link:../../packages/observability
+      fastify:
+        specifier: ^5.0.0
+        version: 5.11.2
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.20.1
+      tsx:
+        specifier: ^4.0.0
         version: 4.23.9
       typescript:
         specifier: ^5.6.0
@@ -162,6 +272,25 @@ importers:
         version: 4.23.9
       typescript:
         specifier: ^5.7.0
+        version: 5.9.3
+
+  services/mobile-bff-service:
+    dependencies:
+      '@sthyra-crm/observability':
+        specifier: workspace:*
+        version: link:../../packages/observability
+      fastify:
+        specifier: ^5.0.0
+        version: 5.11.2
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.20.1
+      tsx:
+        specifier: ^4.19.0
+        version: 4.23.9
+      typescript:
+        specifier: ^5.6.0
         version: 5.9.3
 
   services/org-service:
@@ -217,6 +346,47 @@ importers:
         specifier: ^5.7.0
         version: 5.9.3
 
+  services/report-service:
+    dependencies:
+      '@sthyra-crm/observability':
+        specifier: workspace:*
+        version: link:../../packages/observability
+      fastify:
+        specifier: ^5.0.0
+        version: 5.11.2
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.20.1
+      tsx:
+        specifier: ^4.0.0
+        version: 4.23.9
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+
+  services/track-service:
+    dependencies:
+      '@sthyra-crm/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
+      '@sthyra-crm/observability':
+        specifier: workspace:*
+        version: link:../../packages/observability
+      fastify:
+        specifier: ^5.0.0
+        version: 5.11.2
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.20.1
+      tsx:
+        specifier: ^4.0.0
+        version: 4.23.9
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+
   services/user-service:
     dependencies:
       '@sthyra-crm/observability':
@@ -237,6 +407,25 @@ importers:
         version: 4.23.9
       typescript:
         specifier: ^5.7.0
+        version: 5.9.3
+
+  services/workflow-service:
+    dependencies:
+      '@sthyra-crm/observability':
+        specifier: workspace:*
+        version: link:../../packages/observability
+      fastify:
+        specifier: ^5.0.0
+        version: 5.11.2
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.20.1
+      tsx:
+        specifier: ^4.0.0
+        version: 4.23.9
+      typescript:
+        specifier: ^5.6.0
         version: 5.9.3
 
 packages:
@@ -613,6 +802,35 @@ packages:
   '@pinojs/redact@0.4.0':
     resolution: {integrity: sha512-k2ENnmBugE/rzQfEcdWHcCY+/FM3VLzH9cYEsbdsoqrvzAKRhUZeRNhAZvB8OitQJ1TBed3yqWtdjzS6wJKBwg==}
 
+  '@redis/bloom@1.2.0':
+    resolution: {integrity: sha512-HG2DFjYKbpNmVXsa0keLHp/3leGJz1mjh09f2RLGGLQZzSHpkmZWuwJbAvo3QcRY8p80m5+ZdXZdYOSBLlp7Cg==}
+    peerDependencies:
+      '@redis/client': ^1.0.0
+
+  '@redis/client@1.6.1':
+    resolution: {integrity: sha512-/KCsg3xSlR+nCK8/8ZYSknYxvXHwubJrU82F3Lm1Fp6789VQ0/3RJKfsmRXjqfaTA++23CvC3hqmqe/2GEt6Kw==}
+    engines: {node: '>=14'}
+
+  '@redis/graph@1.1.1':
+    resolution: {integrity: sha512-FEMTcTHZozZciLRl6GiiIB4zGm5z5F3F6a6FZCyrfxdKOhFlGkiAqlexWMBzCi4DcRoyiOsuLfW+cjlGWyExOw==}
+    peerDependencies:
+      '@redis/client': ^1.0.0
+
+  '@redis/json@1.0.7':
+    resolution: {integrity: sha512-6UyXfjVaTBTJtKNG4/9Z8PSpKE6XgSyEb8iwaqDcy+uKrd/DGYHTWkUdnQDyzm727V7p21WUMhsqz5oy65kPcQ==}
+    peerDependencies:
+      '@redis/client': ^1.0.0
+
+  '@redis/search@1.2.0':
+    resolution: {integrity: sha512-tYoDBbtqOVigEDMAcTGsRlMycIIjwMCgD8eR2t0NANeQmgK/lvxNAvYyb6bZDD4frHRhIHkJu2TBRvB0ERkOmw==}
+    peerDependencies:
+      '@redis/client': ^1.0.0
+
+  '@redis/time-series@1.1.0':
+    resolution: {integrity: sha512-c1Q99M5ljsIuc4YdaCwfUEXsofakb9c8+Zse2qxTadu8TalLXuAESzLvFAvNVbkmSlvlzIQOLpBCmWI9wTOt+g==}
+    peerDependencies:
+      '@redis/client': ^1.0.0
+
   '@smithy/core@3.33.2':
     resolution: {integrity: sha512-CUGXpnPkVdjUCbix+83sWLW9VFgQOm44MDOx/ihITJMAnOZKvL8YYIc7DR9pP/tZ8CIRvMiON/TucvygqbHO3w==}
     engines: {node: '>=18.0.0'}
@@ -801,6 +1019,10 @@ packages:
   client-only@0.0.1:
     resolution: {integrity: sha512-IV3Ou0jSMzZrd3pZ48nLkT9DA7Ag1pnPzaiQhpW7c3RbcqqzvzzVu+L8gfqMp/8IM2MQtSiqaCxrrcfu8I8rMA==}
 
+  cluster-key-slot@1.1.2:
+    resolution: {integrity: sha512-RMr0FhtfXemyinomL4hrWcYJxmX6deFdCxpJzhDttxgO1+bcCnkk+9drydLVDmAMG7NE6aN/fl4F7ucU/90gAA==}
+    engines: {node: '>=0.10.0'}
+
   color-convert@2.0.1:
     resolution: {integrity: sha512-RRECPsj7iu/xb5oKYcsFHSppFNnsj/52OVTRKb4zP5onXwVF3zVmmToNcOfGC+CRDpfK/U584fMg38ZHCaElKQ==}
     engines: {node: '>=7.0.0'}
@@ -961,6 +1183,10 @@ packages:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
+
+  generic-pool@3.9.0:
+    resolution: {integrity: sha512-hymDOu5B53XvN4QT9dBmZxPX4CWhBPPLguTZ9MMFeFa/Kg0xWVfylOVNlJji/E7yTZWFd/q9GO5TxDLq156D7g==}
+    engines: {node: '>= 4'}
 
   glob-parent@6.0.2:
     resolution: {integrity: sha512-XxwI8EOhVQgWp6iDL+3b0r86f4d6AX6zSU55HfB4ydCEuXLXc5FcYeOu+nnGftS4TEju/11rt4KJPTMgbfmv4A==}
@@ -1224,6 +1450,9 @@ packages:
   real-require@1.0.0:
     resolution: {integrity: sha512-P4nbQYQfePJxRSmY+v/KINxVucm4NF3p3s7pJveMTtom52FR4YGltUQLB8idDXwDDWW+eYrWDFbuzUnjoWHF7g==}
 
+  redis@4.7.1:
+    resolution: {integrity: sha512-S1bJDnqLftzHXHP8JsT5II/CtHWQrASX5K96REjWjlmWKrviSOLWmM7QnRLstAWsu1VBBV1ffV6DzCvxNP0UJQ==}
+
   require-from-string@2.0.2:
     resolution: {integrity: sha512-Xf0nWe6RseziFMu+Ap9biiUbmplq6S9/p+7w7YXP/JBHhrUDDUhwa+vANyubuqfZWTveU//DYVGsDG7RKL/vEw==}
     engines: {node: '>=0.10.0'}
@@ -1369,6 +1598,9 @@ packages:
   xtend@4.0.2:
     resolution: {integrity: sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==}
     engines: {node: '>=0.4'}
+
+  yallist@4.0.0:
+    resolution: {integrity: sha512-3wdGidZyq5PB084XLES5TpOSRA3wjXAlIWMhum2kRcv/41Sn2emQ0dycQW4uZXLejwKvg6EsvbdlVL+FYEct7A==}
 
   yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
@@ -1744,6 +1976,32 @@ snapshots:
 
   '@pinojs/redact@0.4.0': {}
 
+  '@redis/bloom@1.2.0(@redis/client@1.6.1)':
+    dependencies:
+      '@redis/client': 1.6.1
+
+  '@redis/client@1.6.1':
+    dependencies:
+      cluster-key-slot: 1.1.2
+      generic-pool: 3.9.0
+      yallist: 4.0.0
+
+  '@redis/graph@1.1.1(@redis/client@1.6.1)':
+    dependencies:
+      '@redis/client': 1.6.1
+
+  '@redis/json@1.0.7(@redis/client@1.6.1)':
+    dependencies:
+      '@redis/client': 1.6.1
+
+  '@redis/search@1.2.0(@redis/client@1.6.1)':
+    dependencies:
+      '@redis/client': 1.6.1
+
+  '@redis/time-series@1.1.0(@redis/client@1.6.1)':
+    dependencies:
+      '@redis/client': 1.6.1
+
   '@smithy/core@3.33.2':
     dependencies:
       '@smithy/types': 4.17.2
@@ -1969,6 +2227,8 @@ snapshots:
 
   client-only@0.0.1: {}
 
+  cluster-key-slot@1.1.2: {}
+
   color-convert@2.0.1:
     dependencies:
       color-name: 1.1.4
@@ -2173,6 +2433,8 @@ snapshots:
 
   fsevents@2.3.3:
     optional: true
+
+  generic-pool@3.9.0: {}
 
   glob-parent@6.0.2:
     dependencies:
@@ -2415,6 +2677,15 @@ snapshots:
 
   real-require@1.0.0: {}
 
+  redis@4.7.1:
+    dependencies:
+      '@redis/bloom': 1.2.0(@redis/client@1.6.1)
+      '@redis/client': 1.6.1
+      '@redis/graph': 1.1.1(@redis/client@1.6.1)
+      '@redis/json': 1.0.7(@redis/client@1.6.1)
+      '@redis/search': 1.2.0(@redis/client@1.6.1)
+      '@redis/time-series': 1.1.0(@redis/client@1.6.1)
+
   require-from-string@2.0.2: {}
 
   resolve-from@4.0.0: {}
@@ -2521,5 +2792,7 @@ snapshots:
   word-wrap@1.2.5: {}
 
   xtend@4.0.2: {}
+
+  yallist@4.0.0: {}
 
   yocto-queue@0.1.0: {}

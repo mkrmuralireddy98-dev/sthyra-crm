@@ -129,7 +129,8 @@ export class TrackService {
     if (!cur) throw new Error('milestone not found: ' + id);
     if (cur.orgId !== orgId) throw new Error('milestone not found: ' + id);
 
-    const patch: Partial<Milestone> = {};
+    type Writable<T> = { -readonly [K in keyof T]: T[K] };
+    const patch: Writable<Partial<Milestone>> = {};
     if (input.status !== undefined) {
       if (!isValidTransition(cur.status, input.status)) {
         throw new Error(`invalid transition: ${cur.status} → ${input.status}`);
