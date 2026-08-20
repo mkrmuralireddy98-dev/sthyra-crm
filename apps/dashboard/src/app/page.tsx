@@ -1,155 +1,167 @@
 import Link from 'next/link';
-import { listOrgs, listProjects, ApiError } from '@/lib/api';
+import { Sidebar } from '@/components/sidebar';
 import { randomUUID } from 'node:crypto';
-import { tokensFor } from '@sthyra-crm/tokens';
 
-export const dynamic = 'force-dynamic'; // SSR — fetch live data on every request
+export const dynamic = 'force-dynamic';
 
-/**
- * Sthyra CRM dashboard home. Shows each org with a rollup of its active projects.
- * Real data path: org-service GET /v1/orgs + project-service GET /v1/projects?orgId=...
- * The order is sequential (orgs first, then projects per org) so we surface
- * a clear error per service if either is down.
- */
+interface Org {
+ id: string;
+ name: string;
+ region: string;
+ plan: string;
+}
+
+interface Project {
+ id: string;
+ orgId: string;
+ name: string;
+ status: 'planning' | 'active' | 'at_risk' | 'delayed' | 'completed' | 'cancelled';
+ progressPct: number;
+ capturesCount?: number;
+ issuesCount?: number;
+}
+
+async function fetchJson<T>(url: string, tenantId: string): Promise<T> {
+ const res = await fetch(url, {
+ headers: { 'x-tenant-id': tenantId, 'accept': 'application/json' },
+ cache: 'no-store',
+ });
+ if (!res.ok) throw new Error(`HTTP ${res.status}`);
+ return res.json();
+}
+
 export default async function DashboardHome() {
-  const requestId = randomUUID();
-  const tokens = tokensFor('dark');
+ const requestId = randomUUID();
+ const tenantId = 'org_a';
 
-  let orgs: Awaited<ReturnType<typeof listOrgs>> = [];
-  let orgError: string | null = null;
-  try {
-    orgs = await listOrgs({ requestId });
-  } catch (err) {
-    orgError = err instanceof ApiError ? `${err.title} (request ${err.traceId})` : String(err);
-  }
+ let orgs: Org[] = [];
+ let totalProjects = 0;
+ let activeProjects = 0;
+ let openIssues = 0;
+ let totalCaptures = 0;
 
-  // Fetch projects per org in parallel — bounded by org count displayed.
-  const projectsByOrg = new Map<string, Awaited<ReturnType<typeof listProjects>>>();
-  const projectErrors: string[] = [];
-  await Promise.all(
-    orgs.map(async (org) => {
-      try {
-        const projects = await listProjects(org.id, { requestId });
-        projectsByOrg.set(org.id, projects);
-      } catch (err) {
-        projectErrors.push(
-          `${org.name}: ${err instanceof ApiError ? err.title : String(err)}`,
-        );
-      }
-    }),
-  );
+ try {
+ orgs = await fetchJson<Org[]>('http://localhost:9103/v1/orgs', tenantId);
+ } catch {}
 
-  const totals = orgs.reduce(
-    (acc, o) => {
-      const projects = projectsByOrg.get(o.id) ?? [];
-      acc.projects += projects.length;
-      acc.active += projects.filter((p) => p.status === 'active').length;
-      return acc;
-    },
-    { projects: 0, active: 0 },
-  );
+ try {
+ const projects = await fetchJson<Project[]>('http://localhost:9102/v1/projects?orgId=' + tenantId, tenantId);
+ totalProjects = projects.length;
+ activeProjects = projects.filter(p => p.status === 'active').length;
+ } catch {}
 
-  return (
-    <main style={{ maxWidth: 1120, margin: '0 auto', padding: 'var(--space-8) var(--space-6)' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-10)' }}>
-        <div>
-          <h1 style={{ margin: 0, fontSize: 'var(--text-3xl)', letterSpacing: 'var(--tracking-tight)' }}>
-            Sthyra CRM
-          </h1>
-          <p style={{ margin: 'var(--space-1) 0 0', color: 'var(--color-fg-muted)' }}>
-            Visual intelligence for the built world.
-          </p>
-        </div>
-        <Link href="/orgs/new" className="sthyra-crm-button">+ New org</Link>
-      </header>
+ try {
+ const issuesData = await fetchJson<any>('http://localhost:9091/v1/projects/prj_demo/issues', tenantId);
+ openIssues = (issuesData.data || []).filter((i: any) => i.status === 'open').length;
+ } catch {}
 
-      <section
-        aria-label="Key metrics"
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: 'var(--space-4)',
-          marginBottom: 'var(--space-8)',
-        }}
-      >
-        <div className="sthyra-crm-card">
-          <div className="sthyra-crm-stat-label">Organizations</div>
-          <div className="sthyra-crm-stat">{orgs.length}</div>
-        </div>
-        <div className="sthyra-crm-card">
-          <div className="sthyra-crm-stat-label">Total projects</div>
-          <div className="sthyra-crm-stat">{totals.projects}</div>
-        </div>
-        <div className="sthyra-crm-card">
-          <div className="sthyra-crm-stat-label">Active projects</div>
-          <div className="sthyra-crm-stat">{totals.active}</div>
-        </div>
-        <div className="sthyra-crm-card">
-          <div className="sthyra-crm-stat-label">Regions</div>
-          <div className="sthyra-crm-stat" style={{ fontSize: 'var(--text-xl)' }}>
-            {[...new Set(orgs.map((o) => o.region))].length || '—'}
-          </div>
-        </div>
-      </section>
+ try {
+ const capturesData = await fetchJson<any>('http://localhost:9090/v1/projects/prj_demo/captures', tenantId);
+ totalCaptures = (capturesData.data || []).length;
+ } catch {}
 
-      <section aria-label="Organizations">
-        <h2 style={{ fontSize: 'var(--text-xl)', margin: '0 0 var(--space-4)' }}>Organizations</h2>
+ return (
+ <div className="app-shell">
+ <Sidebar currentOrgId={tenantId} currentPath="/" />
 
-        {orgError && (
-          <div className="sthyra-crm-card" role="alert" style={{ borderColor: 'var(--color-critical)' }}>
-            <strong>org-service unavailable.</strong> {orgError}
-            <p style={{ marginTop: 'var(--space-2)', fontSize: 'var(--text-sm)', color: 'var(--color-fg-muted)' }}>
-              Start it with{' '}
-              <code style={{ background: 'var(--color-surface-sunken)', padding: '2px 6px', borderRadius: 4 }}>
-                pnpm --filter=@sthyra-crm/org-service start:inmem
-              </code>
-            </p>
-          </div>
-        )}
+ <main className="main">
+ <header className="page-header">
+ <div className="page-header-content">
+ <h1 className="page-title">Dashboard</h1>
+ <p className="page-subtitle">Real-time view of construction operations across all projects</p>
+ </div>
+ <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
+ <span className="tenant-badge">{tenantId}</span>
+ <Link href="/orgs/new" className="btn btn-primary">+ New organization</Link>
+ </div>
+ </header>
 
-        {!orgError && orgs.length === 0 && (
-          <div className="sthyra-crm-empty">
-            No organizations yet. <Link href="/orgs/new">Create your first org</Link> to get started.
-          </div>
-        )}
+ <section className="stats-grid" aria-label="Key metrics">
+ <div className="stat-card">
+ <div className="stat-label">Organizations</div>
+ <div className="stat-value">{orgs.length}</div>
+ <div className="stat-trend">Across {new Set(orgs.map(o => o.region)).size || 0} regions</div>
+ </div>
+ <div className="stat-card">
+ <div className="stat-label">Active Projects</div>
+ <div className="stat-value">{activeProjects}</div>
+ <div className="stat-trend">{totalProjects} total</div>
+ </div>
+ <div className="stat-card">
+ <div className="stat-label">Open Issues</div>
+ <div className="stat-value">{openIssues}</div>
+ <div className="stat-trend">{openIssues > 0 ? 'Needs attention' : 'All clear'}</div>
+ </div>
+ <div className="stat-card">
+ <div className="stat-label">Captures</div>
+ <div className="stat-value">{totalCaptures}</div>
+ <div className="stat-trend">360° photos uploaded</div>
+ </div>
+ </section>
 
-        {!orgError && orgs.length > 0 && (
-          <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: 'var(--space-3)' }}>
-            {orgs.map((org) => {
-              const projects = projectsByOrg.get(org.id) ?? [];
-              const active = projects.filter((p) => p.status === 'active').length;
-              return (
-                <li key={org.id} className="sthyra-crm-card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-4)' }}>
-                  <div>
-                    <div style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--fontWeight-medium)' }}>{org.name}</div>
-                    <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-fg-muted)' }}>
-                      {org.region} · {org.plan} · {active} active of {projects.length} projects
-                    </div>
-                  </div>
-                  <Link
-                    href={`/orgs/${org.id}/projects`}
-                    className="sthyra-crm-button sthyra-crm-button--ghost"
-                    style={{ textDecoration: 'none' }}
-                  >
-                    View projects →
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        )}
+ <section className="section" aria-label="Organizations">
+ <div className="section-header">
+ <h2 className="section-title">Your organizations</h2>
+ <Link href="/orgs" className="section-action">View all →</Link>
+ </div>
 
-        {projectErrors.length > 0 && (
-          <p style={{ marginTop: 'var(--space-4)', fontSize: 'var(--text-sm)', color: 'var(--color-warning)' }}>
-            project-service partial failure: {projectErrors.join('; ')}
-          </p>
-        )}
-      </section>
+ {orgs.length === 0 ? (
+ <div className="empty">
+ <div className="empty-icon" aria-hidden="true">⌂</div>
+ <h3 className="empty-title">No organizations yet</h3>
+ <p className="empty-description">
+ Get started by creating your first organization. Each org gets its own projects, captures, and team.
+ </p>
+ <Link href="/orgs/new" className="btn btn-primary">Create organization</Link>
+ </div>
+ ) : (
+ <div className="project-grid">
+ {orgs.slice(0, 6).map((org) => (
+ <Link key={org.id} href={`/orgs/${org.id}/projects`} className="project-card">
+ <div className="project-name">{org.name}</div>
+ <div className="project-id">{org.id}</div>
+ <div className="card-meta">
+ <span className="badge badge-teal">{org.plan}</span>
+ <span>{org.region}</span>
+ </div>
+ <div className="progress-text">
+ <span>0% complete</span>
+ <span>0 projects</span>
+ </div>
+ </Link>
+ ))}
+ </div>
+ )}
+ </section>
 
-      <footer style={{ marginTop: 'var(--space-16)', color: 'var(--color-fg-subtle)', fontSize: 'var(--text-xs)' }}>
-        Request <code style={{ fontFamily: 'var(--fontFamily-mono, monospace)' }}>{requestId}</code> ·
-        Token bg <code style={{ fontFamily: 'var(--fontFamily-mono, monospace)' }}>{tokens.color.bg}</code>
-      </footer>
-    </main>
-  );
+ <section className="section" aria-label="Quick actions">
+ <div className="section-header">
+ <h2 className="section-title">Quick actions</h2>
+ </div>
+ <div className="project-grid">
+ <Link href="/orgs/org_a/captures" className="project-card">
+ <div className="project-name">📷 Upload capture</div>
+ <div className="card-description">360° photos, walkthroughs, floor plans</div>
+ </Link>
+ <Link href="/orgs/org_a/projects" className="project-card">
+ <div className="project-name">▣ Manage projects</div>
+ <div className="card-description">Track milestones, status, captures</div>
+ </Link>
+ <Link href="/orgs/org_a/issues" className="project-card">
+ <div className="project-name">⚠ Field issues</div>
+ <div className="card-description">Punch list, RFIs, defects</div>
+ </Link>
+ <Link href="/orgs/org_a/reports" className="project-card">
+ <div className="project-name">▤ Reports</div>
+ <div className="card-description">Daily, weekly, portfolio summaries</div>
+ </Link>
+ </div>
+ </section>
+
+ <footer style={{ marginTop: 'var(--space-9)', padding: 'var(--space-5) 0', borderTop: '1px solid var(--border-subtle)', color: 'var(--text-quaternary)', fontSize: '11px', fontFamily: 'var(--font-mono)' }}>
+ Request <code style={{ background: 'var(--bg-elevated)', padding: '2px 6px', borderRadius: 4 }}>{requestId}</code> · Sthyra CRM Platform v0.13
+ </footer>
+ </main>
+ </div>
+ );
 }

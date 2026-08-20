@@ -6,7 +6,7 @@
  * Endpoint URLs come from env vars so the same build runs in dev, staging, prod.
  */
 
-import { randomUUID } from 'node:crypto';
+import { randomUUID } from 'crypto';
 
 const ORG_SERVICE_URL = process.env.ORG_SERVICE_URL ?? 'http://127.0.0.1:8080';
 const PROJECT_SERVICE_URL = process.env.PROJECT_SERVICE_URL ?? 'http://127.0.0.1:8082';

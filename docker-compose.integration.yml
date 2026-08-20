@@ -263,6 +263,31 @@ services:
       - "9100:9100"
 
 
+  web-dashboard:
+    build:
+      context: .
+      dockerfile: apps/dashboard/Dockerfile
+    container_name: sthyra-crm-web-dashboard-int
+    depends_on:
+      field-service:
+        condition: service_started
+      capture-service:
+        condition: service_started
+      org-service:
+        condition: service_started
+      project-service:
+        condition: service_started
+    environment:
+      PORT: "3000"
+      HOST: "0.0.0.0"
+      ORG_SERVICE_URL: "http://org-service:9103"
+      PROJECT_SERVICE_URL: "http://project-service:9102"
+      FIELD_SERVICE_URL: "http://field-service:9091"
+      CAPTURE_SERVICE_URL: "http://capture-service:9090"
+    ports:
+      - "3000:3000"
+
+
 volumes:
 
   sthyra-crm-pg-data-int:
