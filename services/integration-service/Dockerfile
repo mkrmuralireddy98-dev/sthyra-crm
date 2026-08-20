@@ -16,6 +16,8 @@ COPY --from=builder /app/pnpm-workspace.yaml /app/package.json /app/tsconfig.bas
 COPY --from=builder /app/packages/ ./packages/
 COPY --from=builder /app/services/integration-service/ ./services/integration-service/
 WORKDIR /app/services/integration-service
+COPY --from=builder /app/services/integration-service/node_modules ./node_modules
+COPY --from=builder /app/node_modules /node_modules
 ENV PORT=9098
 EXPOSE 9098
 CMD ["node", "dist/cli.js"]

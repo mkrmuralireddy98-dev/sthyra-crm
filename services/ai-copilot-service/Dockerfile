@@ -16,6 +16,8 @@ COPY --from=builder /app/pnpm-workspace.yaml /app/package.json /app/tsconfig.bas
 COPY --from=builder /app/packages/ ./packages/
 COPY --from=builder /app/services/ai-copilot-service/ ./services/ai-copilot-service/
 WORKDIR /app/services/ai-copilot-service
+COPY --from=builder /app/services/ai-copilot-service/node_modules ./node_modules
+COPY --from=builder /app/node_modules /node_modules
 ENV PORT=9093
 EXPOSE 9093
 CMD ["node", "dist/cli.js"]

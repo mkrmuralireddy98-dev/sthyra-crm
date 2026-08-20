@@ -16,6 +16,8 @@ COPY --from=builder /app/pnpm-workspace.yaml /app/package.json /app/tsconfig.bas
 COPY --from=builder /app/packages/ ./packages/
 COPY --from=builder /app/services/bim-viewer-service/ ./services/bim-viewer-service/
 WORKDIR /app/services/bim-viewer-service
+COPY --from=builder /app/services/bim-viewer-service/node_modules ./node_modules
+COPY --from=builder /app/node_modules /node_modules
 ENV PORT=9092
 EXPOSE 9092
 CMD ["node", "dist/cli.js"]

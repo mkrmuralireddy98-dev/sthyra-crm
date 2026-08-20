@@ -16,6 +16,8 @@ COPY --from=builder /app/pnpm-workspace.yaml /app/package.json /app/tsconfig.bas
 COPY --from=builder /app/packages/ ./packages/
 COPY --from=builder /app/services/mobile-bff-service/ ./services/mobile-bff-service/
 WORKDIR /app/services/mobile-bff-service
+COPY --from=builder /app/services/mobile-bff-service/node_modules ./node_modules
+COPY --from=builder /app/node_modules /node_modules
 ENV PORT=9094
 EXPOSE 9094
 CMD ["node", "dist/cli.js"]

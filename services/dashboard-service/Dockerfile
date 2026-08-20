@@ -16,6 +16,8 @@ COPY --from=builder /app/pnpm-workspace.yaml /app/package.json /app/tsconfig.bas
 COPY --from=builder /app/packages/ ./packages/
 COPY --from=builder /app/services/dashboard-service/ ./services/dashboard-service/
 WORKDIR /app/services/dashboard-service
+COPY --from=builder /app/services/dashboard-service/node_modules ./node_modules
+COPY --from=builder /app/node_modules /node_modules
 ENV PORT=9099
 EXPOSE 9099
 CMD ["node", "dist/cli.js"]
