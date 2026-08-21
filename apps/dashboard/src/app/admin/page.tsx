@@ -22,7 +22,7 @@ export default function AdminPage() {
  <div>
  <div className="page-eyebrow">
  <span className="page-eyebrow-marker" />
- <span>// platform · admin console · us-east · pro</span>
+ <span>// platform · admin console · global · pro</span>
  </div>
  <h1 className="page-title">
  platform<br />
@@ -65,7 +65,7 @@ export default function AdminPage() {
  <div>
  <h3 className="bento-title">Acme Construction</h3>
  <p style={{ fontSize: 12, color: 'var(--fg-muted)', marginTop: 6 }}>
- 12 projects · 12 members · us-east · pro
+ 12 projects · 12 members · 🇺🇸 United States · pro
  </p>
  </div>
  <div className="bento-viz">
@@ -80,7 +80,7 @@ export default function AdminPage() {
  <div>
  <h3 className="bento-title">BuildRight Inc</h3>
  <p style={{ fontSize: 12, color: 'var(--fg-muted)', marginTop: 6 }}>
- 47 projects · 124 members · eu-west · enterprise
+ 47 projects · 124 members · 🇬🇧 United Kingdom · enterprise
  </p>
  </div>
  <div className="bento-viz">
@@ -95,7 +95,7 @@ export default function AdminPage() {
  <div>
  <h3 className="bento-title">MegaStructures LLC</h3>
  <p style={{ fontSize: 12, color: 'var(--fg-muted)', marginTop: 6 }}>
- 3 projects · 5 members · us-west · starter
+ 3 projects · 5 members · 🇺🇸 United States · starter
  </p>
  </div>
  <div className="bento-viz">

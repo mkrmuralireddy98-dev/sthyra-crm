@@ -128,7 +128,7 @@ export default async function Dashboard() {
  <div>
  <div className="page-eyebrow">
  <span className="page-eyebrow-marker" />
- <span>// workspace · {orgId} · us-east</span>
+ <span>// workspace · {orgId} · 🇺🇸 United States</span>
  </div>
  <h1 className="page-title">
  operations<br />
@@ -336,7 +336,7 @@ export default async function Dashboard() {
  gap: 16,
  }}>
  <span>© 2026 — sthyra</span>
- <span>{orgName} · us-east · {totals.projects} projects</span>
+ <span>{orgName} · 🇺🇸 United States · {totals.projects} projects</span>
  <span>v0.13 · user role</span>
  </footer>
  </main>

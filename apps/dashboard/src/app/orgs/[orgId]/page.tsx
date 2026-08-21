@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 const ORG_DATA: Record<string, any> = {
  org_a: {
  name: 'Acme Construction',
- region: 'us-east',
+ country: 'US',
  plan: 'pro',
  memberCount: 12,
  projectCount: 12,
@@ -17,7 +17,7 @@ const ORG_DATA: Record<string, any> = {
  },
  org_b: {
  name: 'BuildRight Inc',
- region: 'eu-west',
+ country: 'GB',
  plan: 'enterprise',
  memberCount: 124,
  projectCount: 47,
@@ -28,7 +28,7 @@ const ORG_DATA: Record<string, any> = {
  },
  org_c: {
  name: 'MegaStructures LLC',
- region: 'us-west',
+ country: 'US',
  plan: 'starter',
  memberCount: 5,
  projectCount: 3,
@@ -83,6 +83,27 @@ function MiniBar({ value }: { value: number }) {
  );
 }
 
+
+const COUNTRY_NAMES: Record<string, string> = {
+ US: 'United States', GB: 'United Kingdom', CA: 'Canada',
+ IE: 'Ireland', DE: 'Germany', NL: 'Netherlands',
+ FR: 'France', ES: 'Spain', IT: 'Italy',
+ MX: 'Mexico', BR: 'Brazil', IN: 'India',
+ AE: 'United Arab Emirates', SA: 'Saudi Arabia',
+ SG: 'Singapore', JP: 'Japan', KR: 'South Korea',
+ AU: 'Australia',
+};
+const FLAGS: Record<string, string> = {
+ US: '🇺🇸', GB: '🇬🇧', CA: '🇨🇦', IE: '🇮🇪', DE: '🇩🇪', NL: '🇳🇱',
+ FR: '🇫🇷', ES: '🇪🇸', IT: '🇮🇹', MX: '🇲🇽', BR: '🇧🇷', IN: '🇮🇳',
+ AE: '🇦🇪', SA: '🇸🇦', SG: '🇸🇬', JP: '🇯🇵', KR: '🇰🇷', AU: '🇦🇺',
+};
+const countryLabel = (code: string): string => {
+ const name = COUNTRY_NAMES[code] ?? code;
+ const flag = FLAGS[code] ?? '🏳';
+ return `${flag} ${name}`;
+};
+
 export default async function OrgDetailPage({ params }: { params: { orgId: string } }) {
  const tenantId = params.orgId;
  const org = ORG_DATA[tenantId] ?? ORG_DATA.org_a;
@@ -96,7 +117,7 @@ export default async function OrgDetailPage({ params }: { params: { orgId: strin
  <section className="page-mast">
  <div className="page-eyebrow">
  <span className="page-eyebrow-marker" />
- <span>// workspace · {tenantId} · {org.region}</span>
+ <span>// workspace · {tenantId} · {countryLabel(org.country)}</span>
  </div>
  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 'var(--space-5)' }}>
  <div>
@@ -107,7 +128,7 @@ export default async function OrgDetailPage({ params }: { params: { orgId: strin
  </h1>
  <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-4)', flexWrap: 'wrap' }}>
  <span className="badge badge-info">{org.plan} plan</span>
- <span className="badge badge-neutral">{org.region}</span>
+ <span className="badge badge-neutral">{countryLabel(org.country)}</span>
  <span className="badge badge-success">{org.memberCount} members</span>
  <span className="badge badge-neutral">v0.13 · 13/13 services</span>
  </div>
@@ -251,7 +272,7 @@ export default async function OrgDetailPage({ params }: { params: { orgId: strin
  gap: 16,
  }}>
  <span>© 2026 — sthyra</span>
- <span>{org.name} · {org.plan} plan · {org.region}</span>
+ <span>{org.name} · {org.plan} plan · {countryLabel(org.country)}</span>
  <span>v0.13 · 13/13 services</span>
  </footer>
  </main>

@@ -8,7 +8,7 @@ export default function WelcomePage() {
  const [step, setStep] = useState(1);
  const [formData, setFormData] = useState({
  orgName: '',
- region: 'us-east',
+ country: 'US',
  plan: 'pro',
  projectName: '',
  projectLocation: '',
@@ -160,13 +160,13 @@ export default function WelcomePage() {
  </div>
  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
  <div>
- <label htmlFor="region" style={{ display: 'block', fontSize: 12, fontWeight: 510, color: 'var(--text-secondary)', marginBottom: 6 }}>
+ <label htmlFor="country" style={{ display: 'block', fontSize: 12, fontWeight: 510, color: 'var(--text-secondary)', marginBottom: 6 }}>
  Region
  </label>
  <select
- id="region"
- value={formData.region}
- onChange={(e) => setFormData({ ...formData, region: e.target.value })}
+ id="country"
+ value={formData.country}
+ onChange={(e) => setFormData({ ...formData, country: e.target.value })}
  style={{
  width: '100%',
  padding: '10px 12px',

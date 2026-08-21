@@ -4,11 +4,31 @@ import { TopNav, LiveMarquee } from '@/components/top-nav';
 export const dynamic = 'force-dynamic';
 
 const ORGS = [
- { id: 'org_a', name: 'Acme Construction', region: 'us-east', plan: 'pro', status: 'active', projects: 12, members: 12, captures: 24, storage: '1.2 GB' },
- { id: 'org_b', name: 'BuildRight Inc', region: 'eu-west', plan: 'enterprise', status: 'active', projects: 47, members: 124, captures: 412, storage: '18.4 GB' },
- { id: 'org_c', name: 'MegaStructures LLC', region: 'us-west', plan: 'starter', status: 'trial', projects: 3, members: 5, captures: 4, storage: '0.1 GB' },
+ { id: 'org_a', name: 'Acme Construction', country: 'US', plan: 'pro', status: 'active', projects: 12, members: 12, captures: 24, storage: '1.2 GB' },
+ { id: 'org_b', name: 'BuildRight Inc', country: 'GB', plan: 'enterprise', status: 'active', projects: 47, members: 124, captures: 412, storage: '18.4 GB' },
+ { id: 'org_c', name: 'MegaStructures LLC', country: 'US', plan: 'starter', status: 'trial', projects: 3, members: 5, captures: 4, storage: '0.1 GB' },
 ];
 
+
+const COUNTRY_NAMES: Record<string, string> = {
+ US: 'United States', GB: 'United Kingdom', CA: 'Canada',
+ IE: 'Ireland', DE: 'Germany', NL: 'Netherlands',
+ FR: 'France', ES: 'Spain', IT: 'Italy',
+ MX: 'Mexico', BR: 'Brazil', IN: 'India',
+ AE: 'United Arab Emirates', SA: 'Saudi Arabia',
+ SG: 'Singapore', JP: 'Japan', KR: 'South Korea',
+ AU: 'Australia',
+};
+const FLAGS: Record<string, string> = {
+ US: '🇺🇸', GB: '🇬🇧', CA: '🇨🇦', IE: '🇮🇪', DE: '🇩🇪', NL: '🇳🇱',
+ FR: '🇫🇷', ES: '🇪🇸', IT: '🇮🇹', MX: '🇲🇽', BR: '🇧🇷', IN: '🇮🇳',
+ AE: '🇦🇪', SA: '🇸🇦', SG: '🇸🇬', JP: '🇯🇵', KR: '🇰🇷', AU: '🇦🇺',
+};
+const countryLabel = (code: string): string => {
+ const name = COUNTRY_NAMES[code] ?? code;
+ const flag = FLAGS[code] ?? '🏳';
+ return `${flag} ${name}`;
+};
 export default async function OrgsPage() {
  return (
  <div className="app-shell">
@@ -27,7 +47,7 @@ export default async function OrgsPage() {
  <span className="page-title-accent">sthyra.</span>
  </h1>
  <p style={{ fontSize: 14, color: 'var(--fg-muted)', marginTop: 'var(--space-3)', maxWidth: 520 }}>
- every workspace on the platform · active and trial tenants · multi-region
+ every workspace on the platform · active and trial tenants · multi-country
  </p>
  </div>
  <Link href="/orgs/new" className="btn btn-primary">
@@ -52,8 +72,8 @@ export default async function OrgsPage() {
  <div className="stat-value">{ORGS.filter(o => o.status === 'trial').length}</div>
  </div>
  <div className="stat-cell">
- <div className="stat-label">// regions</div>
- <div className="stat-value">{new Set(ORGS.map(o => o.region)).size}</div>
+ <div className="stat-label">// countries</div>
+ <div className="stat-value">{new Set(ORGS.map(o => o.country)).size}</div>
  </div>
  </div>
 
@@ -68,7 +88,7 @@ export default async function OrgsPage() {
  <thead>
  <tr>
  <th>// organization</th>
- <th>// region</th>
+ <th>// country</th>
  <th>// plan</th>
  <th>// status</th>
  <th>// projects</th>
@@ -86,7 +106,7 @@ export default async function OrgsPage() {
  </Link>
  <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--fg-quaternary)', marginTop: 2 }}>{o.id}</div>
  </td>
- <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>{o.region}</td>
+ <td style={{ fontSize: 12 }}>{countryLabel(o.country)}</td>
  <td>
  <span className={`badge ${o.plan === 'enterprise' ? 'badge-teal' : o.plan === 'pro' ? 'badge-info' : 'badge-neutral'}`}>
  {o.plan}
@@ -122,7 +142,7 @@ export default async function OrgsPage() {
  textTransform: 'uppercase',
  }}>
  <span>© 2026 — sthyra</span>
- <span>3 organizations · 3 regions</span>
+ <span>3 organizations · 3 countries</span>
  <span>v0.13</span>
  </footer>
  </main>
