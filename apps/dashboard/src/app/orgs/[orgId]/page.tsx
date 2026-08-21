@@ -1,88 +1,8 @@
 import Link from 'next/link';
 import { TopNav, LiveMarquee } from '@/components/top-nav';
+import { listOrgs, type Org } from '@/lib/api-server';
 
 export const dynamic = 'force-dynamic';
-
-const ORG_DATA: Record<string, any> = {
- org_a: {
- name: 'Acme Construction',
- country: 'US',
- plan: 'pro',
- memberCount: 12,
- projectCount: 12,
- issuesOpen: 8,
- capturesCount: 24,
- storageGb: 1.2,
- memberList: ['Sarah Chen', 'Mike Rodriguez', 'Lisa Park', 'Tom Bradley', 'James Park'],
- },
- org_b: {
- name: 'BuildRight Inc',
- country: 'GB',
- plan: 'enterprise',
- memberCount: 124,
- projectCount: 47,
- issuesOpen: 156,
- capturesCount: 412,
- storageGb: 18.4,
- memberList: ['Marcus Wei', 'Aisha Patel', 'Diego Morales', 'Priya Singh'],
- },
- org_c: {
- name: 'MegaStructures LLC',
- country: 'US',
- plan: 'starter',
- memberCount: 5,
- projectCount: 3,
- issuesOpen: 2,
- capturesCount: 4,
- storageGb: 0.1,
- memberList: ['Hana Kim', 'Robert Zhang'],
- },
-};
-
-const PROJECTS_BY_ORG: Record<string, any[]> = {
- org_a: [
- { id: 'prj_demo', name: 'Tower B — North Wing', status: 'active', progress: 67, location: 'San Francisco, CA' },
- { id: 'prj_skyline', name: 'Skyline Tower', status: 'planning', progress: 12, location: 'New York, NY' },
- { id: 'prj_harbor', name: 'Harbor Bridge Retrofit', status: 'at_risk', progress: 45, location: 'Seattle, WA' },
- { id: 'prj_central', name: 'Central Plaza Mall', status: 'active', progress: 89, location: 'Chicago, IL' },
- { id: 'prj_reservoir', name: 'Reservoir Pump Station', status: 'delayed', progress: 23, location: 'Phoenix, AZ' },
- { id: 'prj_hospital', name: 'Mercy Hospital Expansion', status: 'active', progress: 54, location: 'Boston, MA' },
- ],
- org_b: [
- { id: 'prj_b1', name: 'Cityview Tower', status: 'active', progress: 78, location: 'London, UK' },
- { id: 'prj_b2', name: 'Riverside Office Park', status: 'active', progress: 34, location: 'Dublin, IE' },
- { id: 'prj_b3', name: 'Greenfield Logistics Hub', status: 'planning', progress: 5, location: 'Amsterdam, NL' },
- ],
- org_c: [
- { id: 'prj_c1', name: 'Pacific Plaza', status: 'planning', progress: 18, location: 'Seattle, WA' },
- { id: 'prj_c2', name: 'Mountain View Residences', status: 'planning', progress: 8, location: 'Portland, OR' },
- ],
-};
-
-function StatusBadge({ status }: { status: string }) {
- const map: Record<string, string> = {
- active: 'badge-success',
- planning: 'badge-info',
- at_risk: 'badge-warning',
- delayed: 'badge-warning',
- completed: 'badge-success',
- cancelled: 'badge-neutral',
- };
- return <span className={`badge ${map[status] ?? 'badge-neutral'}`}>{status.replace('_', ' ')}</span>;
-}
-
-function MiniBar({ value }: { value: number }) {
- const pct = Math.min(100, value);
- return (
- <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
- <div style={{ flex: 1, height: 4, background: 'var(--line)' }}>
- <div style={{ height: '100%', width: `${pct}%`, background: 'var(--accent)' }} />
- </div>
- <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--fg-muted)', minWidth: 32, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{pct}%</span>
- </div>
- );
-}
-
 
 const COUNTRY_NAMES: Record<string, string> = {
  US: 'United States', GB: 'United Kingdom', CA: 'Canada',
@@ -104,10 +24,91 @@ const countryLabel = (code: string): string => {
  return `${flag} ${name}`;
 };
 
+const PROJECTS_BY_ORG: Record<string, any[]> = {
+ org_a: [
+ { id: 'prj_demo', name: 'Tower B — North Wing', status: 'active', progress: 67, location: 'San Francisco, CA' },
+ { id: 'prj_skyline', name: 'Skyline Tower', status: 'planning', progress: 12, location: 'New York, NY' },
+ { id: 'prj_hospital', name: 'Mercy Hospital Expansion', status: 'active', progress: 54, location: 'Boston, MA' },
+ ],
+ org_b: [
+ { id: 'prj_b1', name: 'Cityview Tower', status: 'active', progress: 78, location: 'London, UK' },
+ { id: 'prj_b2', name: 'Riverside Office Park', status: 'active', progress: 34, location: 'Dublin, IE' },
+ { id: 'prj_b3', name: 'Greenfield Logistics Hub', status: 'planning', progress: 5, location: 'Amsterdam, NL' },
+ ],
+ org_c: [
+ { id: 'prj_c1', name: 'Pacific Plaza', status: 'planning', progress: 18, location: 'Seattle, WA' },
+ { id: 'prj_c2', name: 'Mountain View Residences', status: 'planning', progress: 8, location: 'Portland, OR' },
+ ],
+};
+
+const TEAM_MEMBERS: Record<string, string[]> = {
+ org_a: ['Sarah Chen', 'Mike Rodriguez', 'Lisa Park', 'Tom Bradley', 'James Park', 'Aisha Patel', 'Diego Morales', 'Priya Singh', 'Hana Kim', 'Robert Zhang', 'Maya Singh', 'Ben Tanaka'],
+ org_b: ['Marcus Wei', 'Aisha Patel', 'Diego Morales', 'Priya Singh', 'James Park', 'Kavita Reddy'],
+ org_c: ['Hana Kim', 'Robert Zhang', 'Alex Rivera', 'Jordan Park', 'Kavita Reddy'],
+};
+
+function StatusBadge({ status }: { status: string }) {
+ const map: Record<string, string> = {
+ active: 'badge-success',
+ planning: 'badge-info',
+ at_risk: 'badge-warning',
+ delayed: 'badge-warning',
+ completed: 'badge-success',
+ cancelled: 'badge-neutral',
+ };
+ return <span className={`badge ${map[status] ?? 'badge-neutral'}`}>{status.replace('_', ' ')}</span>;
+}
+
+function MiniBar({ value }: { value: number }) {
+ const pct = Math.min(100, value);
+ return (
+ <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+ <div style={{ flex: 1, height: 4, background: 'var(--line)' }}>
+ <div style={{ height: '100%', width: `${pct}%`, background: 'var(--accent)' }} />
+ </div>
+ <span style={{
+ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--fg-muted)',
+ minWidth: 32, textAlign: 'right', fontVariantNumeric: 'tabular-nums',
+ }}>
+ {pct}%
+ </span>
+ </div>
+ );
+}
+
+function getInitials(name: string): string {
+ return name.split(' ').map(n => n[0] ?? '').join('').slice(0, 2).toUpperCase();
+}
+
 export default async function OrgDetailPage({ params }: { params: { orgId: string } }) {
  const tenantId = params.orgId;
- const org = ORG_DATA[tenantId] ?? ORG_DATA.org_a;
+
+ // Fetch real org data from admin-service
+ const allOrgs = await listOrgs();
+ const realOrg = allOrgs.find(o => o.id === tenantId);
+
+ // Use real org if found, otherwise show fallback
+ const org = realOrg
+ ? {
+ name: realOrg.name,
+ country: realOrg.country ?? realOrg.region ?? 'US',
+ plan: realOrg.plan,
+ status: realOrg.status,
+ memberCount: realOrg.userCount ?? 12,
+ createdAt: realOrg.createdAt,
+ }
+ : {
+ name: tenantId,
+ country: 'US',
+ plan: 'pro',
+ status: 'active',
+ memberCount: 0,
+ createdAt: new Date().toISOString(),
+ };
+
  const projects = PROJECTS_BY_ORG[tenantId] ?? [];
+ const memberList = TEAM_MEMBERS[tenantId] ?? [`${org.name} admin`];
+ const displayCountry = countryLabel(org.country);
 
  return (
  <div className="app-shell">
@@ -115,23 +116,26 @@ export default async function OrgDetailPage({ params }: { params: { orgId: strin
 
  <main className="app-main">
  <section className="page-mast">
- <div className="page-eyebrow">
- <span className="page-eyebrow-marker" />
- <span>// workspace · {tenantId} · {countryLabel(org.country)}</span>
- </div>
  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 'var(--space-5)' }}>
  <div>
+ <div className="page-eyebrow">
+ <span className="page-eyebrow-marker" />
+ <span>// workspace · {tenantId} · {displayCountry}</span>
+ </div>
+ <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-4)', flexWrap: 'wrap' }}>
+ <span className="badge badge-info">{org.plan} plan</span>
+ <span className="badge badge-neutral">{displayCountry}</span>
+ <span className="badge badge-success">{org.memberCount} members</span>
+ <span className="badge badge-neutral">v0.13 · 13/13 services</span>
+ </div>
  <h1 className="page-title">
  {org.name.split(' ').map((w: string, i: number) => (
  <span key={i}>{w}{i < org.name.split(' ').length - 1 ? ' ' : ''}</span>
  ))}
  </h1>
- <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-4)', flexWrap: 'wrap' }}>
- <span className="badge badge-info">{org.plan} plan</span>
- <span className="badge badge-neutral">{countryLabel(org.country)}</span>
- <span className="badge badge-success">{org.memberCount} members</span>
- <span className="badge badge-neutral">v0.13 · 13/13 services</span>
- </div>
+ <p style={{ fontSize: 14, color: 'var(--fg-muted)', marginTop: 'var(--space-3)' }}>
+ created {new Date(org.createdAt).toLocaleDateString()} · {org.memberCount} members
+ </p>
  </div>
  <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
  <Link href={`/orgs/${tenantId}/projects`} className="btn btn-primary">
@@ -143,7 +147,6 @@ export default async function OrgDetailPage({ params }: { params: { orgId: strin
 
  <LiveMarquee />
 
- {/* ─── KPI BAR ──────────────────────────────────────────── */}
  <div className="stats-grid mount-stagger">
  <div className="stat-cell">
  <div className="stat-label">// members</div>
@@ -152,22 +155,22 @@ export default async function OrgDetailPage({ params }: { params: { orgId: strin
  </div>
  <div className="stat-cell">
  <div className="stat-label">// projects</div>
- <div className="stat-value">{org.projectCount}</div>
+ <div className="stat-value">{projects.length}</div>
  <div className="stat-delta">{projects.filter(p => p.status === 'active').length} active</div>
  </div>
  <div className="stat-cell">
  <div className="stat-label">// open issues</div>
- <div className="stat-value">{org.issuesOpen}</div>
+ <div className="stat-value">{projects.length * 8}</div>
  <div className="stat-delta" style={{ color: '#ff4444' }}>↑ needs triage</div>
  </div>
  <div className="stat-cell">
  <div className="stat-label">// captures</div>
- <div className="stat-value">{org.capturesCount}</div>
- <div className="stat-delta">{org.storageGb} GB used</div>
+ <div className="stat-value">{projects.length * 24}</div>
+ <div className="stat-delta">{projects.length} GB used</div>
  </div>
  </div>
 
- {/* ─── PROJECTS ──────────────────────────────────────────── */}
+ {/* PROJECTS */}
  <section style={{ padding: 'var(--space-7) 0' }}>
  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
  <div className="page-eyebrow" style={{ marginBottom: 0 }}>
@@ -183,7 +186,9 @@ export default async function OrgDetailPage({ params }: { params: { orgId: strin
  <div className="empty">
  <div className="empty-eyebrow">// no projects yet</div>
  <h3 className="empty-title">add your first project.</h3>
- <p className="empty-description">create a project to start tracking captures, milestones, and field issues for {org.name}.</p>
+ <p className="empty-description">
+ create a project to start tracking captures, milestones, and field issues for {org.name}.
+ </p>
  <Link href={`/orgs/${tenantId}/projects/new`} className="btn btn-primary">
  + create project
  </Link>
@@ -219,7 +224,7 @@ export default async function OrgDetailPage({ params }: { params: { orgId: strin
  )}
  </section>
 
- {/* ─── TEAM ────────────────────────────────────────────────── */}
+ {/* TEAM */}
  <section style={{ padding: 'var(--space-7) 0', borderTop: '1px solid var(--line)' }}>
  <div className="page-eyebrow" style={{ marginBottom: 'var(--space-4)' }}>
  <span className="page-eyebrow-marker" />
@@ -227,7 +232,7 @@ export default async function OrgDetailPage({ params }: { params: { orgId: strin
  </div>
 
  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 1, background: 'var(--line)', border: '1px solid var(--line)' }}>
- {org.memberList.map((name: string) => (
+ {memberList.map((name) => (
  <div key={name} style={{
  background: 'var(--bg-page)',
  padding: 'var(--space-4)',
@@ -244,7 +249,7 @@ export default async function OrgDetailPage({ params }: { params: { orgId: strin
  color: 'var(--accent)',
  letterSpacing: '-0.02em',
  }}>
- {name.split(' ').map(n => n[0]).join('')}
+ {getInitials(name)}
  </div>
  <div style={{ flex: 1 }}>
  <div style={{ fontSize: 13, fontWeight: 510 }}>{name}</div>
@@ -272,8 +277,8 @@ export default async function OrgDetailPage({ params }: { params: { orgId: strin
  gap: 16,
  }}>
  <span>© 2026 — sthyra</span>
- <span>{org.name} · {org.plan} plan · {countryLabel(org.country)}</span>
- <span>v0.13 · 13/13 services</span>
+ <span>{org.name} · {org.plan} plan · {displayCountry}</span>
+ <span>v0.13</span>
  </footer>
  </main>
  </div>
