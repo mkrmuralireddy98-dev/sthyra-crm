@@ -1,8 +1,16 @@
 import Link from 'next/link';
 import { TopNav, LiveMarquee } from '@/components/top-nav';
+import { cookies } from 'next/headers';
 import { listOrgs, type Org } from '@/lib/api-server';
+import { OrgActions } from '@/components/org-actions';
 
 export const dynamic = 'force-dynamic';
+
+// Read role from cookies (set by role-switcher)
+async function getRole(): Promise<'admin' | 'user'> {
+ const cookieStore = await cookies();
+ return (cookieStore.get('sthyra-role')?.value as 'admin' | 'user') ?? 'user';
+}
 
 const COUNTRY_NAMES: Record<string, string> = {
  US: 'United States', GB: 'United Kingdom', CA: 'Canada',
@@ -30,6 +38,7 @@ function adminToCountry(org: Org): string {
 }
 
 export default async function OrgsPage() {
+ const role = await getRole();
  const orgs = await listOrgs();
  const totalProjects = orgs.length * 12; // mock for now
  const activeOrgs = orgs.filter(o => o.status === 'active').length;
@@ -107,6 +116,7 @@ export default async function OrgsPage() {
  <th>// status</th>
  <th>// members</th>
  <th>// created</th>
+ <th>// actions</th>
  </tr>
  </thead>
  <tbody>
@@ -133,6 +143,9 @@ export default async function OrgsPage() {
  <td style={{ fontVariantNumeric: 'tabular-nums' }}>{o.userCount ?? '—'}</td>
  <td style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--fg-quaternary)' }}>
  {new Date(o.createdAt).toLocaleDateString()}
+ </td>
+ <td>
+ <OrgActions orgId={o.id} orgName={o.name} status={o.status} role={role} />
  </td>
  </tr>
  ))}
