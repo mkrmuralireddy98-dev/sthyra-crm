@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { TopNav } from '@/components/top-nav';
 import { toast } from '@/components/toast';
+import { createOrg } from '@/lib/api';
 
 const COUNTRIES = [
  { code: 'US', name: 'United States', flag: '🇺🇸' },
@@ -42,24 +43,34 @@ export default function NewOrgPage() {
  const [submitting, setSubmitting] = useState(false);
  const [error, setError] = useState<string | null>(null);
 
- const onSubmit = (e: React.FormEvent) => {
+ const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '_').slice(0, 20) || 'unnamed';
+ const orgId = `org_${slug}`;
+ const selectedCountry = COUNTRIES.find(c => c.code === country);
+
+ const onSubmit = async (e: React.FormEvent) => {
  e.preventDefault();
  setError(null);
  setSubmitting(true);
 
- // simulate
- setTimeout(() => {
- const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '_').slice(0, 20);
+ try {
+ const created = await createOrg({ name, country, plan });
  toast({
  title: 'organization created',
- description: `${name} · ${country} · ${plan}`,
+ description: `${created.id} · ${created.name} · ${country}`,
+ });
+ // Redirect to the new org
+ router.push(`/orgs/${created.id}`);
+ } catch (err: any) {
+ const msg = err?.message ?? 'failed to create org';
+ setError(msg);
+ toast({
+ title: 'failed to create org',
+ description: msg,
+ variant: 'error',
  });
  setSubmitting(false);
- router.push(`/orgs/org_${slug}`);
- }, 600);
+ }
  };
-
- const selectedCountry = COUNTRIES.find(c => c.code === country);
 
  return (
  <div className="app-shell">
@@ -71,7 +82,7 @@ export default function NewOrgPage() {
  <div>
  <div className="page-eyebrow">
  <span className="page-eyebrow-marker" />
- <span>// platform · new organization</span>
+ <span>// platform · new organization · admin-service:9100</span>
  </div>
  <h1 className="page-title">
  new<br />
@@ -111,7 +122,6 @@ export default function NewOrgPage() {
  )}
 
  <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
- {/* Name */}
  <div>
  <label htmlFor="org-name" className="form-label">// organization name *</label>
  <input
@@ -125,7 +135,6 @@ export default function NewOrgPage() {
  className="form-input"
  style={{ fontSize: 18, padding: 'var(--space-3) 0' }}
  />
- {name && (
  <div style={{
  marginTop: 'var(--space-2)',
  fontFamily: 'var(--font-mono)',
@@ -133,12 +142,10 @@ export default function NewOrgPage() {
  color: 'var(--fg-quaternary)',
  letterSpacing: '0.05em',
  }}>
- // slug: org_{name.toLowerCase().replace(/[^a-z0-9]+/g, '_').slice(0, 20) || 'unnamed'}
+ // slug: {orgId}
  </div>
- )}
  </div>
 
- {/* Country */}
  <div>
  <label htmlFor="org-country" className="form-label">// country *</label>
  <select
@@ -172,7 +179,6 @@ export default function NewOrgPage() {
  )}
  </div>
 
- {/* Plan */}
  <div>
  <label className="form-label">// plan</label>
  <div style={{
@@ -257,3 +263,4 @@ export default function NewOrgPage() {
  </div>
  );
 }
+

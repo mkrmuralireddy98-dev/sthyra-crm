@@ -13,15 +13,11 @@ interface Issue {
  createdAt: string;
 }
 
-async function fetchIssues(): Promise<Issue[]> {
+async function fetchIssues(orgId: string): Promise<Issue[]> {
  try {
- const res = await fetch('http://127.0.0.1:9091/v1/projects/prj_demo/issues', {
- headers: { 'x-tenant-id': 'org_a', 'accept': 'application/json' },
- cache: 'no-store',
- });
- if (!res.ok) return [];
- const data = await res.json();
- return (data.data || []) as Issue[];
+ const { listIssues } = await import('@/lib/api');
+ const issues = await listIssues(orgId, 'prj_demo');
+ return issues as Issue[];
  } catch {
  return [];
  }
@@ -49,7 +45,7 @@ function SeverityPill({ severity }: { severity: string }) {
 
 export default async function IssuesPage({ params }: { params: { orgId: string } }) {
  const tenantId = params.orgId;
- const issues = await fetchIssues();
+ const issues = await fetchIssues(tenantId);
 
  const counts = {
  total: issues.length,

@@ -1,14 +1,8 @@
 import Link from 'next/link';
 import { TopNav, LiveMarquee } from '@/components/top-nav';
+import { listOrgs, type Org } from '@/lib/api';
 
 export const dynamic = 'force-dynamic';
-
-const ORGS = [
- { id: 'org_a', name: 'Acme Construction', country: 'US', plan: 'pro', status: 'active', projects: 12, members: 12, captures: 24, storage: '1.2 GB' },
- { id: 'org_b', name: 'BuildRight Inc', country: 'GB', plan: 'enterprise', status: 'active', projects: 47, members: 124, captures: 412, storage: '18.4 GB' },
- { id: 'org_c', name: 'MegaStructures LLC', country: 'US', plan: 'starter', status: 'trial', projects: 3, members: 5, captures: 4, storage: '0.1 GB' },
-];
-
 
 const COUNTRY_NAMES: Record<string, string> = {
  US: 'United States', GB: 'United Kingdom', CA: 'Canada',
@@ -29,7 +23,19 @@ const countryLabel = (code: string): string => {
  const flag = FLAGS[code] ?? '🏳';
  return `${flag} ${name}`;
 };
+
+// Map admin-service 'region' (which we overloaded as country code) back to display
+function adminToCountry(org: Org): string {
+ return org.country ?? 'US';
+}
+
 export default async function OrgsPage() {
+ const orgs = await listOrgs();
+ const totalProjects = orgs.length * 12; // mock for now
+ const activeOrgs = orgs.filter(o => o.status === 'active').length;
+ const trialOrgs = orgs.filter(o => o.status === 'trial').length;
+ const countriesCount = new Set(orgs.map(o => adminToCountry(o))).size;
+
  return (
  <div className="app-shell">
  <TopNav />
@@ -40,14 +46,14 @@ export default async function OrgsPage() {
  <div>
  <div className="page-eyebrow">
  <span className="page-eyebrow-marker" />
- <span>// organizations · {ORGS.length}</span>
+ <span>// organizations · {orgs.length} from admin-service</span>
  </div>
  <h1 className="page-title">
  all tenants on<br />
  <span className="page-title-accent">sthyra.</span>
  </h1>
  <p style={{ fontSize: 14, color: 'var(--fg-muted)', marginTop: 'var(--space-3)', maxWidth: 520 }}>
- every workspace on the platform · active and trial tenants · multi-country
+ every workspace on the platform · fetched from <code style={{ color: 'var(--accent)' }}>admin-service:9100</code>
  </p>
  </div>
  <Link href="/orgs/new" className="btn btn-primary">
@@ -61,19 +67,19 @@ export default async function OrgsPage() {
  <div className="stats-grid mount-stagger">
  <div className="stat-cell">
  <div className="stat-label">// organizations</div>
- <div className="stat-value">{ORGS.length}</div>
+ <div className="stat-value">{orgs.length}</div>
  </div>
  <div className="stat-cell">
  <div className="stat-label">// active</div>
- <div className="stat-value">{ORGS.filter(o => o.status === 'active').length}</div>
+ <div className="stat-value">{activeOrgs}</div>
  </div>
  <div className="stat-cell">
  <div className="stat-label">// trial</div>
- <div className="stat-value">{ORGS.filter(o => o.status === 'trial').length}</div>
+ <div className="stat-value">{trialOrgs}</div>
  </div>
  <div className="stat-cell">
  <div className="stat-label">// countries</div>
- <div className="stat-value">{new Set(ORGS.map(o => o.country)).size}</div>
+ <div className="stat-value">{countriesCount}</div>
  </div>
  </div>
 
@@ -83,6 +89,14 @@ export default async function OrgsPage() {
  <span>// all organizations</span>
  </div>
 
+ {orgs.length === 0 ? (
+ <div className="empty">
+ <div className="empty-eyebrow">// admin-service returned 0</div>
+ <h3 className="empty-title">no tenants yet.</h3>
+ <p className="empty-description">create your first organization to start tracking projects.</p>
+ <Link href="/orgs/new" className="btn btn-primary">+ new organization</Link>
+ </div>
+ ) : (
  <div style={{ border: '1px solid var(--line)', overflowX: 'auto' }}>
  <table className="data-table" style={{ border: 'none' }}>
  <thead>
@@ -91,14 +105,12 @@ export default async function OrgsPage() {
  <th>// country</th>
  <th>// plan</th>
  <th>// status</th>
- <th>// projects</th>
  <th>// members</th>
- <th>// captures</th>
- <th>// storage</th>
+ <th>// created</th>
  </tr>
  </thead>
  <tbody>
- {ORGS.map((o) => (
+ {orgs.map((o) => (
  <tr key={o.id}>
  <td>
  <Link href={`/orgs/${o.id}`} style={{ fontWeight: 600 }}>
@@ -106,9 +118,9 @@ export default async function OrgsPage() {
  </Link>
  <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--fg-quaternary)', marginTop: 2 }}>{o.id}</div>
  </td>
- <td style={{ fontSize: 12 }}>{countryLabel(o.country)}</td>
+ <td style={{ fontSize: 12 }}>{countryLabel(adminToCountry(o))}</td>
  <td>
- <span className={`badge ${o.plan === 'enterprise' ? 'badge-teal' : o.plan === 'pro' ? 'badge-info' : 'badge-neutral'}`}>
+ <span className={`badge ${o.plan === 'enterprise' ? 'badge-info' : o.plan === 'pro' ? 'badge-success' : 'badge-neutral'}`}>
  {o.plan}
  </span>
  </td>
@@ -118,15 +130,16 @@ export default async function OrgsPage() {
  {o.status}
  </span>
  </td>
- <td style={{ fontVariantNumeric: 'tabular-nums' }}>{o.projects}</td>
- <td style={{ fontVariantNumeric: 'tabular-nums' }}>{o.members}</td>
- <td style={{ fontVariantNumeric: 'tabular-nums' }}>{o.captures}</td>
- <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--fg-muted)' }}>{o.storage}</td>
+ <td style={{ fontVariantNumeric: 'tabular-nums' }}>{o.userCount ?? '—'}</td>
+ <td style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--fg-quaternary)' }}>
+ {new Date(o.createdAt).toLocaleDateString()}
+ </td>
  </tr>
  ))}
  </tbody>
  </table>
  </div>
+ )}
  </section>
 
  <footer style={{
@@ -142,7 +155,7 @@ export default async function OrgsPage() {
  textTransform: 'uppercase',
  }}>
  <span>© 2026 — sthyra</span>
- <span>3 organizations · 3 countries</span>
+ <span>{orgs.length} organizations · {countriesCount} countries</span>
  <span>v0.13</span>
  </footer>
  </main>

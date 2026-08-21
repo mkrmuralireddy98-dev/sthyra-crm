@@ -20,21 +20,18 @@ export default function NewIssuePage({ params }: { params: { orgId: string } }) 
  setSubmitting(true);
  setError(null);
  try {
- const idempotencyKey = `create-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
- const res = await fetch('http://127.0.0.1:9091/v1/projects/prj_demo/issues', {
- method: 'POST',
- headers: {
- 'x-tenant-id': tenantId,
- 'x-idempotency-key': idempotencyKey,
- 'content-type': 'application/json',
- },
- body: JSON.stringify({ title, description, severity, trade }),
+ const { createIssue } = await import('@/lib/api');
+ const created = await createIssue({
+ tenantId,
+ projectId: 'prj_demo',
+ title,
+ description,
+ severity,
+ trade,
  });
- if (!res.ok) throw new Error(`HTTP ${res.status}`);
- const data = await res.json();
  toast({
  title: 'issue created',
- description: `${data.id} → ${data.title}`,
+ description: `${created.id} → ${created.title}`,
  });
  router.push(`/orgs/${tenantId}/issues`);
  } catch (e: any) {
