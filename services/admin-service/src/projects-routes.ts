@@ -30,6 +30,16 @@ export function registerProjectRoutes(app: FastifyInstance): void {
  // Create project
  app.post('/v1/admin/tenants/:id/projects', async (req: any, reply: any) => {
  const tenantId = ((req.params as any).id ?? '').trim();
+ const idem = (req.headers as any)['x-idempotency-key'] ?? (req.headers as any)['idempotency-key'];
+ if (!idem) {
+ reply.code(400).send({
+ type: 'https://sthyra-crm.dev/errors/missing-idempotency-key',
+ title: 'Missing Idempotency-Key',
+ status: 400,
+ detail: 'x-idempotency-key required',
+ });
+ return;
+ }
  const body = (req.body ?? {}) as { name?: string; location?: string; type?: string };
  if (!body.name || !body.location) {
  reply.code(400).send({
@@ -58,6 +68,16 @@ export function registerProjectRoutes(app: FastifyInstance): void {
 
  // Update project
  app.patch('/v1/admin/tenants/:tenantId/projects/:projectId', async (req: any, reply: any) => {
+ const idem = (req.headers as any)['x-idempotency-key'] ?? (req.headers as any)['idempotency-key'];
+ if (!idem) {
+ reply.code(400).send({
+ type: 'https://sthyra-crm.dev/errors/missing-idempotency-key',
+ title: 'Missing Idempotency-Key',
+ status: 400,
+ detail: 'x-idempotency-key required',
+ });
+ return;
+ }
  const tenantId = ((req.params as any).tenantId ?? '').trim();
  const projectId = ((req.params as any).projectId ?? '').trim();
  const items = projects.get(tenantId) ?? [];
@@ -73,6 +93,16 @@ export function registerProjectRoutes(app: FastifyInstance): void {
 
  // Delete project
  app.delete('/v1/admin/tenants/:tenantId/projects/:projectId', async (req: any, reply: any) => {
+ const idem = (req.headers as any)['x-idempotency-key'] ?? (req.headers as any)['idempotency-key'];
+ if (!idem) {
+ reply.code(400).send({
+ type: 'https://sthyra-crm.dev/errors/missing-idempotency-key',
+ title: 'Missing Idempotency-Key',
+ status: 400,
+ detail: 'x-idempotency-key required',
+ });
+ return;
+ }
  const tenantId = ((req.params as any).tenantId ?? '').trim();
  const projectId = ((req.params as any).projectId ?? '').trim();
  const items = projects.get(tenantId) ?? [];
