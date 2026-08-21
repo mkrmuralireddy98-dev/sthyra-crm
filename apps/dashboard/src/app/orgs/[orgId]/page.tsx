@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { TopNav, LiveMarquee } from '@/components/top-nav';
-import { listOrgs, type Org } from '@/lib/api-server';
+import { listOrgs, listProjects, type Org, type Project } from '@/lib/api-server';
 
 export const dynamic = 'force-dynamic';
 
@@ -106,7 +106,15 @@ export default async function OrgDetailPage({ params }: { params: { orgId: strin
  createdAt: new Date().toISOString(),
  };
 
- const projects = PROJECTS_BY_ORG[tenantId] ?? [];
+ const realProjects = await listProjects(tenantId);
+ const seedProjects = PROJECTS_BY_ORG[tenantId] ?? [];
+ const projects: any[] = [
+ ...realProjects.map(p => ({
+ id: p.id, name: p.name, status: p.status, progress: p.progressPct,
+ location: p.location,
+ })),
+ ...seedProjects.filter(sp => !realProjects.find(rp => rp.id === sp.id)),
+ ];
  const memberList = TEAM_MEMBERS[tenantId] ?? [`${org.name} admin`];
  const displayCountry = countryLabel(org.country);
 

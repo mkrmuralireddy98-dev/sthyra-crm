@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { TopNav, LiveMarquee } from '@/components/top-nav';
+import { listProjects } from '@/lib/api-server';
 
 export const dynamic = 'force-dynamic';
 
@@ -48,7 +49,14 @@ function MiniBar({ value }: { value: number }) {
 
 export default async function ProjectsPage({ params }: { params: { orgId: string } }) {
  const tenantId = params.orgId;
- const projects = MOCK_PROJECTS;
+ const realProjects = await listProjects(tenantId);
+ const projects: any[] = [
+ ...realProjects.map(p => ({
+ id: p.id, name: p.name, status: p.status, progressPct: p.progressPct,
+ capturesCount: 0, issuesCount: 0, location: p.location,
+ })),
+ ...MOCK_PROJECTS.filter(mp => !realProjects.find(rp => rp.id === mp.id)),
+ ];
 
  return (
  <div className="app-shell">
