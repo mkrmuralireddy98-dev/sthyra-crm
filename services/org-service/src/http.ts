@@ -11,7 +11,7 @@
 import Fastify, { type FastifyInstance } from 'fastify';
 import { randomUUID } from 'node:crypto';
 import { OrgService, type Org } from './index.js';
-import { emit, installRequestIdPlugin } from '@sthyra-crm/observability';
+import { emit, installRequestIdPlugin, installCorsPlugin } from '@sthyra-crm/observability';
 
 interface BuildServerOptions {
   service: OrgService;
@@ -38,12 +38,13 @@ interface Rfc7807 {
 export function buildServer(opts: BuildServerOptions): FastifyInstance {
   const app = Fastify({ logger: false });
   installRequestIdPlugin(app);
+ installCorsPlugin(app);
   const idem = opts.idempotency ?? new Map<string, string>();
 
   app.setErrorHandler((err: unknown, _req, reply) => {
     const trace_id = randomUUID();
     const detail = err instanceof Error ? err.message : String(err);
-    emit('error', 'unhandled_error', { detail });
+    emit('unhandled_error', { detail }, { service: 'org-service', level: 'error' });
     reply.type('application/problem+json').status(500).send({
       type: 'https://sthyra-crm.dev/errors/internal',
       title: 'Internal Server Error',

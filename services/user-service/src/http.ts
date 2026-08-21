@@ -5,7 +5,7 @@ import {
   type ProvisionInput,
   type Role,
 } from './index.js';
-import { emit, installRequestIdPlugin } from '@sthyra-crm/observability';
+import { emit, installRequestIdPlugin, installCorsPlugin } from '@sthyra-crm/observability';
 
 interface BuildServerOptions {
   service: UserService;
@@ -31,11 +31,12 @@ const VALID_ROLES: ReadonlySet<Role> = new Set<Role>([
 export function buildServer(opts: BuildServerOptions): FastifyInstance {
   const app = Fastify({ logger: false });
   installRequestIdPlugin(app);
+ installCorsPlugin(app);
 
   app.setErrorHandler((err: unknown, _req, reply) => {
     const trace_id = randomUUID();
     const detail = err instanceof Error ? err.message : String(err);
-    emit('error', 'unhandled_error', { detail });
+    emit('unhandled_error', { detail }, { service: 'user-service', level: 'error' });
     reply.type('application/problem+json').status(500).send({
       type: 'https://sthyra-crm.dev/errors/internal',
       title: 'Internal Server Error',

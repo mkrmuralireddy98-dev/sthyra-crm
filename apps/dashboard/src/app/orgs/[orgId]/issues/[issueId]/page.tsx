@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Sidebar } from '@/components/sidebar';
+import { TopNav } from '@/components/top-nav';
 import { randomUUID } from 'node:crypto';
 
 export const dynamic = 'force-dynamic';
@@ -49,8 +49,8 @@ export default async function IssueDetailPage({ params }: { params: { orgId: str
  if (!issue) {
  return (
  <div className="app-shell">
- <Sidebar currentOrgId={tenantId} currentPath={`/orgs/${tenantId}/issues`} />
- <main className="main">
+ <TopNav currentOrgId={tenantId} />
+ <main className="app-main">
  <div className="empty">
  <div className="empty-icon">⚠</div>
  <h3 className="empty-title">Issue not found</h3>
@@ -64,8 +64,8 @@ export default async function IssueDetailPage({ params }: { params: { orgId: str
 
  return (
  <div className="app-shell">
- <Sidebar currentOrgId={tenantId} currentPath={`/orgs/${tenantId}/issues`} />
- <main className="main">
+ <TopNav currentOrgId={tenantId} />
+ <main className="app-main">
  <header className="page-header fade-in">
  <div className="page-header-content">
  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 8 }}>
@@ -172,7 +172,7 @@ export default async function IssueDetailPage({ params }: { params: { orgId: str
  </section>
  </div>
 
- {/* Sidebar */}
+ 
  <aside style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
  {/* Status timeline */}
  <section className="card fade-in">

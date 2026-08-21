@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Sidebar } from '@/components/sidebar';
+import { TopNav } from '@/components/top-nav';
 import { toast } from '@/components/toast';
 
 export default function NewProjectPage({ params }: { params: { orgId: string } }) {
@@ -30,8 +30,8 @@ export default function NewProjectPage({ params }: { params: { orgId: string } }
 
  return (
  <div className="app-shell">
- <Sidebar currentOrgId={tenantId} currentPath={`/orgs/${tenantId}/projects`} />
- <main className="main">
+ <TopNav currentOrgId={tenantId} />
+ <main className="app-main">
  <header className="page-header fade-in">
  <div className="page-header-content">
  <h1 className="page-title">New project</h1>

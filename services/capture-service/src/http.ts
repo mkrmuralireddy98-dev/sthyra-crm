@@ -23,7 +23,7 @@
 
 import Fastify, { type FastifyInstance } from 'fastify';
 import { randomUUID } from 'node:crypto';
-import { currentRequestId, installRequestIdPlugin, emit } from '@sthyra-crm/observability';
+import { currentRequestId, installRequestIdPlugin, installCorsPlugin, emit } from '@sthyra-crm/observability';
 import {
  CaptureService,
  DuplicateClientCaptureIdError,
@@ -106,6 +106,7 @@ export async function buildCaptureServer(deps: BuildServerDeps = {}): Promise<Fa
 
  // Request-id propagation + structured logging (Constitution §VI)
  installRequestIdPlugin(app);
+ installCorsPlugin(app);
 
  function requestIdOf(_req: unknown): string {
  return currentRequestId() ?? randomUUID();
@@ -141,13 +142,13 @@ export async function buildCaptureServer(deps: BuildServerDeps = {}): Promise<Fa
  metrics.incActiveUpload();
 
  // Structured log: capture creation requested (Constitution §VI)
- emit('info', 'capture_create_requested', {
+ emit('capture_create_requested', {
  orgId,
  projectId,
  idempotencyKey,
  kind: body.kind,
  clientCaptureId: body.clientCaptureId,
- });
+ }, { service: 'capture-service', level: 'info' });
 
  try {
  const result = await service.create(orgId, projectId, idempotencyKey, {

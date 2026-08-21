@@ -4,7 +4,7 @@
  */
 
 import Fastify from 'fastify';
-import { installRequestIdPlugin, currentRequestId } from '@sthyra-crm/observability';
+import { installRequestIdPlugin, installCorsPlugin, currentRequestId } from '@sthyra-crm/observability';
 import { AdminService } from './service.js';
 import { InMemoryAdminRepository } from './repo-memory.js';
 import { AuditLogger } from './audit.js';
@@ -57,6 +57,7 @@ function getIdemKey(req: { headers: Record<string, string | string[] | undefined
 export async function buildAdminServer(deps: BuildServerDeps = {}): Promise<any> {
  const app = Fastify({ logger: false, disableRequestLogging: true });
  installRequestIdPlugin(app);
+ installCorsPlugin(app);
  const repo = new InMemoryAdminRepository();
  const audit = new AuditLogger(repo);
  const health = new HealthChecker();

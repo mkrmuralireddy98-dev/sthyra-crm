@@ -4,7 +4,7 @@
 
 import Fastify, { type FastifyInstance } from 'fastify';
 import { randomUUID } from 'node:crypto';
-import { installRequestIdPlugin, currentRequestId } from '@sthyra-crm/observability';
+import { installRequestIdPlugin, installCorsPlugin, currentRequestId } from '@sthyra-crm/observability';
 import { InMemoryIssueRepository } from './repo-memory.js';
 import { InMemoryIdempotencyStore } from './in-memory-idempotency.js';
 import { IssueService } from './service.js';
@@ -59,6 +59,7 @@ function rid(): string {
 export async function buildFieldServer(deps: BuildServerDeps = {}): Promise<FastifyInstance> {
  const app = Fastify({ logger: false, disableRequestLogging: true });
  installRequestIdPlugin(app);
+ installCorsPlugin(app);
 
  const bus = deps.bus ?? new InMemoryEventBus();
  const repo = deps.repo ?? new InMemoryIssueRepository();

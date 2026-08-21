@@ -4,7 +4,7 @@
 
 import Fastify, { type FastifyInstance } from 'fastify';
 import { randomUUID } from 'node:crypto';
-import { installRequestIdPlugin, currentRequestId } from '@sthyra-crm/observability';
+import { installRequestIdPlugin, installCorsPlugin, currentRequestId } from '@sthyra-crm/observability';
 import { CopilotService } from './service.js';
 import type { CopilotServiceDeps } from './service.js';
 import type { CopilotRepository } from './repository.js';
@@ -56,6 +56,7 @@ function rid(): string {
 export async function buildCopilotServer(deps: BuildServerDeps = {}): Promise<FastifyInstance> {
  const app = Fastify({ logger: false, disableRequestLogging: true });
  installRequestIdPlugin(app);
+ installCorsPlugin(app);
 
  const repo = deps.repo ?? new InMemoryCopilotRepository();
  const bus = deps.bus ?? new InMemoryEventBus();

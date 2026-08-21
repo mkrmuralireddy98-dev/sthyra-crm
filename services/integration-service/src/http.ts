@@ -4,7 +4,7 @@
 
 import Fastify, { type FastifyInstance } from 'fastify';
 import { randomUUID } from 'node:crypto';
-import { installRequestIdPlugin, currentRequestId } from '@sthyra-crm/observability';
+import { installRequestIdPlugin, installCorsPlugin, currentRequestId } from '@sthyra-crm/observability';
 import { IntegrationService } from './service.js';
 import { InMemoryIntegrationRepository } from './repo-memory.js';
 import type { IntegrationRepository } from './repository.js';
@@ -49,6 +49,7 @@ function problem(
 export async function buildIntegrationServer(deps: BuildServerDeps = {}): Promise<FastifyInstance> {
   const app = Fastify({ logger: false, disableRequestLogging: true });
   installRequestIdPlugin(app);
+ installCorsPlugin(app);
 
   const repo = deps.repo ?? new InMemoryIntegrationRepository();
   const service = deps.service ?? new IntegrationService({ repo });

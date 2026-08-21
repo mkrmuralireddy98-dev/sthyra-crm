@@ -104,7 +104,7 @@ export async function startPostgresServer(
  (metrics as unknown as { recordPipelineDuration: Metrics['recordPipelineDuration'] }).recordPipelineDuration =
  otelMetrics.recordPipelineDuration.bind(otelMetrics);
  (metrics as unknown as { snapshot: Metrics['snapshot'] }).snapshot = otelMetrics.snapshot.bind(otelMetrics);
- emit('info', 'otel_metrics_enabled', { mode: 'fake-otel-meter' });
+ emit('otel_metrics_enabled', { mode: 'fake-otel-meter' }, { service: 'capture-service', level: 'info' });
  }
 
  const repo = new PostgresCaptureRepository({ pg: pgClient });
@@ -114,10 +114,10 @@ export async function startPostgresServer(
  const { RedisIdempotencyStore, createDefaultRedisClient } = await import('./redis-idempotency.js');
  const redisClient = await createDefaultRedisClient({ url: process.env.REDIS_URL });
  idempotency = new RedisIdempotencyStore({ redis: redisClient });
- emit('info', 'redis_idempotency_connected', { url: 'redacted' });
+ emit('redis_idempotency_connected', { url: 'redacted' }, { service: 'capture-service', level: 'info' });
  } else {
  idempotency = new InMemoryIdempotencyStore();
- emit('warn', 'redis_idempotency_disabled', { reason: 'REDIS_URL not set' });
+ emit('redis_idempotency_disabled', { reason: 'REDIS_URL not set' }, { service: 'capture-service', level: 'warn' });
  }
  const bus = new InMemoryEventBus(); // Phase 1.b: Redis pub/sub
  const { PostgresOutboxWriter } = await import('./outbox-writer.js');
@@ -143,7 +143,7 @@ export async function startPostgresServer(
  pollIntervalMs: 1000,
  });
  dispatcher.start();
- emit('info', 'outbox_dispatcher_started', { pollIntervalMs: 1000, mode: 'multi-instance' });
+ emit('outbox_dispatcher_started', { pollIntervalMs: 1000, mode: 'multi-instance' }, { service: 'capture-service', level: 'info' });
 
  return {
  port,
@@ -162,16 +162,16 @@ async function main(): Promise<void> {
  const HOST = process.env.HOST ?? DEFAULT_HOST;
 
  if (DATABASE_URL) {
- emit('info', 'capture_service_booting', { mode: 'postgres', port: PORT });
+ emit('capture_service_booting', { mode: 'postgres', port: PORT }, { service: 'capture-service', level: 'info' });
  // Lazy-load pg so tests don't need it
  const pgModule = await import('pg');
  const pool = new pgModule.default.Pool({ connectionString: DATABASE_URL });
  const server = await startPostgresServer(pool, { port: PORT, host: HOST });
- emit('info', 'capture_service_ready', { port: server.port, host: server.host });
+ emit('capture_service_ready', { port: server.port, host: server.host }, { service: 'capture-service', level: 'info' });
  } else {
- emit('info', 'capture_service_booting', { mode: 'in-memory', port: PORT });
+ emit('capture_service_booting', { mode: 'in-memory', port: PORT }, { service: 'capture-service', level: 'info' });
  const server = await startInMemoryServer({ port: PORT, host: HOST });
- emit('info', 'capture_service_ready', { port: server.port, host: server.host, mode: 'in-memory' });
+ emit('capture_service_ready', { port: server.port, host: server.host, mode: 'in-memory' }, { service: 'capture-service', level: 'info' });
  }
  // Avoid unused
  void metrics;

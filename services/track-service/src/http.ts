@@ -4,7 +4,7 @@
 
 import Fastify, { type FastifyInstance } from 'fastify';
 import { randomUUID } from 'node:crypto';
-import { installRequestIdPlugin, currentRequestId } from '@sthyra-crm/observability';
+import { installRequestIdPlugin, installCorsPlugin, currentRequestId } from '@sthyra-crm/observability';
 import { TrackService } from './service.js';
 import { InMemoryTrackRepository } from './repo-memory.js';
 import { computeProjectStatusReport } from './status.js';
@@ -54,6 +54,7 @@ function rid(): string {
 export async function buildTrackServer(deps: BuildServerDeps = {}): Promise<FastifyInstance> {
   const app = Fastify({ logger: false, disableRequestLogging: true });
   installRequestIdPlugin(app);
+ installCorsPlugin(app);
 
   const repo = deps.repo ?? new InMemoryTrackRepository();
   const service = deps.service ?? new TrackService({ repo });

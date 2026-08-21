@@ -4,7 +4,7 @@
 
 import Fastify, { type FastifyInstance } from 'fastify';
 import { randomUUID } from 'node:crypto';
-import { installRequestIdPlugin, currentRequestId } from '@sthyra-crm/observability';
+import { installRequestIdPlugin, installCorsPlugin, currentRequestId } from '@sthyra-crm/observability';
 import { WorkflowService } from './service.js';
 import { InMemoryWorkflowRepository } from './repo-memory.js';
 import type { WorkflowRepository } from './repository.js';
@@ -52,6 +52,7 @@ function problem(
 export async function buildWorkflowServer(deps: BuildServerDeps = {}): Promise<FastifyInstance> {
   const app = Fastify({ logger: false, disableRequestLogging: true });
   installRequestIdPlugin(app);
+ installCorsPlugin(app);
 
   const repo = deps.repo ?? new InMemoryWorkflowRepository();
   const service = deps.service ?? new WorkflowService({ repo });

@@ -4,7 +4,7 @@
 
 import Fastify, { type FastifyInstance } from 'fastify';
 import { randomUUID } from 'node:crypto';
-import { installRequestIdPlugin, currentRequestId } from '@sthyra-crm/observability';
+import { installRequestIdPlugin, installCorsPlugin, currentRequestId } from '@sthyra-crm/observability';
 import { BimService, type BimEvent } from './service.js';
 import { InMemoryEventBus } from './realtime/index.js';
 import { installRealtimePlugin } from './realtime/sse.js';
@@ -54,6 +54,7 @@ function rid(): string {
 export async function buildBimServer(deps: BuildServerDeps = {}): Promise<FastifyInstance> {
  const app = Fastify({ logger: false, disableRequestLogging: true });
  installRequestIdPlugin(app);
+ installCorsPlugin(app);
 
  const bus = deps.bus ?? new InMemoryEventBus();
  const repo = deps.repo;

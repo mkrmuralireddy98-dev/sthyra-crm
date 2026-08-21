@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Sidebar } from '@/components/sidebar';
+import { TopNav } from '@/components/top-nav';
 import { PanoramaViewer } from '@/components/panorama-viewer';
 import { randomUUID } from 'node:crypto';
 
@@ -36,8 +36,8 @@ export default async function CaptureDetailPage({ params }: { params: { orgId: s
 
  return (
  <div className="app-shell">
- <Sidebar currentOrgId={tenantId} currentPath={`/orgs/${tenantId}/captures`} />
- <main className="main">
+ <TopNav currentOrgId={tenantId} />
+ <main className="app-main">
  <header className="page-header">
  <div className="page-header-content">
  <h1 className="page-title">{capture.name}</h1>

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Sidebar } from '@/components/sidebar';
+import { TopNav } from '@/components/top-nav';
 import { randomUUID } from 'node:crypto';
 
 export const dynamic = 'force-dynamic';
@@ -14,8 +14,8 @@ export default async function OrgsPage() {
  const requestId = randomUUID();
  return (
  <div className="app-shell">
- <Sidebar currentPath="/orgs" />
- <main className="main">
+ <TopNav />
+ <main className="app-main">
  <header className="page-header fade-in">
  <div className="page-header-content">
  <h1 className="page-title">Organizations</h1>

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Sidebar } from '@/components/sidebar';
+import { TopNav } from '@/components/top-nav';
 import { BimViewer } from '@/components/bim-viewer';
 import { randomUUID } from 'node:crypto';
 
@@ -37,8 +37,8 @@ export default async function ProjectDetailPage({ params }: { params: { orgId: s
 
  return (
  <div className="app-shell">
- <Sidebar currentOrgId={tenantId} currentPath={`/orgs/${tenantId}/projects`} />
- <main className="main">
+ <TopNav currentOrgId={tenantId} />
+ <main className="app-main">
  <header className="page-header">
  <div className="page-header-content">
  <h1 className="page-title">{project.name}</h1>

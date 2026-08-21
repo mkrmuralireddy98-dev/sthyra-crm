@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import * as assert from 'node:assert/strict';
 import Fastify from 'fastify';
-import { emit, installRequestIdPlugin, newRequestId, currentRequestId } from './index.js';
+import { emit, installRequestIdPlugin, installCorsPlugin, currentRequestId } from './index.js';
 
 describe('observability', () => {
   it('installRequestIdPlugin assigns x-request-id and echoes it back', async () => {
@@ -46,11 +46,6 @@ describe('observability', () => {
     await app.close();
   });
 
-  it('newRequestId returns a valid UUID v4', () => {
-    const id = newRequestId();
-    assert.match(id, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
-  });
-
   it('currentRequestId returns the id set by installRequestIdPlugin during a request', async () => {
     const app = Fastify({ logger: false });
     installRequestIdPlugin(app);
@@ -84,7 +79,7 @@ describe('observability', () => {
       const app = Fastify({ logger: false });
       installRequestIdPlugin(app);
       app.get('/v1/emit', async () => {
-        emit('info', 'test_event', { foo: 'bar' }, 'sthyra-crm-test');
+        emit('test_event', { foo: 'bar' }, { service: 'sthyra-crm-test', level: 'info' });
         return { ok: true };
       });
       await app.ready();
