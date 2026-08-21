@@ -1,6 +1,5 @@
 import Link from 'next/link';
-import { TopNav } from '@/components/top-nav';
-import { randomUUID } from 'node:crypto';
+import { TopNav, LiveMarquee } from '@/components/top-nav';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,9 +16,9 @@ interface Issue {
  resolvedAt?: string | null;
 }
 
-async function fetchIssue(projectId: string, issueId: string, tenantId: string): Promise<Issue | null> {
+async function fetchIssue(issueId: string, tenantId: string): Promise<Issue | null> {
  try {
- const res = await fetch(`http://127.0.0.1:9091/v1/projects/${projectId}/issues/${issueId}`, {
+ const res = await fetch(`http://127.0.0.1:9091/v1/projects/prj_demo/issues/${issueId}`, {
  headers: { 'x-tenant-id': tenantId, 'accept': 'application/json' },
  cache: 'no-store',
  });
@@ -30,7 +29,6 @@ async function fetchIssue(projectId: string, issueId: string, tenantId: string):
  }
 }
 
-// Mock status history (real one would come from field-service status history endpoint)
 const MOCK_HISTORY = [
  { from: null, to: 'open', at: '2 hours ago', actor: 'Sarah Chen', reason: 'Auto-created from field inspection' },
 ];
@@ -40,23 +38,47 @@ const MOCK_COMMENTS = [
  { id: 'c2', author: 'Lisa Park', at: '30 min ago', body: 'Coordinating with structural engineer for assessment.' },
 ];
 
+function StatusBadge({ status }: { status: string }) {
+ const map: Record<string, string> = {
+ open: 'badge-warning',
+ in_progress: 'badge-info',
+ resolved: 'badge-success',
+ wont_fix: 'badge-neutral',
+ };
+ return <span className={`badge ${map[status] ?? 'badge-neutral'}`}>{status.replace('_', ' ')}</span>;
+}
+
+function SeverityBadge({ severity }: { severity: string }) {
+ const map: Record<string, string> = {
+ critical: 'badge-danger',
+ high: 'badge-danger',
+ medium: 'badge-warning',
+ low: 'badge-neutral',
+ };
+ return <span className={`badge ${map[severity] ?? 'badge-neutral'}`}>{severity}</span>;
+}
+
 export default async function IssueDetailPage({ params }: { params: { orgId: string; issueId: string } }) {
- const requestId = randomUUID();
  const tenantId = params.orgId;
  const issueId = params.issueId;
- const issue = await fetchIssue('prj_demo', issueId, tenantId);
+ const issue = await fetchIssue(issueId, tenantId);
 
  if (!issue) {
  return (
  <div className="app-shell">
  <TopNav currentOrgId={tenantId} />
  <main className="app-main">
- <div className="empty">
- <div className="empty-icon">⚠</div>
- <h3 className="empty-title">Issue not found</h3>
- <p className="empty-description">This issue may not exist or you don't have access to it.</p>
- <Link href={`/orgs/${tenantId}/issues`} className="btn btn-primary">← Back to issues</Link>
+ <section className="page-mast">
+ <div className="page-eyebrow">
+ <span className="page-eyebrow-marker" />
+ <span>// 404 · not found</span>
  </div>
+ <h1 className="page-title">issue not found.</h1>
+ <p className="page-subtitle">this issue may not exist or you don't have access.</p>
+ <Link href={`/orgs/${tenantId}/issues`} className="btn btn-primary" style={{ marginTop: 'var(--space-5)' }}>
+ ← back to issues
+ </Link>
+ </section>
  </main>
  </div>
  );
@@ -66,56 +88,70 @@ export default async function IssueDetailPage({ params }: { params: { orgId: str
  <div className="app-shell">
  <TopNav currentOrgId={tenantId} />
  <main className="app-main">
- <header className="page-header fade-in">
- <div className="page-header-content">
- <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 8 }}>
- <span className={`badge ${
- issue.severity === 'critical' || issue.severity === 'high' ? 'badge-danger' :
- issue.severity === 'medium' ? 'badge-warning' : 'badge-neutral'
- }`}>{issue.severity}</span>
- <span className="badge badge-info">{issue.status.replace('_', ' ')}</span>
- <code style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-quaternary)' }}>{issue.id}</code>
+ <section className="page-mast">
+ <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 'var(--space-5)' }}>
+ <div>
+ <div className="page-eyebrow">
+ <span className="page-eyebrow-marker" />
+ <span>// {issue.projectId} · {issue.id.slice(-8)}</span>
  </div>
- <h1 className="page-title">{issue.title}</h1>
- <p className="page-subtitle">In project <Link href={`/orgs/${tenantId}/projects/${issue.projectId}`} style={{ color: 'var(--teal-400)' }}>{issue.projectId}</Link> · Opened {new Date(issue.createdAt).toLocaleDateString()}</p>
+ <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-3)' }}>
+ <SeverityBadge severity={issue.severity} />
+ <StatusBadge status={issue.status} />
  </div>
- <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
- <Link href={`/orgs/${tenantId}/issues`} className="btn btn-ghost">← Back</Link>
- <button className="btn btn-primary">Resolve</button>
+ <h1 className="page-title" style={{ fontSize: 'clamp(36px, 5vw, 64px)' }}>{issue.title}</h1>
  </div>
- </header>
+ <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+ <Link href={`/orgs/${tenantId}/issues`} className="btn btn-ghost">← back</Link>
+ <button className="btn btn-primary">resolve →</button>
+ </div>
+ </div>
+ </section>
 
- <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 'var(--space-5)', alignItems: 'start' }}>
- {/* Main content */}
- <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+ <LiveMarquee />
+
+ <div style={{
+ display: 'grid',
+ gridTemplateColumns: '2fr 1fr',
+ gap: 'var(--space-7)',
+ padding: 'var(--space-7) 0',
+ alignItems: 'start',
+ }}>
+ <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-7)' }}>
  {/* Description */}
- <section className="section fade-in">
- <div className="section-header"><h2 className="section-title">Description</h2></div>
- <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
- {issue.description || 'No description provided.'}
+ <section>
+ <div className="page-eyebrow" style={{ marginBottom: 'var(--space-3)' }}>
+ <span className="page-eyebrow-marker" />
+ <span>// description</span>
+ </div>
+ <p style={{
+ color: 'var(--fg-secondary)',
+ lineHeight: 1.6,
+ padding: 'var(--space-4)',
+ background: 'var(--bg-elevated)',
+ border: '1px solid var(--line)',
+ }}>
+ {issue.description || 'no description provided.'}
  </p>
  </section>
 
  {/* Photos */}
- <section className="section fade-in">
- <div className="section-header">
- <h2 className="section-title">Photos</h2>
- <button className="btn btn-ghost" style={{ padding: '4px 12px', fontSize: 12 }}>+ Add photo</button>
+ <section>
+ <div className="page-eyebrow" style={{ marginBottom: 'var(--space-3)' }}>
+ <span className="page-eyebrow-marker" />
+ <span>// photos · 3</span>
  </div>
- <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 'var(--space-2)' }}>
+ <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 1, background: 'var(--line)', border: '1px solid var(--line)' }}>
  {[1, 2, 3].map((i) => (
  <div key={i} style={{
  aspectRatio: '4 / 3',
- background: `linear-gradient(135deg, var(--bg-panel), var(--bg-elevated-2))`,
- border: '1px solid var(--border-default)',
- borderRadius: 'var(--radius-md)',
+ background: 'var(--bg-page)',
  display: 'flex',
  alignItems: 'center',
  justifyContent: 'center',
- color: 'var(--text-quaternary)',
+ color: 'var(--fg-quaternary)',
  fontSize: 11,
  fontFamily: 'var(--font-mono)',
- cursor: 'pointer',
  }}>
  photo_{i}.jpg
  </div>
@@ -123,76 +159,81 @@ export default async function IssueDetailPage({ params }: { params: { orgId: str
  </div>
  </section>
 
- {/* Comments */}
- <section className="section fade-in">
- <div className="section-header">
- <h2 className="section-title">Activity ({MOCK_COMMENTS.length})</h2>
+ {/* Activity */}
+ <section>
+ <div className="page-eyebrow" style={{ marginBottom: 'var(--space-3)' }}>
+ <span className="page-eyebrow-marker" />
+ <span>// activity · {MOCK_COMMENTS.length}</span>
  </div>
- <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+ <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
  {MOCK_COMMENTS.map((c) => (
  <div key={c.id} style={{ display: 'flex', gap: 'var(--space-3)' }}>
  <div style={{
- width: 32, height: 32, borderRadius: '50%',
+ width: 36, height: 36, flexShrink: 0,
+ border: '1px solid var(--line)',
  background: 'var(--bg-elevated)',
- color: 'var(--text-secondary)',
  display: 'flex', alignItems: 'center', justifyContent: 'center',
- fontSize: 12, fontWeight: 600, flexShrink: 0,
+ fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 700,
+ color: 'var(--accent)',
  }}>
- {c.author.split(' ').map((n) => n[0]).join('')}
+ {c.author.split(' ').map(n => n[0]).join('')}
  </div>
  <div style={{ flex: 1 }}>
  <div style={{ fontSize: 12, marginBottom: 4 }}>
- <span style={{ fontWeight: 510, color: 'var(--text-primary)' }}>{c.author}</span>
- <span style={{ color: 'var(--text-quaternary)', marginLeft: 8 }}>{c.at}</span>
+ <span style={{ fontWeight: 510, color: 'var(--fg)' }}>{c.author}</span>
+ <span style={{ color: 'var(--fg-quaternary)', marginLeft: 8, fontFamily: 'var(--font-mono)' }}>{c.at}</span>
  </div>
- <p style={{ color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.5 }}>{c.body}</p>
+ <p style={{ color: 'var(--fg-secondary)', fontSize: 13, lineHeight: 1.5 }}>{c.body}</p>
  </div>
  </div>
  ))}
- </div>
- <div style={{ marginTop: 'var(--space-4)', display: 'flex', gap: 'var(--space-3)' }}>
+ <div style={{ display: 'flex', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
  <div style={{
- width: 32, height: 32, borderRadius: '50%',
+ width: 36, height: 36, flexShrink: 0,
+ border: '1px solid var(--accent)',
  background: 'var(--bg-elevated)',
- color: 'var(--text-secondary)',
  display: 'flex', alignItems: 'center', justifyContent: 'center',
- fontSize: 12, fontWeight: 600, flexShrink: 0,
- }}>You</div>
+ fontFamily: 'var(--font-display)', fontSize: 14, fontWeight: 700,
+ color: 'var(--accent)',
+ }}>
+ You
+ </div>
  <textarea
- placeholder="Add a comment…"
+ placeholder="add a comment…"
  rows={3}
  style={{
- flex: 1, padding: 'var(--space-3)', background: 'var(--bg-elevated)',
- border: '1px solid var(--border-default)', borderRadius: 'var(--radius-md)',
- color: 'var(--text-primary)', fontSize: 13, resize: 'vertical',
+ flex: 1, padding: 'var(--space-3)',
+ background: 'var(--bg-elevated)',
+ border: '1px solid var(--line)',
+ color: 'var(--fg-primary)',
+ fontSize: 13, resize: 'vertical',
  fontFamily: 'inherit',
  }}
  />
  </div>
+ </div>
  </section>
  </div>
 
- 
- <aside style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
- {/* Status timeline */}
- <section className="card fade-in">
- <h3 style={{ fontSize: 13, fontWeight: 590, marginBottom: 'var(--space-4)' }}>Status timeline</h3>
- <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+ {/* Sidebar */}
+ <aside style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+ <section>
+ <div className="page-eyebrow" style={{ marginBottom: 'var(--space-3)' }}>
+ <span className="page-eyebrow-marker" />
+ <span>// status timeline</span>
+ </div>
+ <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', padding: 'var(--space-4)', background: 'var(--bg-elevated)', border: '1px solid var(--line)' }}>
  {MOCK_HISTORY.map((h, i) => (
  <div key={i} style={{ display: 'flex', gap: 'var(--space-3)' }}>
- <div style={{
- width: 8, height: 8, borderRadius: '50%',
- background: i === 0 ? 'var(--teal-500)' : 'var(--text-quaternary)',
- marginTop: 6, flexShrink: 0,
- }} />
+ <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--accent)', marginTop: 6, flexShrink: 0 }} />
  <div style={{ flex: 1 }}>
- <div style={{ fontSize: 12, color: 'var(--text-primary)', fontWeight: 510 }}>
- → <span className="badge badge-info" style={{ marginLeft: 4 }}>{h.to}</span>
+ <div style={{ fontSize: 12, color: 'var(--fg-primary)', fontWeight: 510 }}>
+ → <StatusBadge status={h.to} />
  </div>
- <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 2 }}>{h.at}</div>
- <div style={{ fontSize: 11, color: 'var(--text-quaternary)', marginTop: 2 }}>{h.actor}</div>
+ <div style={{ fontSize: 11, color: 'var(--fg-muted)', marginTop: 4, fontFamily: 'var(--font-mono)' }}>{h.at}</div>
+ <div style={{ fontSize: 11, color: 'var(--fg-quaternary)', marginTop: 2 }}>{h.actor}</div>
  {h.reason && (
- <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 4, fontStyle: 'italic' }}>{h.reason}</div>
+ <div style={{ fontSize: 11, color: 'var(--fg-muted)', marginTop: 4, fontStyle: 'italic' }}>{h.reason}</div>
  )}
  </div>
  </div>
@@ -200,30 +241,28 @@ export default async function IssueDetailPage({ params }: { params: { orgId: str
  </div>
  </section>
 
- {/* Properties */}
- <section className="card fade-in">
- <h3 style={{ fontSize: 13, fontWeight: 590, marginBottom: 'var(--space-4)' }}>Properties</h3>
- <dl style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+ <section>
+ <div className="page-eyebrow" style={{ marginBottom: 'var(--space-3)' }}>
+ <span className="page-eyebrow-marker" />
+ <span>// properties</span>
+ </div>
+ <dl style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', padding: 'var(--space-4)', background: 'var(--bg-elevated)', border: '1px solid var(--line)' }}>
  {[
- { label: 'Project', value: <Link href={`/orgs/${tenantId}/projects/${issue.projectId}`}>{issue.projectId}</Link> },
- { label: 'Kind', value: issue.kind },
- { label: 'Trade', value: issue.trade || '—' },
- { label: 'Created', value: new Date(issue.createdAt).toLocaleDateString() },
- { label: 'Resolved', value: issue.resolvedAt ? new Date(issue.resolvedAt).toLocaleDateString() : '—' },
+ { label: 'project', value: <Link href={`/orgs/${tenantId}/projects/${issue.projectId}`}>{issue.projectId}</Link> },
+ { label: 'kind', value: issue.kind },
+ { label: 'trade', value: issue.trade || '—' },
+ { label: 'created', value: new Date(issue.createdAt).toLocaleDateString() },
+ { label: 'resolved', value: issue.resolvedAt ? new Date(issue.resolvedAt).toLocaleDateString() : '—' },
  ].map((row) => (
  <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
- <dt style={{ color: 'var(--text-tertiary)' }}>{row.label}</dt>
- <dd style={{ color: 'var(--text-secondary)', fontWeight: 510 }}>{row.value}</dd>
+ <dt style={{ color: 'var(--fg-muted)' }}>{row.label}</dt>
+ <dd style={{ color: 'var(--fg-primary)', fontWeight: 510 }}>{row.value}</dd>
  </div>
  ))}
  </dl>
  </section>
  </aside>
  </div>
-
- <footer style={{ marginTop: 'var(--space-9)', padding: 'var(--space-5) 0', borderTop: '1px solid var(--border-subtle)', color: 'var(--text-quaternary)', fontSize: 11, fontFamily: 'var(--font-mono)' }}>
- Request <code style={{ background: 'var(--bg-elevated)', padding: '2px 6px', borderRadius: 4 }}>{requestId}</code>
- </footer>
  </main>
  </div>
  );

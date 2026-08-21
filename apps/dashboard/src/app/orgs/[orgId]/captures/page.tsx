@@ -1,6 +1,5 @@
 import Link from 'next/link';
-import { TopNav } from '@/components/top-nav';
-import { randomUUID } from 'node:crypto';
+import { TopNav, LiveMarquee } from '@/components/top-nav';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,13 +8,15 @@ interface Capture {
  projectId: string;
  name: string;
  status: string;
+ kind: string;
  createdAt: string;
+ size: string;
 }
 
-async function fetchCaptures(projectId: string, tenantId: string): Promise<Capture[]> {
+async function fetchCaptures(): Promise<Capture[]> {
  try {
- const res = await fetch(`http://capture-service:9090/v1/projects/${projectId}/captures`, {
- headers: { 'x-tenant-id': tenantId, 'accept': 'application/json' },
+ const res = await fetch('http://127.0.0.1:9090/v1/projects/prj_demo/captures', {
+ headers: { 'x-tenant-id': 'org_a', 'accept': 'application/json' },
  cache: 'no-store',
  });
  if (!res.ok) return [];
@@ -26,157 +27,195 @@ async function fetchCaptures(projectId: string, tenantId: string): Promise<Captu
  }
 }
 
-const ACCEPTED_TYPES = {
- '360-video': 'video/mp4,video/quicktime,.mp4,.mov',
- 'floor-plan': 'image/png,image/jpeg,application/pdf,.png,.jpg,.pdf',
- 'bim-model': '.ifc,.glb,.gltf,.obj,.fbx,.rvt,.dwg',
- 'photo': 'image/*,.jpg,.jpeg,.png',
-};
+const UPLOAD_KINDS = [
+ { kind: '360-video', icon: '◐', title: '360° walkthrough', desc: 'MP4, MOV · up to 5GB' },
+ { kind: 'floor-plan', icon: '◇', title: 'floor plan', desc: 'PDF, PNG, JPG · up to 50MB' },
+ { kind: 'bim-model', icon: '▣', title: 'BIM model', desc: 'IFC, GLB, GLTF, RVT · up to 500MB' },
+ { kind: 'photo', icon: '◆', title: 'site photo', desc: 'JPG, PNG · up to 10MB' },
+];
 
-function CaptureUploader() {
- return (
- <section className="section">
- <div className="section-header">
- <h2 className="section-title">Upload capture</h2>
- </div>
-
- <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 'var(--space-3)' }}>
- <UploadCard
- icon="🎥"
- title="360° walkthrough"
- subtitle="MP4, MOV up to 5GB"
- accept={ACCEPTED_TYPES['360-video']}
- kind="360-video"
- />
- <UploadCard
- icon="🗺"
- title="Floor plan"
- subtitle="PDF, PNG, JPG"
- accept={ACCEPTED_TYPES['floor-plan']}
- kind="floor-plan"
- />
- <UploadCard
- icon="🏗"
- title="BIM model"
- subtitle="IFC, GLB, GLTF, RVT"
- accept={ACCEPTED_TYPES['bim-model']}
- kind="bim-model"
- />
- <UploadCard
- icon="📷"
- title="Site photo"
- subtitle="JPG, PNG"
- accept={ACCEPTED_TYPES['photo']}
- kind="photo"
- />
- </div>
- </section>
- );
-}
-
-function UploadCard({ icon, title, subtitle, accept, kind }: { icon: string; title: string; subtitle: string; accept: string; kind: string }) {
- return (
- <form action="/api/captures" method="post" encType="multipart/form-data" style={{ display: 'contents' }}>
- <label className="upload-zone" htmlFor={`upload-${kind}`} style={{ padding: 'var(--space-5)' }}>
- <div className="upload-icon" aria-hidden="true" style={{ fontSize: '20px', width: '40px', height: '40px' }}>{icon}</div>
- <div className="upload-title" style={{ fontSize: '13px' }}>{title}</div>
- <div className="upload-subtitle">{subtitle}</div>
- <input
- id={`upload-${kind}`}
- name="file"
- type="file"
- accept={accept}
- multiple
- style={{ position: 'absolute', width: '1px', height: '1px', opacity: 0 }}
- aria-label={`Upload ${title}`}
- />
- <input type="hidden" name="kind" value={kind} />
- </label>
- </form>
- );
-}
+const MOCK_CAPTURES = [
+ { id: 'cap_0281', projectId: 'prj_demo', name: 'Tower B - Level 4 walkthrough', kind: 'walkthrough', status: 'ready', createdAt: '2026-08-21T11:24:00Z', size: '2.4 GB' },
+ { id: 'cap_0280', projectId: 'prj_demo', name: 'Tower B BIM master', kind: 'bim-model', status: 'ready', createdAt: '2026-08-20T14:10:00Z', size: '128 MB' },
+ { id: 'cap_0278', projectId: 'prj_hospital', name: 'OR wing floor plan v3', kind: 'floor-plan', status: 'processing', createdAt: '2026-08-21T08:45:00Z', size: '24 MB' },
+];
 
 export default async function CapturesPage({ params }: { params: { orgId: string } }) {
- const requestId = randomUUID();
  const tenantId = params.orgId;
- const projectId = 'prj_demo';
- const captures = await fetchCaptures(projectId, tenantId);
+ const captures = await fetchCaptures();
+ const allCaptures = captures.length > 0 ? captures : MOCK_CAPTURES;
 
  return (
  <div className="app-shell">
  <TopNav currentOrgId={tenantId} />
-
  <main className="app-main">
- <header className="page-header">
- <div className="page-header-content">
- <h1 className="page-title">Captures</h1>
- <p className="page-subtitle">360° walkthroughs, floor plans, BIM models, and site photos</p>
+ <section className="page-mast">
+ <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 'var(--space-5)' }}>
+ <div>
+ <div className="page-eyebrow">
+ <span className="page-eyebrow-marker" />
+ <span>// workspace · {tenantId}</span>
  </div>
- <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
- <span className="tenant-badge">{tenantId}</span>
- <button className="btn btn-primary">+ Upload</button>
+ <h1 className="page-title">
+ captures<span className="page-title-accent">.</span>
+ </h1>
+ <p style={{ fontSize: 14, color: 'var(--fg-muted)', marginTop: 'var(--space-3)', maxWidth: 520 }}>
+ 360° walkthroughs · floor plans · BIM models · site photos · all fused to project
+ </p>
  </div>
- </header>
-
- <section className="stats-grid" aria-label="Capture metrics">
- <div className="stat-card">
- <div className="stat-label">Total captures</div>
- <div className="stat-value">{captures.length}</div>
- </div>
- <div className="stat-card">
- <div className="stat-label">Processing</div>
- <div className="stat-value">{captures.filter(c => c.status === 'processing').length}</div>
- </div>
- <div className="stat-card">
- <div className="stat-label">Ready</div>
- <div className="stat-value">{captures.filter(c => c.status === 'ready').length}</div>
- </div>
- <div className="stat-card">
- <div className="stat-label">Storage</div>
- <div className="stat-value">0 GB</div>
- <div className="stat-trend">Used</div>
  </div>
  </section>
 
- <CaptureUploader />
+ <LiveMarquee />
 
- <section className="section">
- <div className="section-header">
- <h2 className="section-title">Recent captures</h2>
- <span className="section-action">{captures.length} items</span>
+ <div className="stats-grid mount-stagger">
+ <div className="stat-cell">
+ <div className="stat-label">// total captures</div>
+ <div className="stat-value">{allCaptures.length}</div>
+ </div>
+ <div className="stat-cell">
+ <div className="stat-label">// processing</div>
+ <div className="stat-value">{allCaptures.filter(c => c.status === 'processing').length}</div>
+ </div>
+ <div className="stat-cell">
+ <div className="stat-label">// ready</div>
+ <div className="stat-value">{allCaptures.filter(c => c.status === 'ready').length}</div>
+ </div>
+ <div className="stat-cell">
+ <div className="stat-label">// storage</div>
+ <div className="stat-value">2.6 GB</div>
+ <div className="stat-delta">of 50 GB</div>
+ </div>
  </div>
 
- {captures.length === 0 ? (
+ {/* Upload zones */}
+ <section style={{ padding: 'var(--space-7) 0' }}>
+ <div className="page-eyebrow" style={{ marginBottom: 'var(--space-4)' }}>
+ <span className="page-eyebrow-marker" />
+ <span>// upload capture</span>
+ </div>
+
+ <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 1, background: 'var(--line)', border: '1px solid var(--line)' }}>
+ {UPLOAD_KINDS.map((u) => (
+ <label
+ key={u.kind}
+ htmlFor={`upload-${u.kind}`}
+ className="upload-zone"
+ style={{ margin: 0, border: 'none', minHeight: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-2)', cursor: 'pointer' }}
+ >
+ <div style={{
+ fontFamily: 'var(--font-display)',
+ fontSize: 40,
+ fontWeight: 700,
+ color: 'var(--accent)',
+ lineHeight: 1,
+ marginBottom: 'var(--space-2)',
+ }}>
+ {u.icon}
+ </div>
+ <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--accent)', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+ // drop or click
+ </div>
+ <div style={{ fontSize: 13, fontWeight: 510 }}>{u.title}</div>
+ <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--fg-muted)', letterSpacing: '0.05em' }}>
+ {u.desc}
+ </div>
+ <input
+ id={`upload-${u.kind}`}
+ type="file"
+ accept={u.kind === '360-video' ? 'video/mp4,video/quicktime,.mp4,.mov' : u.kind === 'floor-plan' ? '.pdf,image/*' : u.kind === 'bim-model' ? '.ifc,.glb,.gltf' : 'image/*'}
+ multiple
+ style={{ position: 'absolute', width: '1px', height: '1px', opacity: 0 }}
+ aria-label={`Upload ${u.title}`}
+ />
+ </label>
+ ))}
+ </div>
+ </section>
+
+ {/* Recent captures */}
+ <section style={{ padding: 'var(--space-7) 0', borderTop: '1px solid var(--line)' }}>
+ <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
+ <div className="page-eyebrow" style={{ marginBottom: 0 }}>
+ <span className="page-eyebrow-marker" />
+ <span>// recent captures · {allCaptures.length}</span>
+ </div>
+ </div>
+
+ {allCaptures.length === 0 ? (
  <div className="empty">
- <div className="empty-icon" aria-hidden="true">📷</div>
- <h3 className="empty-title">No captures yet</h3>
- <p className="empty-description">Upload your first capture to start building visual context. 360° walkthroughs, BIM models, floor plans, and photos all sync here.</p>
- <button className="btn btn-primary">Upload first capture</button>
+ <div className="empty-eyebrow">// empty</div>
+ <h3 className="empty-title">no captures yet.</h3>
+ <p className="empty-description">
+ upload your first capture to start building visual context.
+ 360° walkthroughs, BIM models, floor plans, and photos all sync here.
+ </p>
  </div>
  ) : (
- <table className="data-table">
- <thead>
- <tr>
- <th>Name</th>
- <th>Status</th>
- <th>Created</th>
- </tr>
- </thead>
- <tbody>
- {captures.map((capture) => (
- <tr key={capture.id}>
- <td><Link href={`/orgs/${tenantId}/captures/${capture.id}`}>{capture.name}</Link></td>
- <td><span className="badge badge-neutral">{capture.status}</span></td>
- <td><time style={{ color: 'var(--text-tertiary)', fontSize: '12px' }}>{new Date(capture.createdAt).toLocaleDateString()}</time></td>
- </tr>
+ <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 1, background: 'var(--line)', border: '1px solid var(--line)' }}>
+ {allCaptures.slice(0, 6).map((c) => (
+ <Link
+ key={c.id}
+ href={`/orgs/${tenantId}/captures/${c.id}`}
+ style={{
+ background: 'var(--bg-page)',
+ padding: 'var(--space-4)',
+ textDecoration: 'none',
+ color: 'inherit',
+ display: 'block',
+ }}
+ >
+ <div style={{
+ fontFamily: 'var(--font-mono)',
+ fontSize: 10,
+ color: 'var(--accent)',
+ letterSpacing: '0.1em',
+ textTransform: 'uppercase',
+ marginBottom: 4,
+ }}>
+ // {c.kind || 'capture'}
+ </div>
+ <div style={{
+ fontFamily: 'var(--font-display)',
+ fontSize: 18,
+ fontWeight: 600,
+ letterSpacing: '-0.02em',
+ marginBottom: 8,
+ lineHeight: 1.3,
+ }}>
+ {c.name || c.id}
+ </div>
+ <div style={{
+ display: 'flex',
+ justifyContent: 'space-between',
+ fontFamily: 'var(--font-mono)',
+ fontSize: 11,
+ color: 'var(--fg-quaternary)',
+ }}>
+ <span>{new Date(c.createdAt).toLocaleDateString()}</span>
+ <span>{c.size}</span>
+ </div>
+ </Link>
  ))}
- </tbody>
- </table>
+ </div>
  )}
  </section>
 
- <footer style={{ marginTop: 'var(--space-9)', padding: 'var(--space-5) 0', borderTop: '1px solid var(--border-subtle)', color: 'var(--text-quaternary)', fontSize: '11px', fontFamily: 'var(--font-mono)' }}>
- Request <code style={{ background: 'var(--bg-elevated)', padding: '2px 6px', borderRadius: 4 }}>{requestId}</code>
+ <footer style={{
+ padding: 'var(--space-7) 0',
+ borderTop: '1px solid var(--line)',
+ display: 'flex',
+ justifyContent: 'space-between',
+ alignItems: 'center',
+ fontFamily: 'var(--font-mono)',
+ fontSize: 11,
+ color: 'var(--fg-muted)',
+ letterSpacing: '0.1em',
+ textTransform: 'uppercase',
+ }}>
+ <span>© 2026 — sthyra</span>
+ <span>capture service · v0.7</span>
+ <span>v0.13</span>
  </footer>
  </main>
  </div>

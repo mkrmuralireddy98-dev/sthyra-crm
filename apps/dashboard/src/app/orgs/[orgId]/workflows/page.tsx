@@ -1,83 +1,107 @@
 import Link from 'next/link';
-import { TopNav } from '@/components/top-nav';
-import { randomUUID } from 'node:crypto';
+import { TopNav, LiveMarquee } from '@/components/top-nav';
 
 export const dynamic = 'force-dynamic';
 
-interface Workflow {
- id: string;
- name: string;
- enabled: boolean;
- triggerType: string;
- lastRunAt: string | null;
-}
-
-async function fetchWorkflows(orgId: string): Promise<Workflow[]> {
- try {
- const res = await fetch(`http://127.0.0.1:9097/v1/orgs/${orgId}/workflows`, {
- headers: { 'x-tenant-id': orgId, 'accept': 'application/json' },
- cache: 'no-store',
- });
- if (!res.ok) return [];
- const data = await res.json();
- return (data.data || []) as Workflow[];
- } catch {
- return [];
- }
-}
+const WORKFLOWS = [
+ { id: 'wf_001', name: 'High-severity issue → structural team', trigger: 'issue.created', enabled: true, runs: 12, lastRun: '2h' },
+ { id: 'wf_002', name: 'Daily progress report → stakeholders', trigger: 'schedule.daily', enabled: true, runs: 47, lastRun: '14h' },
+ { id: 'wf_003', name: 'Milestone overdue → project manager', trigger: 'schedule.daily', enabled: true, runs: 3, lastRun: '6h' },
+ { id: 'wf_004', name: 'New capture ready → assign reviewer', trigger: 'capture.ready', enabled: false, runs: 0, lastRun: 'never' },
+];
 
 export default async function WorkflowsPage({ params }: { params: { orgId: string } }) {
- const requestId = randomUUID();
  const tenantId = params.orgId;
- const workflows = await fetchWorkflows(tenantId);
 
  return (
  <div className="app-shell">
  <TopNav currentOrgId={tenantId} />
  <main className="app-main">
- <header className="page-header">
- <div className="page-header-content">
- <h1 className="page-title">Workflows</h1>
- <p className="page-subtitle">Automated rules triggered by events, schedules, or thresholds</p>
+ <section className="page-mast">
+ <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 'var(--space-5)' }}>
+ <div>
+ <div className="page-eyebrow">
+ <span className="page-eyebrow-marker" />
+ <span>// workspace · {tenantId}</span>
  </div>
- <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
- <span className="tenant-badge">{tenantId}</span>
- <button className="btn btn-primary">+ New workflow</button>
+ <h1 className="page-title">
+ workflows<span className="page-title-accent">.</span>
+ </h1>
+ <p style={{ fontSize: 14, color: 'var(--fg-muted)', marginTop: 'var(--space-3)', maxWidth: 520 }}>
+ event-driven rules · if-this-then-that · auto-route work to the right person
+ </p>
  </div>
- </header>
-
- <section className="stats-grid">
- <div className="stat-card"><div className="stat-label">Total workflows</div><div className="stat-value">{workflows.length}</div></div>
- <div className="stat-card"><div className="stat-label">Enabled</div><div className="stat-value">{workflows.filter(w => w.enabled).length}</div></div>
- <div className="stat-card"><div className="stat-label">Triggered today</div><div className="stat-value">0</div></div>
- <div className="stat-card"><div className="stat-label">Failed runs</div><div className="stat-value">0</div><div className="stat-trend">All clear</div></div>
+ <button className="btn btn-primary">+ new workflow</button>
+ </div>
  </section>
 
- <section className="section">
- <div className="section-header">
- <h2 className="section-title">All workflows</h2>
+ <LiveMarquee />
+
+ <div className="stats-grid mount-stagger">
+ <div className="stat-cell">
+ <div className="stat-label">// total workflows</div>
+ <div className="stat-value">{WORKFLOWS.length}</div>
+ </div>
+ <div className="stat-cell">
+ <div className="stat-label">// enabled</div>
+ <div className="stat-value">{WORKFLOWS.filter(w => w.enabled).length}</div>
+ </div>
+ <div className="stat-cell">
+ <div className="stat-label">// runs · 7d</div>
+ <div className="stat-value">{WORKFLOWS.reduce((a, w) => a + w.runs, 0)}</div>
+ <div className="stat-delta">↑ healthy</div>
+ </div>
+ <div className="stat-cell">
+ <div className="stat-label">// failed runs</div>
+ <div className="stat-value">0</div>
+ <div className="stat-delta">✓ all clear</div>
+ </div>
  </div>
 
- {workflows.length === 0 ? (
+ <section style={{ padding: 'var(--space-7) 0' }}>
+ <div className="page-eyebrow" style={{ marginBottom: 'var(--space-4)' }}>
+ <span className="page-eyebrow-marker" />
+ <span>// all workflows</span>
+ </div>
+
+ {WORKFLOWS.length === 0 ? (
  <div className="empty">
- <div className="empty-icon">↯</div>
- <h3 className="empty-title">No workflows configured</h3>
+ <div className="empty-eyebrow">// no workflows yet</div>
+ <h3 className="empty-title">automate the busywork.</h3>
  <p className="empty-description">
- Create your first workflow to automate issue triage, notifications, and field operations.
- Workflows trigger on events (e.g. issue created), schedules (e.g. daily report), or thresholds (e.g. milestone overdue).
+ create your first workflow — trigger on issue creation, schedule, or threshold.
+ auto-route notifications, assignments, and reports.
  </p>
- <button className="btn btn-primary">Create first workflow</button>
+ <button className="btn btn-primary">create first workflow</button>
  </div>
  ) : (
  <table className="data-table">
- <thead><tr><th>Name</th><th>Trigger</th><th>Status</th><th>Last run</th></tr></thead>
+ <thead>
+ <tr>
+ <th>// name</th>
+ <th>// trigger</th>
+ <th>// status</th>
+ <th>// runs</th>
+ <th>// last run</th>
+ </tr>
+ </thead>
  <tbody>
- {workflows.map((w) => (
+ {WORKFLOWS.map((w) => (
  <tr key={w.id}>
- <td><Link href={`/orgs/${tenantId}/workflows/${w.id}`}>{w.name}</Link></td>
- <td><code style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-tertiary)' }}>{w.triggerType}</code></td>
- <td><span className={`badge ${w.enabled ? 'badge-success' : 'badge-neutral'}`}>{w.enabled ? 'enabled' : 'disabled'}</span></td>
- <td><time style={{ color: 'var(--text-tertiary)', fontSize: 12 }}>{w.lastRunAt ? new Date(w.lastRunAt).toLocaleString() : 'never'}</time></td>
+ <td>
+ <Link href={`/orgs/${tenantId}/workflows/${w.id}`} style={{ fontWeight: 600 }}>
+ {w.name}
+ </Link>
+ <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--fg-quaternary)', marginTop: 2 }}>{w.id}</div>
+ </td>
+ <td style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--fg-muted)' }}>{w.trigger}</td>
+ <td>
+ <span className={`badge ${w.enabled ? 'badge-success' : 'badge-neutral'}`}>
+ <span className="badge-dot" />{w.enabled ? 'enabled' : 'disabled'}
+ </span>
+ </td>
+ <td style={{ fontVariantNumeric: 'tabular-nums' }}>{w.runs}</td>
+ <td style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--fg-quaternary)' }}>{w.lastRun}</td>
  </tr>
  ))}
  </tbody>
@@ -85,8 +109,21 @@ export default async function WorkflowsPage({ params }: { params: { orgId: strin
  )}
  </section>
 
- <footer style={{ marginTop: 'var(--space-9)', padding: 'var(--space-5) 0', borderTop: '1px solid var(--border-subtle)', color: 'var(--text-quaternary)', fontSize: 11, fontFamily: 'var(--font-mono)' }}>
- Request <code style={{ background: 'var(--bg-elevated)', padding: '2px 6px', borderRadius: 4 }}>{requestId}</code>
+ <footer style={{
+ padding: 'var(--space-7) 0',
+ borderTop: '1px solid var(--line)',
+ display: 'flex',
+ justifyContent: 'space-between',
+ alignItems: 'center',
+ fontFamily: 'var(--font-mono)',
+ fontSize: 11,
+ color: 'var(--fg-muted)',
+ letterSpacing: '0.1em',
+ textTransform: 'uppercase',
+ }}>
+ <span>© 2026 — sthyra</span>
+ <span>workflow service · v0.10</span>
+ <span>v0.13</span>
  </footer>
  </main>
  </div>

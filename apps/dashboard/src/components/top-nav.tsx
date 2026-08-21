@@ -14,8 +14,8 @@ const NAV_ITEMS = [
  { href: '/orgs/org_a/reports', label: 'reports', section: '07' },
 ];
 
-export function TopNav({ currentOrgId }: { currentOrgId?: string }) {
- const pathname = usePathname();
+export function TopNav({ currentOrgId, currentPath: explicitPath }: { currentOrgId?: string; currentPath?: string }) {
+ const pathname = explicitPath ?? usePathname();
 
  const isActive = (href: string) => {
  if (href === '/') return pathname === '/';
