@@ -245,7 +245,16 @@ export async function buildAdminServer(deps: BuildServerDeps = {}): Promise<any>
  return await service.systemHealth();
  });
 
- // FR-10: Tenant stats
+ // FR-9b: Get single tenant
+ app.get('/v1/admin/tenants/:id', async (req: any, reply: any) => {
+ const traceId = rid();
+ const id = ((req.params as any).id ?? '').trim();
+ const tenant = await service.findTenant(id);
+ if (!tenant) return problem(reply, 404, 'https://sthyra-crm.dev/errors/not-found', 'Not Found', 'tenant not found', traceId);
+ return tenant;
+ });
+
+// FR-10: Tenant stats
  app.get('/v1/admin/tenants/:id/stats', async (req: any, reply: any) => {
  const traceId = rid();
  const id = ((req.params as any).id ?? '').trim();
