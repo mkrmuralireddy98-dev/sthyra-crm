@@ -72,7 +72,7 @@ export default async function DashboardHome() {
  </div>
  <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
  <span className="tenant-badge">{tenantId}</span>
- <Link href="/orgs/new" className="btn btn-primary">+ New organization</Link>
+ <Link href="/orgs/org_a/issues/new" className="btn btn-primary">+ New issue</Link>
  </div>
  </header>
 
@@ -112,7 +112,7 @@ export default async function DashboardHome() {
  <p className="empty-description">
  Get started by creating your first organization. Each org gets its own projects, captures, and team.
  </p>
- <Link href="/orgs/new" className="btn btn-primary">Create organization</Link>
+ <Link href="/orgs/org_a/issues/new" className="btn btn-primary">Create organization</Link>
  </div>
  ) : (
  <div className="project-grid">

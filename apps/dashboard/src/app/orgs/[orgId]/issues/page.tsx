@@ -70,7 +70,7 @@ export default async function IssuesPage({ params }: { params: { orgId: string }
  <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
  <LivePulse orgId={tenantId} initialCount={counts.total} />
  <span className="tenant-badge">{tenantId}</span>
- <button className="btn btn-primary">+ New issue</button>
+ <Link href={`/orgs/${tenantId}/issues/new`} className="btn btn-primary">+ New issue</Link>
  </div>
  </header>
 

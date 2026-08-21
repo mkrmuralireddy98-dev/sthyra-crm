@@ -46,7 +46,7 @@ export default async function ProjectsPage({ params }: { params: { orgId: string
  </div>
  <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
  <span className="tenant-badge">{tenantId}</span>
- <button className="btn btn-primary">+ New project</button>
+ <Link href={`/orgs/${tenantId}/projects/new`} className="btn btn-primary">+ New project</Link>
  </div>
  </header>
 
