@@ -27,6 +27,14 @@ function url(service: keyof typeof DEFAULT_PORTS, path: string): string {
  return `http://${HOST}:${port}${path}`;
 }
 
+
+function unwrap(response: any): any {
+ if (response && typeof response === 'object' && 'data' in response) {
+ return response.data;
+ }
+ return response;
+}
+
 function newIdempotencyKey(prefix: string): string {
  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
@@ -69,7 +77,7 @@ export async function listOrgs(): Promise<Org[]> {
  { method: 'GET' },
  { authorization: `Bearer admin:super:usr_dashboard` },
  );
- return data.data ?? [];
+ return unwrap(data) ?? [];
  } catch (err) {
  console.error('[api-server] listOrgs failed:', err);
  return [];
@@ -123,7 +131,7 @@ export async function listIssues(orgId: string, projectId = 'prj_demo'): Promise
  { method: 'GET' },
  { 'x-tenant-id': orgId },
  );
- return data.data ?? [];
+ return unwrap(data) ?? [];
  } catch (err) {
  console.error('[api-server] listIssues failed:', err);
  return [];

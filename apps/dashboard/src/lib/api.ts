@@ -1,11 +1,10 @@
 /**
  * API client for the dashboard (client-side).
  * All calls go through Next.js API routes (which proxy to backend).
- * This avoids CORS and hides the backend address from the browser.
  *
- * Server-side code (page.tsx files with `dynamic = 'force-dynamic'`) can
- * import the server-side functions from `@/lib/api-server` for direct
- * access without the proxy hop.
+ * NOTE on response format:
+ * admin-service returns { data: [...] } for collections but bare entities for
+ * single-item ops (POST/PATCH). The unwrap() helper handles both.
  */
 
 export class ApiError extends Error {
@@ -22,8 +21,6 @@ export class ApiError extends Error {
 
 function makeHeaders(opts: {
  tenantId?: string;
- isAdmin?: boolean;
- adminUserId?: string;
  idempotencyKey?: string;
  requestId?: string;
 } = {}): Record<string, string> {
@@ -34,6 +31,17 @@ function makeHeaders(opts: {
  if (opts.idempotencyKey) headers['idempotency-key'] = opts.idempotencyKey;
  if (opts.requestId) headers['x-request-id'] = opts.requestId;
  return headers;
+}
+
+/**
+ * unwrap — admin-service returns either { data: T } or bare T depending on the route.
+ * This helper normalizes so callers always get the entity.
+ */
+function unwrap<T>(response: any): T {
+ if (response && typeof response === 'object' && 'data' in response) {
+ return response.data as T;
+ }
+ return response as T;
 }
 
 async function request<T = any>(
@@ -83,37 +91,37 @@ function newIdempotencyKey(): string {
 }
 
 export async function listOrgs(): Promise<Org[]> {
- const data = await request<{ data: Org[] }>('/api/admin/tenants', { method: 'GET' });
- return data.data ?? [];
+ const data = await request<any>('/api/admin/tenants', { method: 'GET' });
+ return unwrap<Org[]>(data) ?? [];
 }
 
 export async function getOrg(id: string): Promise<Org | null> {
  try {
- const data = await request<{ data: Org }>(`/api/admin/tenants/${id}`, { method: 'GET' });
- return data.data;
+ const data = await request<any>(`/api/admin/tenants/${id}`, { method: 'GET' });
+ return unwrap<Org>(data);
  } catch {
  return null;
  }
 }
 
 export async function createOrg(input: { name: string; country: string; plan: string }): Promise<Org> {
- const data = await request<{ data: Org }>(
+ const data = await request<any>(
  '/api/admin/tenants',
  {
  method: 'POST',
  body: JSON.stringify({
  name: input.name,
- region: input.country, // admin-service stores country code in 'region' field
+ region: input.country, // admin-service stores country in 'region' field
  plan: input.plan,
  }),
  },
  makeHeaders({ idempotencyKey: newIdempotencyKey() }),
  );
- return data.data;
+ return unwrap<Org>(data);
 }
 
 export async function suspendOrg(id: string, reason: string): Promise<Org> {
- const data = await request<{ data: Org }>(
+ const data = await request<any>(
  `/api/admin/tenants/${id}/suspend`,
  {
  method: 'POST',
@@ -121,11 +129,11 @@ export async function suspendOrg(id: string, reason: string): Promise<Org> {
  },
  makeHeaders({ idempotencyKey: newIdempotencyKey() }),
  );
- return data.data;
+ return unwrap<Org>(data);
 }
 
 export async function resumeOrg(id: string, reason: string): Promise<Org> {
- const data = await request<{ data: Org }>(
+ const data = await request<any>(
  `/api/admin/tenants/${id}/resume`,
  {
  method: 'POST',
@@ -133,14 +141,14 @@ export async function resumeOrg(id: string, reason: string): Promise<Org> {
  },
  makeHeaders({ idempotencyKey: newIdempotencyKey() }),
  );
- return data.data;
+ return unwrap<Org>(data);
 }
 
 export async function updateOrg(
  id: string,
  patch: { name?: string; country?: string; plan?: string; status?: string },
 ): Promise<Org> {
- const data = await request<{ data: Org }>(
+ const data = await request<any>(
  `/api/admin/tenants/${id}`,
  {
  method: 'PATCH',
@@ -151,7 +159,7 @@ export async function updateOrg(
  },
  makeHeaders({ idempotencyKey: newIdempotencyKey() }),
  );
- return data.data;
+ return unwrap<Org>(data);
 }
 
 export async function deleteOrg(id: string, reason: string): Promise<void> {
@@ -181,8 +189,8 @@ export interface Issue {
 }
 
 export async function listIssues(tenantId: string, projectId = 'prj_demo'): Promise<Issue[]> {
- const data = await request<{ data: Issue[] }>(`/api/orgs/${tenantId}/issues`, { method: 'GET' });
- return data.data ?? [];
+ const data = await request<any>(`/api/orgs/${tenantId}/issues`, { method: 'GET' });
+ return unwrap<Issue[]>(data) ?? [];
 }
 
 export async function createIssue(input: {
@@ -193,7 +201,7 @@ export async function createIssue(input: {
  severity: string;
  trade?: string;
 }): Promise<Issue> {
- const data = await request<{ data: Issue }>(
+ const data = await request<any>(
  `/api/orgs/${input.tenantId}/issues`,
  {
  method: 'POST',
@@ -209,5 +217,5 @@ export async function createIssue(input: {
  idempotencyKey: newIdempotencyKey(),
  }),
  );
- return data.data;
+ return unwrap<Issue>(data);
 }
