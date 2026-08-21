@@ -16,7 +16,7 @@ export type Severity = (typeof SEVERITIES)[number];
 export const ISSUE_KINDS = ['standard', 'punch'] as const;
 export type IssueKind = (typeof ISSUE_KINDS)[number];
 
-export const TRADES = ['plumbing', 'electrical', 'structural', 'hvac', 'finishes', 'other'] as const;
+export const TRADES = ['general', 'plumbing', 'electrical', 'structural', 'hvac', 'finishes', 'other'] as const;
 export type Trade = (typeof TRADES)[number];
 
 export interface Location {
@@ -80,6 +80,7 @@ export interface Issue {
  readonly resolvedAt: Date | null;
  readonly deletedAt: Date | null;
  readonly kind: IssueKind;
+ readonly trade: Trade;
  readonly punchData: PunchData | null;
 }
 
@@ -124,6 +125,7 @@ export interface CreateIssueInput {
  readonly dueDate?: Date | null;
  readonly createdBy: string;
  readonly kind?: IssueKind;
+ readonly trade?: Trade;
  readonly punchData?: PunchData | null;
 }
 
@@ -182,6 +184,7 @@ export function makeIssueFromInput(input: CreateIssueInput, id: string, now: Dat
  resolvedAt: null,
  deletedAt: null,
  kind: 'standard',
+ trade: input.trade ?? 'general',
  punchData: null,
  };
 }

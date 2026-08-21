@@ -119,6 +119,7 @@ export class PostgresIssueRepository implements IssueRepository {
  deletedAt: row.deleted_at,
  kind: (row.kind ?? 'standard') as 'standard' | 'punch',
  punchData: row.punch_data ? JSON.parse(row.punch_data) as any : null,
+ trade: ((row as any).trade) ?? 'general',
  };
  }
 

@@ -86,6 +86,7 @@ export async function buildFieldServer(deps: BuildServerDeps = {}): Promise<Fast
  if (!body || typeof body !== 'object') return problem(reply, 400, 'https://sthyra-crm.dev/errors/invalid-input', 'Invalid body', 'body must be an object', 'invalid_input', traceId);
  const title = typeof body.title === 'string' ? body.title : '';
  const description = typeof body.description === 'string' ? body.description : '';
+ const trade = typeof body.trade === 'string' ? body.trade : undefined;
  const severity = body.severity;
  if (!title) return problem(reply, 400, 'https://sthyra-crm.dev/errors/invalid-input', 'Invalid title', 'title is required', 'invalid_input', traceId);
  if (!description) return problem(reply, 400, 'https://sthyra-crm.dev/errors/invalid-input', 'Invalid description', 'description is required', 'invalid_input', traceId);
@@ -103,6 +104,7 @@ export async function buildFieldServer(deps: BuildServerDeps = {}): Promise<Fast
  assignedTo: typeof body.assignedTo === 'string' ? body.assignedTo : null,
  dueDate: null,
  createdBy: typeof body.createdBy === 'string' ? body.createdBy : 'unknown',
+ trade: trade as any,
  });
  return reply.code(201).send(issue);
  } catch (err) {
