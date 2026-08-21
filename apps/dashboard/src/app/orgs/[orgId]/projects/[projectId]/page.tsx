@@ -1,10 +1,11 @@
 import Link from 'next/link';
 import { TopNav, LiveMarquee } from '@/components/top-nav';
 import { BimViewer } from '@/components/bim-viewer';
+import { listProjects, type Project } from '@/lib/api-server';
 
 export const dynamic = 'force-dynamic';
 
-const MOCK_PROJECTS: Record<string, any> = {
+const SEED_PROJECTS: Record<string, any> = {
  prj_demo: {
  name: 'Tower B — North Wing',
  status: 'active',
@@ -24,8 +25,6 @@ const MOCK_PROJECTS: Record<string, any> = {
  { name: 'TCO', status: 'pending', date: '2026-12-15' },
  ],
  },
- prj_skyline: { name: 'Skyline Tower', status: 'planning', progressPct: 12, location: 'New York, NY', startedAt: '2026-07-01', totalArea: '450,000 sqft', levels: 45, capturesCount: 4, issuesCount: 1, milestones: [] },
- prj_harbor: { name: 'Harbor Bridge Retrofit', status: 'at_risk', progressPct: 45, location: 'Seattle, WA', startedAt: '2026-01-10', totalArea: '—', levels: 0, capturesCount: 18, issuesCount: 23, milestones: [] },
 };
 
 function StatusBadge({ status }: { status: string }) {
@@ -42,7 +41,49 @@ function StatusBadge({ status }: { status: string }) {
 
 export default async function ProjectDetailPage({ params }: { params: { orgId: string; projectId: string } }) {
  const tenantId = params.orgId;
- const project = MOCK_PROJECTS[params.projectId] ?? MOCK_PROJECTS.prj_demo;
+ const projectId = params.projectId;
+
+ // Fetch real projects from admin-service
+ let realProject: Project | null = null;
+ try {
+ const projects = await listProjects(tenantId);
+ realProject = projects.find(p => p.id === projectId) ?? null;
+ } catch {
+ // ignore
+ }
+
+ // Use real project if found, otherwise fall back to seed mock data
+ let project: any;
+ if (realProject) {
+ project = {
+ name: realProject.name,
+ status: realProject.status,
+ progressPct: realProject.progressPct ?? 0,
+ location: realProject.location,
+ startedAt: realProject.createdAt,
+ totalArea: '—',
+ levels: 0,
+ capturesCount: 0,
+ issuesCount: 0,
+ milestones: [],
+ };
+ } else if (SEED_PROJECTS[projectId]) {
+ project = SEED_PROJECTS[projectId];
+ } else {
+ project = {
+ name: projectId,
+ status: 'planning',
+ progressPct: 0,
+ location: '—',
+ startedAt: new Date().toISOString(),
+ totalArea: '—',
+ levels: 0,
+ capturesCount: 0,
+ issuesCount: 0,
+ milestones: [],
+ };
+ }
+
  const milestones = project.milestones ?? [];
 
  return (
@@ -54,7 +95,7 @@ export default async function ProjectDetailPage({ params }: { params: { orgId: s
  <div>
  <div className="page-eyebrow">
  <span className="page-eyebrow-marker" />
- <span>// {tenantId} · {params.projectId}</span>
+ <span>// {tenantId} · {projectId}</span>
  </div>
  <div style={{ marginTop: 'var(--space-3)', marginBottom: 'var(--space-3)' }}>
  <StatusBadge status={project.status} />
@@ -63,7 +104,7 @@ export default async function ProjectDetailPage({ params }: { params: { orgId: s
  {project.name}
  </h1>
  <p style={{ fontSize: 14, color: 'var(--fg-muted)', marginTop: 'var(--space-3)' }}>
- {project.location} · started {project.startedAt} · {project.totalArea} · {project.levels} levels · {project.capturesCount ?? 0} captures · {project.issuesCount ?? 0} open issues
+ {project.location} · started {typeof project.startedAt === 'string' ? new Date(project.startedAt).toLocaleDateString() : project.startedAt} · {project.totalArea} · {project.levels} levels · {project.capturesCount ?? 0} captures · {project.issuesCount ?? 0} open issues
  </p>
  </div>
  <div style={{ display: 'flex', gap: 'var(--space-3)' }}>

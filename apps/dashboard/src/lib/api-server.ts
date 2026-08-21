@@ -169,3 +169,30 @@ export async function createIssue(input: {
  return null;
  }
 }
+
+// ─── PROJECTS ────────────────────────────────────────────────────
+
+export interface Project {
+ id: string;
+ tenantId: string;
+ name: string;
+ location: string;
+ type: string;
+ status: string;
+ progressPct: number;
+ createdAt: string;
+}
+
+export async function listProjects(orgId: string): Promise<Project[]> {
+ try {
+ const data = await call<{ data: Project[] }>(
+ url('admin', `/v1/admin/tenants/${orgId}/projects`),
+ { method: 'GET' },
+ { 'authorization': `Bearer admin:super:usr_dashboard` },
+ );
+ return unwrap(data) ?? [];
+ } catch (err) {
+ console.error('[api-server] listProjects failed:', err);
+ return [];
+ }
+}
