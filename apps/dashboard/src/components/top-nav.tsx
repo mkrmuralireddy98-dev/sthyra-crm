@@ -2,38 +2,52 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/lib/role';
 
-const NAV_ITEMS = [
- { href: '/', label: 'dashboard', section: '00' },
+const ADMIN_NAV = [
+ { href: '/admin', label: 'admin', section: '00' },
  { href: '/orgs', label: 'orgs', section: '01' },
- { href: '/orgs/org_a/projects', label: 'projects', section: '02' },
- { href: '/orgs/org_a/captures', label: 'captures', section: '03' },
- { href: '/orgs/org_a/issues', label: 'issues', section: '04' },
- { href: '/orgs/org_a/workflows', label: 'workflows', section: '05' },
- { href: '/orgs/org_a/integrations', label: 'integrations', section: '06' },
- { href: '/orgs/org_a/reports', label: 'reports', section: '07' },
+ { href: '/orgs/org_a/workflows', label: 'workflows', section: '02' },
+ { href: '/orgs/org_a/integrations', label: 'integrations', section: '03' },
+ { href: '/orgs/org_a/reports', label: 'reports', section: '04' },
 ];
 
-export function TopNav({ currentOrgId, currentPath: explicitPath }: { currentOrgId?: string; currentPath?: string }) {
- const pathname = explicitPath ?? usePathname();
+const USER_NAV = [
+ { href: '/', label: 'dashboard', section: '00' },
+ { href: '/orgs/org_a/projects', label: 'projects', section: '01' },
+ { href: '/orgs/org_a/captures', label: 'captures', section: '02' },
+ { href: '/orgs/org_a/issues', label: 'issues', section: '03' },
+ { href: '/orgs/org_a/workflows', label: 'workflows', section: '04' },
+ { href: '/orgs/org_a/integrations', label: 'integrations', section: '05' },
+ { href: '/orgs/org_a/reports', label: 'reports', section: '06' },
+];
+
+export function TopNav() {
+ const pathname = usePathname();
+ const { auth } = useAuth();
+ const items = auth.role === 'admin' ? ADMIN_NAV : USER_NAV;
 
  const isActive = (href: string) => {
  if (href === '/') return pathname === '/';
+ if (href === '/admin') return pathname.startsWith('/admin');
+ if (href === '/orgs') return pathname === '/orgs';
  return pathname.startsWith(href);
  };
 
  return (
  <header className="app-nav">
- <Link href="/" className="app-nav-brand">
+ <Link href={auth.role === 'admin' ? '/admin' : '/'} className="app-nav-brand">
  <span className="sthyra-logo">sthyra</span>
- <span className="app-nav-brand-tag">v0.13 — visual intelligence</span>
+ <span className="app-nav-brand-tag">
+ {auth.role === 'admin' ? 'platform · admin' : `${auth.orgName ?? auth.orgId} · user`}
+ </span>
  </Link>
 
  <nav className="app-nav-links" aria-label="Primary">
- {NAV_ITEMS.map((item) => {
+ {items.map((item) => {
  const active = isActive(item.href);
- const href = item.href.includes('[orgId]') && currentOrgId
- ? item.href.replace('[orgId]', currentOrgId)
+ const href = auth.role === 'user' && auth.orgId && item.href.includes('org_a')
+ ? item.href.replace('org_a', auth.orgId)
  : item.href;
  return (
  <Link
@@ -49,11 +63,22 @@ export function TopNav({ currentOrgId, currentPath: explicitPath }: { currentOrg
  </nav>
 
  <div className="app-nav-actions">
+ <span className="app-nav-brand-tag" style={{ marginRight: 8 }}>
+ {auth.role === 'admin' ? (
+ <>
+ <span style={{ color: 'var(--accent)' }}>●</span> {auth.userName}
+ </>
+ ) : (
+ <>
+ <span style={{ color: 'var(--accent)' }}>●</span> {auth.userName}
+ </>
+ )}
+ </span>
  <Link href="/site" className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: 11 }}>
  site
  </Link>
  <Link href="/signin" className="btn btn-primary" style={{ padding: '6px 12px', fontSize: 11 }}>
- sign in
+ sign out
  </Link>
  </div>
  </header>

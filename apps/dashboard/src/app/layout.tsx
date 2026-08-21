@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import { toCssVariables, type ColorMode } from '@sthyra-crm/tokens';
-import { TopNav } from '@/components/top-nav';
+import { AuthProvider } from '@/lib/role';
 import { CommandPalette } from '@/components/command-palette';
 import { ToastViewport } from '@/components/toast';
 import { KeyboardShortcuts } from '@/components/keyboard-shortcuts';
+import { RoleSwitcher } from '@/components/role-switcher';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -21,10 +22,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
  <style id="sthyra-tokens" dangerouslySetInnerHTML={{ __html: css }} />
  </head>
  <body>
+ <AuthProvider>
  {children}
+ <RoleSwitcher />
  <CommandPalette />
  <ToastViewport />
  <KeyboardShortcuts />
+ </AuthProvider>
  </body>
  </html>
  );

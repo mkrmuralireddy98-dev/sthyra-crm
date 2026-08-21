@@ -12,7 +12,7 @@ const ORGS = [
 export default async function OrgsPage() {
  return (
  <div className="app-shell">
- <TopNav currentPath="/orgs" />
+ <TopNav />
 
  <main className="app-main">
  <section className="page-mast">

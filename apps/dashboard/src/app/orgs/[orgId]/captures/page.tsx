@@ -47,7 +47,7 @@ export default async function CapturesPage({ params }: { params: { orgId: string
 
  return (
  <div className="app-shell">
- <TopNav currentOrgId={tenantId} />
+ <TopNav />
  <main className="app-main">
  <section className="page-mast">
  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 'var(--space-5)' }}>

@@ -15,7 +15,7 @@ export default async function ReportsPage({ params }: { params: { orgId: string 
 
  return (
  <div className="app-shell">
- <TopNav currentOrgId={tenantId} />
+ <TopNav />
  <main className="app-main">
  <section className="page-mast">
  <div className="page-eyebrow">

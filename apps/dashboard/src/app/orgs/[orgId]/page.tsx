@@ -90,7 +90,7 @@ export default async function OrgDetailPage({ params }: { params: { orgId: strin
 
  return (
  <div className="app-shell">
- <TopNav currentOrgId={tenantId} />
+ <TopNav />
 
  <main className="app-main">
  <section className="page-mast">

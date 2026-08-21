@@ -30,7 +30,7 @@ export default function NewProjectPage({ params }: { params: { orgId: string } }
 
  return (
  <div className="app-shell">
- <TopNav currentOrgId={tenantId} />
+ <TopNav />
  <main className="app-main">
  <header className="page-header fade-in">
  <div className="page-header-content">
