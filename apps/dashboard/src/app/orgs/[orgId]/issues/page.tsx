@@ -15,7 +15,7 @@ interface Issue {
 
 async function fetchIssues(orgId: string): Promise<Issue[]> {
  try {
- const { listIssues } = await import('@/lib/api');
+ const { listIssues } = await import('@/lib/api-server');
  const issues = await listIssues(orgId, 'prj_demo');
  return issues as Issue[];
  } catch {

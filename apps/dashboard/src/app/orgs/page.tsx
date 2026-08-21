@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { TopNav, LiveMarquee } from '@/components/top-nav';
-import { listOrgs, type Org } from '@/lib/api';
+import { listOrgs, type Org } from '@/lib/api-server';
 
 export const dynamic = 'force-dynamic';
 
