@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { toast } from './toast';
 
 interface PulseEvent {
  id: string;
@@ -39,6 +40,13 @@ export function LivePulse({ orgId, initialCount = 0 }: { orgId: string; initialC
  timestamp: Date.now(),
  },
  ]);
+ if (delta > 0) {
+ toast({
+ title: `${delta} new issue${delta > 1 ? 's' : ''}`,
+ description: 'A new field issue was just reported',
+ variant: 'warning',
+ });
+ }
  }
  } catch {}
  };

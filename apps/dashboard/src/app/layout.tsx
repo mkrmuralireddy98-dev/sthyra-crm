@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { toCssVariables, type ColorMode } from '@sthyra-crm/tokens';
 import { CommandPalette } from '@/components/command-palette';
+import { ToastViewport } from '@/components/toast';
+import { KeyboardShortcuts } from '@/components/keyboard-shortcuts';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -20,6 +22,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
  <body>
  {children}
  <CommandPalette />
+ <ToastViewport />
+ <KeyboardShortcuts />
  </body>
  </html>
  );
