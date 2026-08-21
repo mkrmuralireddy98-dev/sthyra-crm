@@ -56,3 +56,17 @@ export async function POST(
  const action = url.split('/').pop();
  return forward(req, `/v1/admin/tenants/${params.id}/${action}`, 'POST');
 }
+
+export async function PATCH(
+ req: NextRequest,
+ { params }: { params: { id: string } },
+): Promise<NextResponse> {
+ return forward(req, `/v1/admin/tenants/${params.id}`, 'PATCH');
+}
+
+export async function DELETE(
+ req: NextRequest,
+ { params }: { params: { id: string } },
+): Promise<NextResponse> {
+ return forward(req, `/v1/admin/tenants/${params.id}`, 'DELETE');
+}

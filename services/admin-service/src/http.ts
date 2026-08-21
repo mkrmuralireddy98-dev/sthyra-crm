@@ -137,6 +137,34 @@ export async function buildAdminServer(deps: BuildServerDeps = {}): Promise<any>
  return t;
  });
 
+ // FR-3.5: Update tenant (admin-only)
+ app.patch('/v1/admin/tenants/:id', async (req: any, reply: any) => {
+ const traceId = rid();
+ const claims = (req as any).adminClaims;
+ const idem = getIdemKey(req);
+ if (!idem) return problem(reply, 400, 'https://sthyra-crm.dev/errors/missing-idempotency-key', 'Missing Idempotency-Key', 'x-idempotency-key required', traceId);
+ const id = ((req.params as any).id ?? '').trim();
+ const body = (req.body ?? {}) as { name?: string; region?: string; plan?: string; status?: string };
+ const reason = ((req.headers['x-admin-reason'] as string) ?? '').trim() || 'no reason provided';
+ const t = await service.updateTenant(id, body, { actorId: claims.sub ?? 'unknown', reason });
+ if (!t) return problem(reply, 404, 'https://sthyra-crm.dev/errors/not-found', 'Not Found', 'tenant not found', traceId);
+ return t;
+ });
+
+ // FR-3.6: Delete tenant (admin-only, hard delete)
+ app.delete('/v1/admin/tenants/:id', async (req: any, reply: any) => {
+ const traceId = rid();
+ const claims = (req as any).adminClaims;
+ const idem = getIdemKey(req);
+ if (!idem) return problem(reply, 400, 'https://sthyra-crm.dev/errors/missing-idempotency-key', 'Missing Idempotency-Key', 'x-idempotency-key required', traceId);
+ const id = ((req.params as any).id ?? '').trim();
+ const reason = ((req.headers['x-admin-reason'] as string) ?? '').trim() || 'no reason provided';
+ const ok = await service.deleteTenant(id, { actorId: claims.sub ?? 'unknown', reason });
+ if (!ok) return problem(reply, 404, 'https://sthyra-crm.dev/errors/not-found', 'Not Found', 'tenant not found', traceId);
+ reply.code(204);
+ return null;
+ });
+
  // FR-4: List users
  app.get('/v1/admin/users', async (req: any, reply: any) => {
  const traceId = rid();

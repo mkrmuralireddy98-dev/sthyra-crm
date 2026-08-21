@@ -87,6 +87,15 @@ export async function listOrgs(): Promise<Org[]> {
  return data.data ?? [];
 }
 
+export async function getOrg(id: string): Promise<Org | null> {
+ try {
+ const data = await request<{ data: Org }>(`/api/admin/tenants/${id}`, { method: 'GET' });
+ return data.data;
+ } catch {
+ return null;
+ }
+}
+
 export async function createOrg(input: { name: string; country: string; plan: string }): Promise<Org> {
  const data = await request<{ data: Org }>(
  '/api/admin/tenants',
@@ -125,6 +134,34 @@ export async function resumeOrg(id: string, reason: string): Promise<Org> {
  makeHeaders({ idempotencyKey: newIdempotencyKey() }),
  );
  return data.data;
+}
+
+export async function updateOrg(
+ id: string,
+ patch: { name?: string; country?: string; plan?: string; status?: string },
+): Promise<Org> {
+ const data = await request<{ data: Org }>(
+ `/api/admin/tenants/${id}`,
+ {
+ method: 'PATCH',
+ body: JSON.stringify({
+ ...patch,
+ region: patch.country, // admin-service stores country in 'region' field
+ }),
+ },
+ makeHeaders({ idempotencyKey: newIdempotencyKey() }),
+ );
+ return data.data;
+}
+
+export async function deleteOrg(id: string, reason: string): Promise<void> {
+ await request<void>(
+ `/api/admin/tenants/${id}`,
+ {
+ method: 'DELETE',
+ },
+ makeHeaders({ idempotencyKey: newIdempotencyKey() }),
+ );
 }
 
 // ─── ISSUES ──────────────────────────────────────────────────────

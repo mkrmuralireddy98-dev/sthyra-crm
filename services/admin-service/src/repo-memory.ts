@@ -95,6 +95,28 @@ export class InMemoryAdminRepository implements AdminRepository {
  return updated;
  }
 
+ async updateTenant(
+ id: string,
+ patch: { name?: string; region?: string; plan?: string; status?: string },
+ _actorId: string,
+ ): Promise<TenantSummary | null> {
+ const t = this.tenants.get(id);
+ if (!t) return null;
+ const updated: TenantSummary = {
+ ...t,
+ name: patch.name ?? t.name,
+ region: (patch.region as any) ?? t.region,
+ plan: (patch.plan as any) ?? t.plan,
+ status: (patch.status as any) ?? t.status,
+ };
+ this.tenants.set(id, updated);
+ return updated;
+ }
+
+ async deleteTenant(id: string, _actorId: string): Promise<boolean> {
+ return this.tenants.delete(id);
+ }
+
  async listUsers(filter: UserFilter, pagination: PaginationOptions): Promise<PaginatedResult<UserSummary>> {
  let items = Array.from(this.users.values());
  if (filter.tenantId) items = items.filter(u => u.tenantIds.includes(filter.tenantId!));

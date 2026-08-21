@@ -71,13 +71,42 @@ export class AdminService {
  targetType: 'tenant',
  targetId: id,
  reason: ctx.reason,
- metadata: {},
+ metadata: { status: t.status },
  });
  }
  return t;
  }
 
- // ─── Users ─────────────────────────────────────
+ async updateTenant(id: string, patch: { name?: string; region?: string; plan?: string; status?: string }, ctx: ActorContext): Promise<TenantSummary | null> {
+ const t = await this.repo.updateTenant(id, patch, ctx.actorId);
+ if (t) {
+ await this.audit.write({
+ actorId: ctx.actorId,
+ actionType: 'tenant.update',
+ targetType: 'tenant',
+ targetId: id,
+ reason: ctx.reason,
+ metadata: { patch },
+ });
+ }
+ return t;
+ }
+
+ async deleteTenant(id: string, ctx: ActorContext): Promise<boolean> {
+ const ok = await this.repo.deleteTenant(id, ctx.actorId);
+ if (ok) {
+ await this.audit.write({
+ actorId: ctx.actorId,
+ actionType: 'tenant.delete',
+ targetType: 'tenant',
+ targetId: id,
+ reason: ctx.reason,
+ metadata: { hardDelete: true },
+ });
+ }
+ return ok;
+ }
+
  async listUsers(filter: UserFilter, pagination: PaginationOptions): Promise<PaginatedResult<UserSummary>> {
  return this.repo.listUsers(filter, pagination);
  }

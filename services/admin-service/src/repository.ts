@@ -44,6 +44,8 @@ export interface AdminRepository {
  createTenant(input: CreateTenantInput, actorId: string): Promise<TenantSummary>;
  suspendTenant(id: string, reason: string, actorId: string): Promise<TenantSummary | null>;
  resumeTenant(id: string, reason: string, actorId: string): Promise<TenantSummary | null>;
+ updateTenant(id: string, patch: { name?: string; region?: string; plan?: string; status?: string }, actorId: string): Promise<TenantSummary | null>;
+ deleteTenant(id: string, actorId: string): Promise<boolean>;
  listUsers(filter: UserFilter, pagination: PaginationOptions): Promise<PaginatedResult<UserSummary>>;
  findUser(id: string): Promise<UserSummary | null>;
  logoutUser(id: string, actorId: string, reason: string): Promise<boolean>;

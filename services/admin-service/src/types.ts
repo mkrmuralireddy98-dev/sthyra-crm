@@ -17,6 +17,8 @@ export type UserStatus = 'active' | 'suspended' | 'invited';
 export type AuditActionType =
   | 'tenant.create'
   | 'tenant.suspend'
+  | 'tenant.update'
+  | 'tenant.delete'
   | 'tenant.resume'
   | 'user.logout'
   | 'user.reset_password'
