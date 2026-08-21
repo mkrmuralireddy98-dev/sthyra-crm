@@ -65,7 +65,7 @@ test('ISSUES: create → list → get → patch → resolve', async () => {
  const patchRes = await fetch(`${baseUrl}/v1/projects/prj_demo/issues/${issueId}`, {
  method: 'PATCH',
  headers: { 'content-type': 'application/json', ...TENANT_HEADER, 'x-idempotency-key': `e2e-patch-${rid()}` },
- body: JSON.stringify({ title: 'E2E Test Issue (updated)' }),
+ body: JSON.stringify({ title: 'E2E Test Issue (updated)', actorId: 'usr_e2e' }),
  });
  const errTxt2 = patchRes.status !== 200 ? await patchRes.text() : '';
  assert.equal(patchRes.status, 200, `patch returned ${patchRes.status}: ${errTxt2}`);
@@ -76,8 +76,10 @@ test('ISSUES: create → list → get → patch → resolve', async () => {
  const resolveRes = await fetch(`${baseUrl}/v1/projects/prj_demo/issues/${issueId}/resolve`, {
  method: 'POST',
  headers: { 'content-type': 'application/json', ...TENANT_HEADER, 'x-idempotency-key': `e2e-resolve-${rid()}` },
+ body: JSON.stringify({ actorId: 'usr_e2e', resolutionNote: 'fixed' }),
  });
- assert.equal(resolveRes.status, 200);
+ const errResolve = resolveRes.status !== 200 ? await resolveRes.text() : '';
+ assert.equal(resolveRes.status, 200, `resolve returned ${resolveRes.status}: ${errResolve}`);
  const resolved: any = await resolveRes.json();
  assert.equal(resolved.status, 'resolved');
 });
@@ -129,7 +131,7 @@ test('ISSUES: missing x-idempotency-key on create returns 400', async () => {
  headers: { 'content-type': 'application/json', 'x-tenant-id': TENANT },
  body: JSON.stringify({ title: 'no idem', description: 'x' }),
  });
- assert.equal(res.status, 401);
+ assert.equal(res.status, 400);
  const body: any = await res.json();
  assert.match(body.title ?? '', /Idempotency/i);
 });
