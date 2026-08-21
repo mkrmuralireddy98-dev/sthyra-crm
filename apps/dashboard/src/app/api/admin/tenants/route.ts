@@ -31,7 +31,7 @@ async function forward(req: NextRequest, pathname: string, method: string): Prom
 
  try {
  const res = await fetch(url, init);
- const text = await res.text();
+ const text = await res.text(); if (res.status === 204) return new NextResponse(null, { status: 204 });
  return new NextResponse(text, {
  status: res.status,
  headers: {

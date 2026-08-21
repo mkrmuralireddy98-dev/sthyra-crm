@@ -12,7 +12,6 @@ const DEFAULT_ADMIN_USER = process.env.ADMIN_DEFAULT_USER ?? 'usr_dashboard';
 async function forward(req: NextRequest, targetPath: string, method: string): Promise<NextResponse> {
  const url = `${ADMIN_SERVICE_URL}${targetPath}`;
  const headers = new Headers();
- headers.set('content-type', 'application/json');
  headers.set('authorization', `Bearer admin:super:${DEFAULT_ADMIN_USER}`);
  const rid = req.headers.get('x-request-id');
  if (rid) headers.set('x-request-id', rid);
@@ -23,12 +22,13 @@ async function forward(req: NextRequest, targetPath: string, method: string): Pr
  if (method !== 'GET' && method !== 'HEAD') {
  try {
  init.body = await req.text();
+ if (init.body) headers.set('content-type', 'application/json');
  } catch {}
  }
 
  try {
  const res = await fetch(url, init);
- const text = await res.text();
+ const text = await res.text(); if (res.status === 204) return new NextResponse(null, { status: 204 });
  return new NextResponse(text, {
  status: res.status,
  headers: { 'content-type': res.headers.get('content-type') ?? 'application/json' },
