@@ -8,6 +8,7 @@ import { installRequestIdPlugin, installCorsPlugin, currentRequestId } from '@st
 import { AdminService } from './service.js';
 import { InMemoryAdminRepository } from './repo-memory.js';
 import { AuditLogger } from './audit.js';
+import { registerProjectRoutes } from './projects-routes.js';
 import { HealthChecker } from './health.js';
 
 export interface BuildServerDeps {
@@ -262,6 +263,8 @@ export async function buildAdminServer(deps: BuildServerDeps = {}): Promise<any>
  if (!tenant) return problem(reply, 404, 'https://sthyra-crm.dev/errors/not-found', 'Not Found', 'tenant not found', traceId);
  return await service.tenantStats(id);
  });
+
+ registerProjectRoutes(app);
 
  return app;
 }

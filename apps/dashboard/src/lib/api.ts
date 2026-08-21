@@ -219,3 +219,51 @@ export async function createIssue(input: {
  );
  return unwrap<Issue>(data);
 }
+
+
+// ─── PROJECTS ────────────────────────────────────────────────────
+
+export interface Project {
+ id: string;
+ tenantId: string;
+ name: string;
+ location: string;
+ type: string;
+ status: string;
+ progressPct: number;
+ createdAt: string;
+}
+
+export async function listProjects(orgId: string): Promise<Project[]> {
+ const data = await request<any>(`/api/admin/tenants/${orgId}/projects`, { method: 'GET' });
+ return unwrap<Project[]>(data) ?? [];
+}
+
+export async function createProject(input: {
+ tenantId: string;
+ name: string;
+ location: string;
+ type?: string;
+}): Promise<Project> {
+ const data = await request<any>(
+ `/api/admin/tenants/${input.tenantId}/projects`,
+ {
+ method: 'POST',
+ body: JSON.stringify({
+ name: input.name,
+ location: input.location,
+ type: input.type ?? 'commercial',
+ }),
+ },
+ makeHeaders({ idempotencyKey: newIdempotencyKey() }),
+ );
+ return unwrap<Project>(data);
+}
+
+export async function deleteProject(tenantId: string, projectId: string): Promise<void> {
+ await request<void>(
+ `/api/admin/tenants/${tenantId}/projects/${projectId}`,
+ { method: 'DELETE' },
+ makeHeaders({ idempotencyKey: newIdempotencyKey() }),
+ );
+}

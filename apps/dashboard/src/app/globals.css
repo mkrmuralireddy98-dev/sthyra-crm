@@ -322,7 +322,6 @@ button { cursor: pointer; }
  letter-spacing: -0.04em;
  color: var(--fg);
  margin-bottom: var(--space-4);
- text-transform: lowercase;
 }
 
 .page-title-accent { color: var(--accent); }
