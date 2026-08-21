@@ -1,37 +1,12 @@
 /**
- * API client for the dashboard.
- * Runs both server-side (during SSR) and client-side (for actions).
+ * API client for the dashboard (client-side).
+ * All calls go through Next.js API routes (which proxy to backend).
+ * This avoids CORS and hides the backend address from the browser.
  *
- * Routes:
- * - /v1/admin/* on admin-service (port 9100) — admin-only operations
- * - /v1/projects/* on field-service (port 9091) — projects, issues
- * - /v1/captures/* on capture-service (port 9090) — captures
- * - /v1/orgs/* on org-service (port 8080) — currently stubs via admin
- *
- * For the demo the admin-service handles org + user operations since
- * user-service and org-service aren't currently in production.
+ * Server-side code (page.tsx files with `dynamic = 'force-dynamic'`) can
+ * import the server-side functions from `@/lib/api-server` for direct
+ * access without the proxy hop.
  */
-
-const DEFAULT_PORTS = {
- admin: 9100,
- field: 9091,
- capture: 9090,
- track: 9095,
- workflow: 9097,
- integration: 9098,
- report: 9096,
- bim: 9092,
- copilot: 9093,
- mobile: 9094,
- dashboard: 9099,
-};
-
-const HOST = process.env.NEXT_PUBLIC_BACKEND_HOST ?? '127.0.0.1';
-
-function url(service: keyof typeof DEFAULT_PORTS, path: string): string {
- const port = process.env[`NEXT_PUBLIC_${service.toUpperCase()}_PORT`] ?? DEFAULT_PORTS[service];
- return `http://${HOST}:${port}${path}`;
-}
 
 export class ApiError extends Error {
  constructor(
@@ -45,132 +20,117 @@ export class ApiError extends Error {
  }
 }
 
-interface FetchOptions {
- requestId?: string;
- idempotencyKey?: string;
+function makeHeaders(opts: {
  tenantId?: string;
  isAdmin?: boolean;
  adminUserId?: string;
-}
-
-function buildHeaders(opts: FetchOptions = {}): Record<string, string> {
+ idempotencyKey?: string;
+ requestId?: string;
+} = {}): Record<string, string> {
  const headers: Record<string, string> = {
  'content-type': 'application/json',
  };
- if (opts.requestId) headers['x-request-id'] = opts.requestId;
- if (opts.idempotencyKey) headers['idempotency-key'] = opts.idempotencyKey;
  if (opts.tenantId) headers['x-tenant-id'] = opts.tenantId;
- if (opts.isAdmin && opts.adminUserId) {
- headers['authorization'] = `Bearer admin:super:${opts.adminUserId}`;
- }
+ if (opts.idempotencyKey) headers['idempotency-key'] = opts.idempotencyKey;
+ if (opts.requestId) headers['x-request-id'] = opts.requestId;
  return headers;
 }
 
-async function parseProblem(res: Response): Promise<ApiError> {
+async function request<T = any>(
+ urlStr: string,
+ init: RequestInit = {},
+ headers: Record<string, string> = {},
+): Promise<T> {
+ const res = await fetch(urlStr, {
+ ...init,
+ headers: { ...headers, ...(init.headers as Record<string, string>) },
+ });
+ if (!res.ok) {
  const traceId = res.headers.get('x-request-id') ?? 'unknown';
+ let body: any = {};
  try {
- const body = (await res.json()) as any;
- return new ApiError(
+ body = await res.json();
+ } catch {
+ body = { detail: res.statusText };
+ }
+ throw new ApiError(
  res.status,
  body.title ?? 'Error',
  body.detail ?? body.message ?? res.statusText,
  traceId,
  body.code,
  );
- } catch {
- return new ApiError(res.status, 'Error', res.statusText, traceId);
  }
-}
-
-async function request<T = any>(
- urlStr: string,
- init: RequestInit = {},
- opts: FetchOptions = {},
-): Promise<T> {
- const res = await fetch(urlStr, {
- ...init,
- headers: { ...buildHeaders(opts), ...(init.headers as Record<string, string>) },
- });
- if (!res.ok) throw await parseProblem(res);
  if (res.status === 204) return undefined as T;
  return (await res.json()) as T;
 }
 
-// ─── ORG / TENANT OPERATIONS ────────────────────────────────────────────
+// ─── ORGS ────────────────────────────────────────────────────────
 
 export interface Org {
  id: string;
  name: string;
- country: string;
+ country?: string;
+ region?: string;
  plan: string;
  status: string;
  createdAt: string;
  userCount?: number;
- projectCount?: number;
+}
+
+function newIdempotencyKey(): string {
+ return `idemp-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
 export async function listOrgs(): Promise<Org[]> {
- const data = await request<{ data: Org[] }>(url('admin', '/v1/admin/tenants'), { method: 'GET' }, { isAdmin: true, adminUserId: 'usr_viewer' });
+ const data = await request<{ data: Org[] }>('/api/admin/tenants', { method: 'GET' });
  return data.data ?? [];
 }
 
-export async function getOrg(id: string): Promise<Org | null> {
- try {
- const data = await request<{ data: Org }>(url('admin', `/v1/admin/tenants/${id}`), { method: 'GET' }, { isAdmin: true, adminUserId: 'usr_viewer' });
- return data.data ?? null;
- } catch {
- return null;
- }
-}
-
 export async function createOrg(input: { name: string; country: string; plan: string }): Promise<Org> {
- const idempotencyKey = `create-org-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
  const data = await request<{ data: Org }>(
- url('admin', '/v1/admin/tenants'),
+ '/api/admin/tenants',
  {
  method: 'POST',
  body: JSON.stringify({
  name: input.name,
- region: input.country, // admin service uses 'region' as iso country code
+ region: input.country, // admin-service stores country code in 'region' field
  plan: input.plan,
  }),
  },
- { idempotencyKey, isAdmin: true, adminUserId: 'usr_creator' },
+ makeHeaders({ idempotencyKey: newIdempotencyKey() }),
  );
  return data.data;
 }
 
 export async function suspendOrg(id: string, reason: string): Promise<Org> {
- const idempotencyKey = `suspend-${id}-${Date.now()}`;
  const data = await request<{ data: Org }>(
- url('admin', `/v1/admin/tenants/${id}/suspend`),
+ `/api/admin/tenants/${id}/suspend`,
  {
  method: 'POST',
  body: JSON.stringify({ reason }),
  },
- { idempotencyKey, isAdmin: true, adminUserId: 'usr_admin' },
+ makeHeaders({ idempotencyKey: newIdempotencyKey() }),
  );
  return data.data;
 }
 
 export async function resumeOrg(id: string, reason: string): Promise<Org> {
- const idempotencyKey = `resume-${id}-${Date.now()}`;
  const data = await request<{ data: Org }>(
- url('admin', `/v1/admin/tenants/${id}/resume`),
+ `/api/admin/tenants/${id}/resume`,
  {
  method: 'POST',
  body: JSON.stringify({ reason }),
  },
- { idempotencyKey, isAdmin: true, adminUserId: 'usr_admin' },
+ makeHeaders({ idempotencyKey: newIdempotencyKey() }),
  );
  return data.data;
 }
 
-// ─── ISSUE OPERATIONS ────────────────────────────────────────────────
+// ─── ISSUES ──────────────────────────────────────────────────────
 
 export interface Issue {
  id: string;
- tenantId: string;
  orgId: string;
  projectId: string;
  title: string;
@@ -184,25 +144,20 @@ export interface Issue {
 }
 
 export async function listIssues(tenantId: string, projectId = 'prj_demo'): Promise<Issue[]> {
- const data = await request<{ data: Issue[] }>(
- url('field', `/v1/projects/${projectId}/issues`),
- { method: 'GET' },
- { tenantId },
- );
+ const data = await request<{ data: Issue[] }>(`/api/orgs/${tenantId}/issues`, { method: 'GET' });
  return data.data ?? [];
 }
 
 export async function createIssue(input: {
  tenantId: string;
- projectId: string;
+ projectId?: string;
  title: string;
  description?: string;
  severity: string;
  trade?: string;
 }): Promise<Issue> {
- const idempotencyKey = `create-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
  const data = await request<{ data: Issue }>(
- url('field', `/v1/projects/${input.projectId}/issues`),
+ `/api/orgs/${input.tenantId}/issues`,
  {
  method: 'POST',
  body: JSON.stringify({
@@ -212,26 +167,10 @@ export async function createIssue(input: {
  trade: input.trade,
  }),
  },
- { idempotencyKey, tenantId: input.tenantId },
+ makeHeaders({
+ tenantId: input.tenantId,
+ idempotencyKey: newIdempotencyKey(),
+ }),
  );
  return data.data;
 }
-
-// ─── AUTH HEADER GENERATION ──────────────────────────────────────────
-
-export function adminAuthHeader(userId = 'usr_viewer'): Record<string, string> {
- return { authorization: `Bearer admin:super:${userId}` };
-}
-
-// ─── HEALTH AGGREGATION ──────────────────────────────────────────────
-
-export async function getSystemHealth(): Promise<{ services: { name: string; status: string; port: number }[] }> {
- const services = Object.entries(DEFAULT_PORTS).map(([name, port]) => {
- const url = new URL(`http://${HOST}:${port}/v1/health`);
- return { name, port, url: url.toString() };
- });
- return { services: services.map(s => ({ name: s.name, port: s.port, status: 'healthy' })) };
-}
-
-export const BACKEND_PORTS = DEFAULT_PORTS;
-export const BACKEND_HOST = HOST;
