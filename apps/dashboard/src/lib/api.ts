@@ -260,6 +260,18 @@ export async function createProject(input: {
  return unwrap<Project>(data);
 }
 
+export async function updateProject(tenantId: string, projectId: string, patch: { name?: string; location?: string; type?: string; status?: string; progressPct?: number }): Promise<Project> {
+ const data = await request<any>(
+ `/api/admin/tenants/${tenantId}/projects/${projectId}`,
+ {
+ method: 'PATCH',
+ body: JSON.stringify(patch),
+ },
+ makeHeaders({ idempotencyKey: newIdempotencyKey() }),
+ );
+ return unwrap<Project>(data);
+}
+
 export async function deleteProject(tenantId: string, projectId: string): Promise<void> {
  await request<void>(
  `/api/admin/tenants/${tenantId}/projects/${projectId}`,

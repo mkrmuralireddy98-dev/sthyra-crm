@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { TopNav, LiveMarquee } from '@/components/top-nav';
 import { listProjects } from '@/lib/api-server';
+import { ProjectActions } from '@/components/project-actions';
+import { cookies } from 'next/headers';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,6 +51,8 @@ function MiniBar({ value }: { value: number }) {
 
 export default async function ProjectsPage({ params }: { params: { orgId: string } }) {
  const tenantId = params.orgId;
+ const cookieStore = await cookies();
+ const role = (cookieStore.get('sthyra-role')?.value as 'admin' | 'user') ?? 'user';
  const realProjects = await listProjects(tenantId);
  const projects: any[] = [
  ...realProjects.map(p => ({
@@ -100,6 +104,7 @@ export default async function ProjectsPage({ params }: { params: { orgId: string
  <th>// captures</th>
  <th>// issues</th>
  <th>// location</th>
+ <th>// actions</th>
  </tr>
  </thead>
  <tbody>
